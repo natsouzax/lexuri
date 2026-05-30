@@ -50,6 +50,53 @@ export interface SongData {
   genius_url?: string
 }
 
+export type ChunkType =
+  | 'collocation'
+  | 'phrasal_verb'
+  | 'idiomatic'
+  | 'lexical_chunk'
+  | 'formulaic'
+  | 'grammar_pattern'
+  | 'emotional'
+  | 'conversational'
+
+export interface ChunkItem {
+  text: string
+  type: ChunkType
+  start: number
+  end: number
+  literal_translation: string
+  contextual_translation: string
+  importance: 'high' | 'medium' | 'low'
+  frequency_score: number
+  confidence: number
+  color: string
+  clickable: boolean
+  flashcard_suggestion: boolean
+  learner_level: string
+  why_it_matters: string
+}
+
+export interface ChunkAnalysis {
+  original_text: string
+  chunks: ChunkItem[]
+}
+
+export function chunkToFlashcard(chunk: ChunkItem, originalText: string): Flashcard {
+  const lineStart = originalText.lastIndexOf('\n', chunk.start)
+  const lineEnd = originalText.indexOf('\n', chunk.end)
+  const sentenceContext = originalText
+    .slice(lineStart === -1 ? 0 : lineStart + 1, lineEnd === -1 ? originalText.length : lineEnd)
+    .trim()
+
+  return normalizeFlashcard({
+    word: chunk.text,
+    translation: chunk.contextual_translation,
+    explanation: `[${chunk.type}] ${chunk.why_it_matters}`,
+    example: sentenceContext,
+  })!
+}
+
 export function normalizeWord(word: string): string {
   return word.replace(/[^A-Za-z']/g, '').toLowerCase().replace(/^'+|'+$/g, '')
 }
