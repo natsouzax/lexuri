@@ -2,8 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase-browser'
+import UserDropdown from '@/components/auth/UserDropdown'
+import type { User } from '@supabase/supabase-js'
 
 const NAV_ITEMS = [
+  { href: '/feed',       label: 'Learning Feed',  icon: '◈' },
+  { href: '/review',     label: 'Review',         icon: '↺' },
   { href: '/youtube',    label: 'YouTube Studio', icon: '▶' },
   { href: '/flashcards', label: 'Flashcards',     icon: '⊞' },
   { href: '/music',      label: 'Music Lab',       icon: '♪' },
@@ -11,6 +17,17 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <aside className="sidebar">
@@ -47,10 +64,15 @@ export default function Sidebar() {
 
       <div className="sidebar-bottom">
         <hr className="sidebar-divider" style={{ marginBottom: 14 }} />
-        <Link href="/" className="sidebar-site-link">
-          <span style={{ fontSize: '0.8rem' }}>←</span>
-          <span>Public site</span>
-        </Link>
+
+        {user ? (
+          <UserDropdown user={user} />
+        ) : (
+          <Link href="/" className="sidebar-site-link">
+            <span style={{ fontSize: '0.8rem' }}>←</span>
+            <span>Public site</span>
+          </Link>
+        )}
       </div>
     </aside>
   )

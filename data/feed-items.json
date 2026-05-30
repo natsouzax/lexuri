@@ -1,0 +1,90 @@
+[
+  {
+    "id": "try-something-new",
+    "type": "video",
+    "title": "Try Something New for 30 Days",
+    "channel": "TED",
+    "youtube_id": "UNP03fDSj1U",
+    "duration": "3:27",
+    "level": "B1",
+    "tags": ["motivation", "habits", "everyday English"],
+    "preview": "Is there something you've always meant to do, wanted to do, but just haven't? Matt Cutts suggests: Try it for 30 days."
+  },
+  {
+    "id": "how-to-speak",
+    "type": "video",
+    "title": "How to Speak So That People Want to Listen",
+    "channel": "TED",
+    "youtube_id": "eIho2S0ZahI",
+    "duration": "9:58",
+    "level": "B2",
+    "tags": ["communication", "vocabulary", "phrasal verbs"],
+    "preview": "Julian Treasure shares the 7 deadly sins of speaking and offers tools for powerful speech — rich with idioms and collocations."
+  },
+  {
+    "id": "master-procrastinator",
+    "type": "video",
+    "title": "Inside the Mind of a Master Procrastinator",
+    "channel": "TED",
+    "youtube_id": "arj7oStGLkU",
+    "duration": "14:03",
+    "level": "B2",
+    "tags": ["humor", "idioms", "storytelling"],
+    "preview": "Tim Urban takes us deep inside the procrastinator's brain with humor and wit — loaded with informal English, metaphors, and phrasal verbs."
+  },
+  {
+    "id": "growth-mindset",
+    "type": "video",
+    "title": "The Power of Believing You Can Improve",
+    "channel": "TED",
+    "youtube_id": "_X0mgOOSpLU",
+    "duration": "10:23",
+    "level": "B1",
+    "tags": ["education", "mindset", "academic English"],
+    "preview": "Carol Dweck explores the growth mindset and the power of 'not yet' — great for academic and professional vocabulary."
+  },
+  {
+    "id": "great-leaders",
+    "type": "video",
+    "title": "How Great Leaders Inspire Action",
+    "channel": "TED",
+    "youtube_id": "qp0HIF3SfI4",
+    "duration": "18:04",
+    "level": "B2",
+    "tags": ["business", "leadership", "collocations"],
+    "preview": "Simon Sinek explains the Golden Circle — packed with business English collocations and persuasive language patterns."
+  },
+  {
+    "id": "vulnerability",
+    "type": "video",
+    "title": "The Power of Vulnerability",
+    "channel": "TED",
+    "youtube_id": "iCvmsMzlF7o",
+    "duration": "20:19",
+    "level": "C1",
+    "tags": ["emotional", "storytelling", "advanced"],
+    "preview": "Brené Brown researches human connection, shame, and vulnerability — rich emotional vocabulary and conversational register."
+  },
+  {
+    "id": "body-language",
+    "type": "video",
+    "title": "Your Body Language May Shape Who You Are",
+    "channel": "TED",
+    "youtube_id": "Ks-_Mh1QhMc",
+    "duration": "21:02",
+    "level": "B2",
+    "tags": ["psychology", "grammar patterns", "formal"],
+    "preview": "Amy Cuddy's science-backed talk about power poses — full of scientific register, hedging language, and grammar patterns."
+  },
+  {
+    "id": "danger-of-silence",
+    "type": "video",
+    "title": "The Danger of Silence",
+    "channel": "TED",
+    "youtube_id": "QB3ythp2arA",
+    "duration": "4:30",
+    "level": "B1",
+    "tags": ["poetry", "spoken word", "emotional"],
+    "preview": "Clint Smith reads four poems about the danger of silence — a powerful, short piece full of figurative language and emotional expression."
+  }
+]

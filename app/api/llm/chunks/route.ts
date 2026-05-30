@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient, safeJsonParse } from '@/lib/openai'
+import { createClient } from '@/lib/supabase-server'
 import type { ChunkAnalysis, ChunkItem } from '@/lib/types'
 
-const SYSTEM_PROMPT = `You are a neuro-informed English language analysis system specialized in detecting natural learning units for Brazilian Portuguese speakers.
+function buildSystemPrompt(nativeLang: string) {
+  return `You are a neuro-informed English language analysis system specialized in detecting natural learning units for ${nativeLang} speakers.
 
 Your goal is to identify chunks that the brain stores as single cognitive units — NOT isolated words.
 
@@ -21,7 +23,7 @@ RULES:
 - Overlapping chunks ARE allowed: "freaking out" can exist inside "kind of freaking out"
 - Preserve contractions, slang, informal spelling, and oral patterns
 - Do NOT split natural units into isolated words
-- Translations must reflect real meaning and emotional tone, NOT literal word-for-word renderings
+- Translations must be in ${nativeLang} and reflect real meaning and emotional tone, NOT literal word-for-word renderings
 - Use consistent colors per chunk type as specified below
 
 COLOR CODES (use exactly as specified, per type):
@@ -35,8 +37,10 @@ COLOR CODES (use exactly as specified, per type):
 - conversational: "#607D8B"
 
 Return ONLY valid JSON. No markdown fences. No explanations outside JSON.`
+}
 
-const USER_TEMPLATE = (text: string, level: string) => `Analyze this English text and detect all natural language chunks for a ${level} learner.
+function buildUserPrompt(text: string, level: string, nativeLang: string) {
+  return `Analyze this English text and detect all natural language chunks for a ${level} learner.
 
 Return exact character offsets for each chunk so the frontend can highlight them in the original text.
 The "start" and "end" values must match the exact substring in the text below.
@@ -53,8 +57,8 @@ JSON schema to follow exactly:
       "type": "phrasal_verb|collocation|idiomatic|lexical_chunk|formulaic|grammar_pattern|emotional|conversational",
       "start": <integer, 0-based character index>,
       "end": <integer, exclusive>,
-      "literal_translation": "<word-for-word Portuguese>",
-      "contextual_translation": "<natural Portuguese capturing tone and emotion>",
+      "literal_translation": "<word-for-word ${nativeLang}>",
+      "contextual_translation": "<natural ${nativeLang} capturing tone and emotion>",
       "importance": "high|medium|low",
       "frequency_score": <integer 1-10>,
       "confidence": <float 0.0-1.0>,
@@ -66,12 +70,12 @@ JSON schema to follow exactly:
     }
   ]
 }`
+}
 
 function correctOffset(chunk: ChunkItem, text: string): ChunkItem | null {
   const slice = text.slice(chunk.start, chunk.end)
   if (slice.toLowerCase() === chunk.text.toLowerCase()) return chunk
 
-  // LLM got the offset wrong — search for the text
   const idx = text.toLowerCase().indexOf(chunk.text.toLowerCase())
   if (idx === -1) return null
   return { ...chunk, start: idx, end: idx + chunk.text.length }
@@ -79,6 +83,10 @@ function correctOffset(chunk: ChunkItem, text: string): ChunkItem | null {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = (await request.json()) as { text: string; level?: string }
     const { text, level = 'B1' } = body
 
@@ -86,11 +94,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Text is required.' }, { status: 400 })
     }
 
+    const { data: onboarding } = await supabase
+      .from('onboarding')
+      .select('native_language, current_level')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const nativeLang = (onboarding?.native_language as string | null) ?? 'Portuguese'
+    const userLevel = (level !== 'B1' ? level : (onboarding?.current_level as string | null)) ?? 'B1'
+
     const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: USER_TEMPLATE(text, level) },
+        { role: 'system', content: buildSystemPrompt(nativeLang) },
+        { role: 'user', content: buildUserPrompt(text, userLevel, nativeLang) },
       ],
       temperature: 0.2,
     })
