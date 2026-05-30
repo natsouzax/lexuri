@@ -4,7 +4,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <Sidebar />
-      <main className="main-content">{children}</main>
+      <main className="main-content">
+        {children}
+      </main>
     </div>
   )
 }
