@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import UpgradeButton from '@/components/ui/UpgradeButton'
 
 export const metadata: Metadata = {
   title: 'Pricing',
   description: 'Start free. Upgrade when you\'re ready. Simple, transparent pricing for serious English learners.',
 }
+
+const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? ''
 
 const FREE_FEATURES = [
   'Up to 10 videos per month',
@@ -97,9 +100,17 @@ export default function PricingPage() {
                 </div>
               ))}
               <div className="pricing-cta">
-                <Link href="/contact" className="btn-mkt-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  Get Pro →
-                </Link>
+                {PRO_PRICE_ID ? (
+                  <UpgradeButton
+                    priceId={PRO_PRICE_ID}
+                    label="Get Pro →"
+                    className="btn-mkt-primary"
+                  />
+                ) : (
+                  <Link href="/contact" className="btn-mkt-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                    Get Pro →
+                  </Link>
+                )}
               </div>
             </div>
 

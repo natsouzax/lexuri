@@ -2,7 +2,7 @@ import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import type { Flashcard } from './types'
 
 // Service-role client (server-only — never expose to browser)
-function getAdminClient() {
+export function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !serviceKey) {
