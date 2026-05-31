@@ -1445,15 +1445,87 @@ h1, h2, h3 {
 .settings-nav-desc { font-size: 0.8rem; color: var(--muted); }
 .settings-nav-arrow { margin-left: auto; color: var(--muted); font-size: 1.1rem; }
 
+/* Marketing layout utilities */
+.mkt-hero-section { padding-top: 80px; padding-bottom: 80px; }
+.mkt-grid-hero  { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.mkt-grid-2col  { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.mkt-grid-3col  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.mkt-comparison { max-width: 860px; margin: 0 auto; }
+.mkt-btn-group  { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* Feature rows with alternating layout */
+.mkt-feature-row         { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.mkt-feature-row-reverse { direction: rtl; }
+.mkt-feature-row > div   { direction: ltr; }
+
+/* Hamburger button — hidden on desktop */
+.mkt-nav-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--paper);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  line-height: 0;
+  transition: background 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.mkt-nav-hamburger:hover { background: rgba(255,250,240,0.08); }
+
+/* Mobile nav menu */
+.mkt-nav-mobile { background: rgba(18, 26, 22, 0.98); border-top: 1px solid var(--dark-border); }
+.mkt-nav-mobile-link {
+  display: block;
+  padding: 15px 24px;
+  color: var(--dark-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 100ms ease, background 100ms ease;
+  border-bottom: 1px solid rgba(255,250,240,0.05);
+}
+.mkt-nav-mobile-link:hover  { color: var(--paper); background: rgba(255,250,240,0.06); }
+.mkt-nav-mobile-link.active { color: var(--paper); }
+.mkt-nav-mobile-cta { padding: 16px 24px 20px; }
+
 /* Marketing responsive */
 @media (max-width: 900px) {
-  .mkt-nav-links { display: none; }
-  .mkt-footer-grid { grid-template-columns: 1fr; gap: 32px; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
-  .roadmap-grid { grid-template-columns: 1fr; }
+  .mkt-nav-links     { display: none; }
+  .mkt-nav-hamburger { display: flex; }
+
+  .mkt-hero-section  { padding-top: 52px; padding-bottom: 44px; }
+  .mkt-grid-hero     { grid-template-columns: 1fr; gap: 36px; }
+  .mkt-feature-row   { grid-template-columns: 1fr; gap: 28px; direction: ltr; }
+  .mkt-grid-2col     { grid-template-columns: 1fr; }
+  .mkt-grid-3col     { grid-template-columns: 1fr 1fr; }
+
+  .mkt-footer-grid   { grid-template-columns: 1fr; gap: 32px; }
+  .mkt-footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+
+  .pricing-grid      { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+  .roadmap-grid      { grid-template-columns: 1fr; }
 }
+
 @media (max-width: 640px) {
-  .mkt-section { padding: 64px 0; }
-  .mkt-h1 { font-size: 2.2rem; }
-  .mkt-h2 { font-size: 1.7rem; }
+  .mkt-section       { padding: 52px 0; }
+  .mkt-section-sm    { padding: 36px 0; }
+  .mkt-hero-section  { padding-top: 40px; padding-bottom: 36px; }
+  .mkt-container     { padding: 0 16px; }
+
+  .mkt-h1            { font-size: 1.9rem; }
+  .mkt-h2            { font-size: 1.5rem; }
+  .mkt-h3            { font-size: 1.1rem; }
+  .mkt-lead          { font-size: 0.92rem; }
+
+  .mkt-grid-3col     { grid-template-columns: 1fr; }
+  .mkt-btn-group     { flex-direction: column; }
+  .btn-mkt-primary,
+  .btn-mkt-ghost     { width: 100%; justify-content: center; }
+
+  .step-card         { padding: 20px; gap: 14px; }
+  .step-number       { font-size: 1.8rem; }
+  .feature-card      { padding: 20px; }
 }

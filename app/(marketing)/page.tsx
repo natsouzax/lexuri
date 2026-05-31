@@ -59,8 +59,8 @@ export default function HomePage() {
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="mkt-section-dark" style={{ paddingTop: 80, paddingBottom: 80 }}>
-        <div className="mkt-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'center' }}>
+      <section className="mkt-section-dark mkt-hero-section">
+        <div className="mkt-container mkt-grid-hero">
           <div className="animate-fade-up">
             <span className="mkt-eyebrow">AI-Powered Language Learning</span>
             <h1 className="mkt-h1" style={{ color: 'var(--paper)' }}>
@@ -69,7 +69,7 @@ export default function HomePage() {
             <p className="mkt-lead mkt-lead-dark" style={{ marginBottom: 36 }}>
               Stop memorizing word lists. Verbly detects the natural language chunks in videos and music — the phrases, idioms, and patterns that build real fluency.
             </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <div className="mkt-btn-group">
               <Link href="/youtube" className="btn-mkt-primary">Start learning free →</Link>
               <Link href="/features" className="btn-mkt-ghost">See how it works</Link>
             </div>
@@ -122,7 +122,7 @@ export default function HomePage() {
               No vocabulary lists. No grammar drills. Just language the way your brain was designed to learn it.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+          <div className="mkt-grid-3col">
             {STEPS.map((step, i) => (
               <div key={i} className="step-card animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="step-number">{step.n}</div>
@@ -143,7 +143,7 @@ export default function HomePage() {
             <span className="mkt-eyebrow">The Science</span>
             <h2 className="mkt-h2">Why word lists don&apos;t work</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 860, margin: '0 auto' }}>
+          <div className="mkt-grid-2col mkt-comparison">
             <div style={{ border: '1px solid rgba(200,80,60,0.25)', borderRadius: 20, padding: '28px 28px', background: 'rgba(200,80,60,0.05)' }}>
               <div style={{ fontWeight: 900, marginBottom: 16, fontSize: '0.85rem', color: '#b03020' }}>✕ Traditional approach</div>
               {['Memorize isolated words', 'No context or emotion', 'Forget within days', 'Can\'t speak naturally', 'Grammar rules, not patterns'].map((t) => (
@@ -171,7 +171,7 @@ export default function HomePage() {
             <span className="mkt-eyebrow">What&apos;s Inside</span>
             <h2 className="mkt-h2">Everything you need to reach fluency</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
+          <div className="mkt-grid-2col">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
                 <div className="feature-icon" style={{ background: f.iconBg, color: f.iconColor }}>{f.icon}</div>
@@ -193,7 +193,7 @@ export default function HomePage() {
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 48px' }}>
             Verbly is in early access. Testimonials coming soon.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+          <div className="mkt-grid-3col">
             {['B2 level in 6 months', 'Finally understood series without subtitles', 'Chunks made all the difference'].map((quote, i) => (
               <div key={i} style={{ border: '1px solid var(--dark-border)', borderRadius: 20, padding: '28px 24px', background: 'var(--dark-surface)', textAlign: 'left' }}>
                 <div style={{ fontSize: '1.4rem', marginBottom: 12 }}>✦</div>

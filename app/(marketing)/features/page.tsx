@@ -65,8 +65,8 @@ export default function FeaturesPage() {
       {FEATURES.map((f, i) => (
         <section key={i} className={`mkt-section ${i % 2 === 0 ? 'mkt-section-cream' : 'mkt-section-sage'}`}>
           <div className="mkt-container">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center', direction: i % 2 === 0 ? 'ltr' : 'rtl' }}>
-              <div style={{ direction: 'ltr' }}>
+            <div className={`mkt-feature-row${i % 2 !== 0 ? ' mkt-feature-row-reverse' : ''}`}>
+              <div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                   <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: f.bg, color: f.color }}>
                     {f.icon}
@@ -83,7 +83,7 @@ export default function FeaturesPage() {
                   ))}
                 </ul>
               </div>
-              <div style={{ direction: 'ltr' }}>
+              <div>
                 <div style={{ border: '1px solid var(--line)', borderRadius: 20, padding: 32, background: f.bg, minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ textAlign: 'center', color: f.color }}>
                     <div style={{ fontSize: '4rem', marginBottom: 12 }}>{f.icon}</div>
