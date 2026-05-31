@@ -1,11 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense>
+      <VerifyEmailForm />
+    </Suspense>
+  )
+}
+
+function VerifyEmailForm() {
   const params = useSearchParams()
   const email = params.get('email') ?? ''
 
