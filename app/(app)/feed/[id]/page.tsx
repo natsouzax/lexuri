@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import Hero from '@/components/ui/Hero'
+import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
@@ -26,43 +27,30 @@ export default function FeedDetailPage() {
   const { id } = useParams<{ id: string }>()
   const item = getFeedItem(id)
 
-  const [saved, setSaved] = useState(false)
-  const [videoData, setVideoData] = useState<VideoData | null>(null)
+  const [saved, setSaved]                     = useState(false)
+  const [videoData, setVideoData]             = useState<VideoData | null>(null)
   const [transcriptLoading, setTranscriptLoading] = useState(false)
   const [transcriptError, setTranscriptError] = useState('')
 
-  const [level, setLevel] = useState<Level>('B1')
-  const [chunkAnalysis, setChunkAnalysis] = useState<ChunkAnalysis | null>(null)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [selectedChunk, setSelectedChunk] = useState<ChunkItem | null>(null)
+  const [selectedWords, setSelectedWords]     = useState<string[]>([])
+  const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
+  const [generatingCards, setGeneratingCards] = useState(false)
 
-  const [savedChunks, setSavedChunks] = useState<Set<string>>(new Set())
+  const [level, setLevel]                     = useState<Level>('B1')
+  const [chunkAnalysis, setChunkAnalysis]     = useState<ChunkAnalysis | null>(null)
+  const [analyzing, setAnalyzing]             = useState(false)
+  const [selectedChunk, setSelectedChunk]     = useState<ChunkItem | null>(null)
+  const [savedChunks, setSavedChunks]         = useState<Set<string>>(new Set())
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
-  const [recentCards, setRecentCards] = useState<Flashcard[]>([])
-  const [error, setError] = useState('')
+  const [error, setError]                     = useState('')
 
-  useEffect(() => {
-    setSaved(isItemSaved(id))
-  }, [id])
+  useEffect(() => { setSaved(isItemSaved(id)) }, [id])
 
-  const handleToggleSave = useCallback(() => {
-    if (saved) {
-      unsaveItem(id)
-      setSaved(false)
-    } else {
-      saveItem(id)
-      setSaved(true)
-    }
-  }, [id, saved])
-
-  async function handleLoadTranscript() {
+  // Auto-load transcript when the page opens
+  const loadTranscript = useCallback(async () => {
     if (!item) return
     setTranscriptLoading(true)
     setTranscriptError('')
-    setVideoData(null)
-    setChunkAnalysis(null)
-    setSelectedChunk(null)
-    setSavedChunks(new Set())
     try {
       const data = await apiFetch<VideoData>('/api/youtube/transcript', {
         method: 'POST',
@@ -74,6 +62,47 @@ export default function FeedDetailPage() {
       setTranscriptError(String(e))
     } finally {
       setTranscriptLoading(false)
+    }
+  }, [item])
+
+  useEffect(() => { loadTranscript() }, [loadTranscript])
+
+  function handleToggleSave() {
+    if (saved) { unsaveItem(id); setSaved(false) }
+    else       { saveItem(id);   setSaved(true)  }
+  }
+
+  async function handleGenerateFlashcards() {
+    if (!selectedWords.length || !videoData) return
+    setGeneratingCards(true)
+    setError('')
+    try {
+      const timestamps: Record<string, number | null> = {}
+      for (const word of selectedWords) {
+        const seg = videoData.segments.find((s) =>
+          (s.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) ?? []).some((w) => w.toLowerCase() === word),
+        )
+        timestamps[word] = seg?.start ?? null
+      }
+      const cards = await apiFetch<Flashcard[]>('/api/llm/flashcards-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ words: selectedWords, source_video: videoData.video_id, timestamps }),
+      })
+      const valid = cards.filter((c) => !('error' in c))
+      if (valid.length) {
+        await apiFetch('/api/flashcards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cards: valid }),
+        })
+        setGeneratedCards(valid)
+        setSelectedWords([])
+      }
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setGeneratingCards(false)
     }
   }
 
@@ -109,7 +138,7 @@ export default function FeedDetailPage() {
         body: JSON.stringify({ cards: [card] }),
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
-      setRecentCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
+      setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
     } catch (e) {
       setError(String(e))
     } finally {
@@ -138,12 +167,9 @@ export default function FeedDetailPage() {
         body={item.preview}
       />
 
-      {/* Back + meta */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        <Link
-          href="/feed"
-          style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}
-        >
+      {/* Back + meta row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+        <Link href="/feed" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>
           ← Feed
         </Link>
         <span style={{ fontSize: '0.72rem', fontWeight: 900, padding: '2px 10px', borderRadius: 999, background: levelColor, color: '#fff' }}>
@@ -173,163 +199,187 @@ export default function FeedDetailPage() {
         </button>
       </div>
 
-      {/* Embedded YouTube player */}
-      <div className="section-title">Video</div>
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 16, overflow: 'hidden', marginBottom: 24, border: '1px solid var(--line)' }}>
-        <iframe
-          src={`https://www.youtube.com/embed/${item.youtube_id}`}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={item.title}
-        />
-      </div>
-
-      {/* Load transcript */}
-      <div className="section-title">Transcript & Analysis</div>
-      {!videoData && (
-        <>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 12 }}>
-            Load the transcript to extract vocabulary, analyze language chunks, and create flashcards.
-          </p>
-          <button className="btn-primary btn-wide" onClick={handleLoadTranscript} disabled={transcriptLoading}>
-            {transcriptLoading ? <><span className="spinner" />Loading transcript…</> : 'Load transcript'}
-          </button>
-          {transcriptError && <div className="alert-error" style={{ marginTop: 12 }}>{transcriptError}</div>}
-        </>
+      {/* Loading / error state */}
+      {transcriptLoading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 0', color: 'var(--muted)' }}>
+          <span className="spinner" />
+          <span>Loading video and transcript…</span>
+        </div>
       )}
 
+      {transcriptError && (
+        <div>
+          <div className="alert-error">{transcriptError}</div>
+          <button className="btn-secondary" onClick={loadTranscript} style={{ marginTop: 8 }}>Retry</button>
+        </div>
+      )}
+
+      {/* Full studio experience (mirrors YouTube Studio, pre-loaded) */}
       {videoData && (
         <>
-          {/* Transcript text */}
-          <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 20 }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-              Full Transcript
+          <div className="section-title">Lesson Workspace</div>
+
+          {/* Controls row */}
+          <div className="two-col" style={{ marginBottom: 20 }}>
+            <div>
+              <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 6 }}>
+                {videoData.title}
+              </div>
+              <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: 0 }}>
+                Play the video — the transcript syncs word by word. Click any word to collect it, or use AI chunk analysis below.
+              </p>
             </div>
-            <p style={{ fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--ink)', whiteSpace: 'pre-wrap', margin: 0 }}>
-              {videoData.transcript}
-            </p>
+            <div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>My level:</span>
+                {LEVELS.map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setLevel(l)}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 20,
+                      border: `1.5px solid ${level === l ? 'var(--clay)' : 'var(--line)'}`,
+                      background: level === l ? 'var(--clay)' : 'transparent',
+                      color: level === l ? '#fff' : 'var(--muted)',
+                      fontWeight: level === l ? 700 : 400,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
+                {analyzing ? <><span className="spinner" />Analyzing chunks…</> : 'Analyze language chunks'}
+              </button>
+            </div>
           </div>
 
-          {/* Level + analyze button */}
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>My level:</span>
-            {LEVELS.map((l) => (
+          {/* Synced player */}
+          <div className="section-title">Synced Video Transcript</div>
+          <YoutubeSyncPlayer
+            videoId={videoData.video_id}
+            segments={videoData.segments}
+            selectedWords={selectedWords}
+            onWordsChange={setSelectedWords}
+          />
+
+          {/* Word collector */}
+          {selectedWords.length > 0 && (
+            <>
+              <div className="section-title">Vocabulary Collector</div>
+              <div className="chip-list">
+                {selectedWords.map((word) => (
+                  <button
+                    key={word}
+                    className="chip"
+                    onClick={() => setSelectedWords((prev) => prev.filter((w) => w !== word))}
+                  >
+                    {word} ×
+                  </button>
+                ))}
+              </div>
               <button
-                key={l}
-                onClick={() => setLevel(l)}
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: 20,
-                  border: `1.5px solid ${level === l ? 'var(--clay)' : 'var(--line)'}`,
-                  background: level === l ? 'var(--clay)' : 'transparent',
-                  color: level === l ? '#fff' : 'var(--muted)',
-                  fontWeight: level === l ? 700 : 400,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                }}
+                className="btn-primary btn-wide"
+                onClick={handleGenerateFlashcards}
+                disabled={generatingCards}
               >
-                {l}
+                {generatingCards ? <><span className="spinner" />Generating flashcards…</> : 'Generate Flashcards'}
               </button>
-            ))}
-            <button
-              className="btn-primary"
-              onClick={handleAnalyzeChunks}
-              disabled={analyzing}
-              style={{ marginLeft: 'auto' }}
-            >
-              {analyzing ? <><span className="spinner" />Analyzing…</> : 'Analyze language chunks'}
-            </button>
-          </div>
+            </>
+          )}
 
           {error && <div className="alert-error">{error}</div>}
-        </>
-      )}
 
-      {/* Chunk map */}
-      {chunkAnalysis && (
-        <>
-          <div className="section-title">Chunk Map</div>
-          <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <ChunkHighlighter
-              text={chunkAnalysis.original_text}
-              chunks={chunkAnalysis.chunks}
-              selectedChunk={selectedChunk}
-              onChunkClick={setSelectedChunk}
-            />
-          </div>
-
-          {/* Legend */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-            {[
-              { type: 'phrasal_verb', label: 'Phrasal Verb', color: '#4CAF50' },
-              { type: 'idiomatic', label: 'Idiom', color: '#FF6B6B' },
-              { type: 'collocation', label: 'Collocation', color: '#4A90E2' },
-              { type: 'lexical_chunk', label: 'Lexical Chunk', color: '#9C27B0' },
-              { type: 'formulaic', label: 'Formulaic', color: '#FF9800' },
-              { type: 'grammar_pattern', label: 'Grammar Pattern', color: '#00BCD4' },
-              { type: 'emotional', label: 'Emotional', color: '#E91E63' },
-              { type: 'conversational', label: 'Conversational', color: '#607D8B' },
-            ]
-              .filter(({ type }) => chunkAnalysis.chunks.some((c) => c.type === type))
-              .map(({ label, color }) => (
-                <span key={label} style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: color + '22', color }}>
-                  {label}
-                </span>
+          {/* Generated word flashcards */}
+          {generatedCards.length > 0 && (
+            <>
+              <div className="section-title">
+                Generated Flashcards
+                <Link href="/review" style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', textDecoration: 'none' }}>
+                  Go to Review →
+                </Link>
+              </div>
+              {generatedCards.map((card) => (
+                <GeneratedLearningCard key={card.id} card={card} />
               ))}
-          </div>
-
-          {highChunks.length > 0 && (
-            <>
-              <div className="section-title">Key Expressions</div>
-              <div className="three-col" style={{ marginBottom: 24 }}>
-                {highChunks.map((chunk) => (
-                  <ChunkCard
-                    key={chunk.text + chunk.start}
-                    chunk={chunk}
-                    isSelected={selectedChunk?.text === chunk.text}
-                    onSelect={setSelectedChunk}
-                    onMakeFlashcard={handleMakeFlashcard}
-                    making={makingFlashcard === chunk.text}
-                    saved={savedChunks.has(chunk.text)}
-                  />
-                ))}
-              </div>
             </>
           )}
 
-          {otherChunks.length > 0 && (
+          {/* Chunk analysis */}
+          {chunkAnalysis && (
             <>
-              <div className="section-title">More Chunks</div>
-              <div className="three-col" style={{ marginBottom: 24 }}>
-                {otherChunks.map((chunk) => (
-                  <ChunkCard
-                    key={chunk.text + chunk.start}
-                    chunk={chunk}
-                    isSelected={selectedChunk?.text === chunk.text}
-                    onSelect={setSelectedChunk}
-                    onMakeFlashcard={handleMakeFlashcard}
-                    making={makingFlashcard === chunk.text}
-                    saved={savedChunks.has(chunk.text)}
-                  />
-                ))}
+              <div className="section-title">Chunk Map</div>
+              <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
+                <ChunkHighlighter
+                  text={chunkAnalysis.original_text}
+                  chunks={chunkAnalysis.chunks}
+                  selectedChunk={selectedChunk}
+                  onChunkClick={setSelectedChunk}
+                />
               </div>
+
+              {/* Legend */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+                {[
+                  { type: 'phrasal_verb',    label: 'Phrasal Verb',    color: '#4CAF50' },
+                  { type: 'idiomatic',       label: 'Idiom',           color: '#FF6B6B' },
+                  { type: 'collocation',     label: 'Collocation',     color: '#4A90E2' },
+                  { type: 'lexical_chunk',   label: 'Lexical Chunk',   color: '#9C27B0' },
+                  { type: 'formulaic',       label: 'Formulaic',       color: '#FF9800' },
+                  { type: 'grammar_pattern', label: 'Grammar Pattern', color: '#00BCD4' },
+                  { type: 'emotional',       label: 'Emotional',       color: '#E91E63' },
+                  { type: 'conversational',  label: 'Conversational',  color: '#607D8B' },
+                ]
+                  .filter(({ type }) => chunkAnalysis.chunks.some((c) => c.type === type))
+                  .map(({ label, color }) => (
+                    <span key={label} style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: color + '22', color }}>
+                      {label}
+                    </span>
+                  ))}
+              </div>
+
+              {highChunks.length > 0 && (
+                <>
+                  <div className="section-title">Key Expressions</div>
+                  <div className="three-col" style={{ marginBottom: 24 }}>
+                    {highChunks.map((chunk) => (
+                      <ChunkCard
+                        key={chunk.text + chunk.start}
+                        chunk={chunk}
+                        isSelected={selectedChunk?.text === chunk.text}
+                        onSelect={setSelectedChunk}
+                        onMakeFlashcard={handleMakeFlashcard}
+                        making={makingFlashcard === chunk.text}
+                        saved={savedChunks.has(chunk.text)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {otherChunks.length > 0 && (
+                <>
+                  <div className="section-title">More Chunks</div>
+                  <div className="three-col">
+                    {otherChunks.map((chunk) => (
+                      <ChunkCard
+                        key={chunk.text + chunk.start}
+                        chunk={chunk}
+                        isSelected={selectedChunk?.text === chunk.text}
+                        onSelect={setSelectedChunk}
+                        onMakeFlashcard={handleMakeFlashcard}
+                        making={makingFlashcard === chunk.text}
+                        saved={savedChunks.has(chunk.text)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
-        </>
-      )}
-
-      {/* Recently created cards */}
-      {recentCards.length > 0 && (
-        <>
-          <div className="section-title">Cards Created This Session</div>
-          <div className="alert-info" style={{ marginBottom: 12 }}>
-            {recentCards.length} card{recentCards.length !== 1 ? 's' : ''} saved.{' '}
-            <Link href="/review" style={{ color: 'var(--moss)', fontWeight: 700 }}>Go to Review →</Link>
-          </div>
-          {recentCards.map((card) => (
-            <GeneratedLearningCard key={card.id} card={card} />
-          ))}
         </>
       )}
     </>

@@ -8,7 +8,18 @@
     "duration": "3:27",
     "level": "B1",
     "tags": ["motivation", "habits", "everyday English"],
-    "preview": "Is there something you've always meant to do, wanted to do, but just haven't? Matt Cutts suggests: Try it for 30 days."
+    "preview": "Matt Cutts suggests a simple idea: try something new for 30 days. Short, clear and full of practical everyday English."
+  },
+  {
+    "id": "danger-of-silence",
+    "type": "video",
+    "title": "The Danger of Silence",
+    "channel": "TED",
+    "youtube_id": "NiKtZgImdlY",
+    "duration": "4:30",
+    "level": "B1",
+    "tags": ["poetry", "spoken word", "emotional"],
+    "preview": "Clint Smith reads four powerful poems about silence and speaking up — rich figurative language and emotional expression."
   },
   {
     "id": "how-to-speak",
@@ -18,8 +29,8 @@
     "youtube_id": "eIho2S0ZahI",
     "duration": "9:58",
     "level": "B2",
-    "tags": ["communication", "vocabulary", "phrasal verbs"],
-    "preview": "Julian Treasure shares the 7 deadly sins of speaking and offers tools for powerful speech — rich with idioms and collocations."
+    "tags": ["communication", "idioms", "phrasal verbs"],
+    "preview": "Julian Treasure reveals the 7 deadly sins of speaking. Dense with idioms, collocations and persuasion vocabulary."
   },
   {
     "id": "master-procrastinator",
@@ -30,18 +41,7 @@
     "duration": "14:03",
     "level": "B2",
     "tags": ["humor", "idioms", "storytelling"],
-    "preview": "Tim Urban takes us deep inside the procrastinator's brain with humor and wit — loaded with informal English, metaphors, and phrasal verbs."
-  },
-  {
-    "id": "growth-mindset",
-    "type": "video",
-    "title": "The Power of Believing You Can Improve",
-    "channel": "TED",
-    "youtube_id": "_X0mgOOSpLU",
-    "duration": "10:23",
-    "level": "B1",
-    "tags": ["education", "mindset", "academic English"],
-    "preview": "Carol Dweck explores the growth mindset and the power of 'not yet' — great for academic and professional vocabulary."
+    "preview": "Tim Urban's hilarious talk is packed with informal English, metaphors and phrasal verbs — great for understanding native-speed humor."
   },
   {
     "id": "great-leaders",
@@ -52,7 +52,7 @@
     "duration": "18:04",
     "level": "B2",
     "tags": ["business", "leadership", "collocations"],
-    "preview": "Simon Sinek explains the Golden Circle — packed with business English collocations and persuasive language patterns."
+    "preview": "Simon Sinek's Golden Circle talk — dense with business English collocations and persuasive language patterns."
   },
   {
     "id": "vulnerability",
@@ -63,7 +63,7 @@
     "duration": "20:19",
     "level": "C1",
     "tags": ["emotional", "storytelling", "advanced"],
-    "preview": "Brené Brown researches human connection, shame, and vulnerability — rich emotional vocabulary and conversational register."
+    "preview": "Brené Brown on human connection and shame — rich emotional vocabulary, advanced conversational register and complex sentence structures."
   },
   {
     "id": "body-language",
@@ -73,18 +73,139 @@
     "youtube_id": "Ks-_Mh1QhMc",
     "duration": "21:02",
     "level": "B2",
-    "tags": ["psychology", "grammar patterns", "formal"],
-    "preview": "Amy Cuddy's science-backed talk about power poses — full of scientific register, hedging language, and grammar patterns."
+    "tags": ["psychology", "academic English", "hedging"],
+    "preview": "Amy Cuddy's science-backed talk about power poses — full of scientific register, hedging language and grammar patterns."
   },
   {
-    "id": "danger-of-silence",
-    "type": "video",
-    "title": "The Danger of Silence",
-    "channel": "TED",
-    "youtube_id": "QB3ythp2arA",
-    "duration": "4:30",
+    "id": "music-happy",
+    "type": "music",
+    "title": "Happy",
+    "artist": "Pharrell Williams",
+    "youtube_id": "ZbZSe6N_BXs",
+    "duration": "3:53",
+    "level": "A1",
+    "tags": ["pop", "simple vocabulary", "positive mood"],
+    "preview": "One of the most positive songs in modern pop. The vocabulary is super simple and repetitive — perfect for absolute beginners learning everyday feelings."
+  },
+  {
+    "id": "music-count-on-me",
+    "type": "music",
+    "title": "Count on Me",
+    "artist": "Bruno Mars",
+    "youtube_id": "ZMsvwwp6S7Q",
+    "duration": "3:16",
+    "level": "A1",
+    "tags": ["pop", "friendship", "simple vocabulary"],
+    "preview": "Warm and simple lyrics about friendship. Short sentences, high-frequency words and clear pronunciation make this ideal for A1 learners."
+  },
+  {
+    "id": "music-somewhere-rainbow",
+    "type": "music",
+    "title": "Somewhere Over the Rainbow",
+    "artist": "Israel Kamakawiwoʻole",
+    "youtube_id": "V1bFr2SWP1I",
+    "duration": "3:49",
+    "level": "A2",
+    "tags": ["classic", "dreams", "slow tempo"],
+    "preview": "The iconic ukulele version. Slow tempo, clear pronunciation and poetic imagery — great for A2 learners who want to work on vowel sounds."
+  },
+  {
+    "id": "music-shake-it-off",
+    "type": "music",
+    "title": "Shake It Off",
+    "artist": "Taylor Swift",
+    "youtube_id": "nfWlot6h_JM",
+    "duration": "3:39",
+    "level": "A2",
+    "tags": ["pop", "phrasal verbs", "informal"],
+    "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context."
+  },
+  {
+    "id": "music-roar",
+    "type": "music",
+    "title": "Roar",
+    "artist": "Katy Perry",
+    "youtube_id": "VFA3nPFYU98",
+    "duration": "3:43",
+    "level": "A2",
+    "tags": ["pop", "empowerment", "idioms"],
+    "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself."
+  },
+  {
+    "id": "music-hall-of-fame",
+    "type": "music",
+    "title": "Hall of Fame",
+    "artist": "The Script ft. will.i.am",
+    "youtube_id": "mk48xRzuNvA",
+    "duration": "3:47",
     "level": "B1",
-    "tags": ["poetry", "spoken word", "emotional"],
-    "preview": "Clint Smith reads four poems about the danger of silence — a powerful, short piece full of figurative language and emotional expression."
+    "tags": ["pop", "motivation", "collocations"],
+    "preview": "Inspiring lyrics about achieving your dreams. Great collocations: 'make a difference', 'touch the sky', 'go the extra mile' — practical B1 vocabulary."
+  },
+  {
+    "id": "music-someone-like-you",
+    "type": "music",
+    "title": "Someone Like You",
+    "artist": "Adele",
+    "youtube_id": "hLQl3WQQoQ0",
+    "duration": "4:45",
+    "level": "B1",
+    "tags": ["ballad", "emotional", "grammar patterns"],
+    "preview": "Adele's clear British pronunciation and emotional lyrics make this a classic for learners. Notice past tenses, conditionals and formulaic expressions."
+  },
+  {
+    "id": "music-fix-you",
+    "type": "music",
+    "title": "Fix You",
+    "artist": "Coldplay",
+    "youtube_id": "k4V3Mo61fJM",
+    "duration": "4:54",
+    "level": "B1",
+    "tags": ["ballad", "emotional", "vocabulary"],
+    "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension."
+  },
+  {
+    "id": "music-believer",
+    "type": "music",
+    "title": "Believer",
+    "artist": "Imagine Dragons",
+    "youtube_id": "7wtfhZwyrcc",
+    "duration": "3:24",
+    "level": "B1",
+    "tags": ["rock", "resilience", "emotional vocabulary"],
+    "preview": "High-energy rock anthem about overcoming pain. Introduces strong emotional vocabulary and idiomatic expressions in a memorable, rhythmic context."
+  },
+  {
+    "id": "music-stressed-out",
+    "type": "music",
+    "title": "Stressed Out",
+    "artist": "Twenty One Pilots",
+    "youtube_id": "pXRviuL6vMY",
+    "duration": "3:22",
+    "level": "B2",
+    "tags": ["pop", "conversational", "nostalgia", "slang"],
+    "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns."
+  },
+  {
+    "id": "music-dont-stop-me-now",
+    "type": "music",
+    "title": "Don't Stop Me Now",
+    "artist": "Queen",
+    "youtube_id": "HgzGwKwLmgM",
+    "duration": "3:29",
+    "level": "B2",
+    "tags": ["rock", "idioms", "exaggeration"],
+    "preview": "Freddie Mercury at his most energetic. Packed with hyperbole, idiomatic expressions and playful language — great for B2 learners studying rhetorical style."
+  },
+  {
+    "id": "music-bohemian-rhapsody",
+    "type": "music",
+    "title": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "youtube_id": "fJ9rUzIMcZQ",
+    "duration": "5:55",
+    "level": "C1",
+    "tags": ["rock", "theatrical", "complex vocabulary", "opera"],
+    "preview": "One of the most complex songs in English pop music — shifting registers, theatrical vocabulary, Italian phrases, dramatic narrative. A challenge for advanced learners."
   }
 ]

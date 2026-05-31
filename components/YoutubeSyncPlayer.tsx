@@ -22,7 +22,6 @@ declare global {
 
 interface YTPlayer {
   getCurrentTime(): number
-  loadVideoById(id: string): void
   destroy(): void
 }
 
@@ -58,58 +57,73 @@ export default function YoutubeSyncPlayer({
   selectedWords,
   onWordsChange,
 }: Props) {
-  const playerRef = useRef<YTPlayer | null>(null)
-  const playerDivRef = useRef<HTMLDivElement>(null)
-  const selectedSet = useRef(new Set(selectedWords))
+  const playerRef       = useRef<YTPlayer | null>(null)
+  const playerDivRef    = useRef<HTMLDivElement>(null)
+  const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+  const selectedSet     = useRef(new Set(selectedWords))
   const [, forceUpdate] = useState(0)
   const [captionDelay, setCaptionDelay] = useState(0)
   const [activeSegIdx, setActiveSegIdx] = useState(-1)
-  const [activeWordIdx, setActiveWordIdx] = useState(-1)
-  const lastScrollRef = useRef(0)
-  const transcriptRef = useRef<HTMLDivElement>(null)
+  const lastScrollRef   = useRef(0)
+  const transcriptRef   = useRef<HTMLDivElement>(null)
 
-  // Keep selectedSet in sync with prop
+  // Refs so the interval always reads the latest values without being recreated
+  const captionDelayRef  = useRef(0)
+  const updateActiveRef  = useRef<(t: number) => void>(() => {})
+
   useEffect(() => {
     selectedSet.current = new Set(selectedWords)
     forceUpdate((n) => n + 1)
   }, [selectedWords])
 
-  // Load YouTube IFrame API once
+  useEffect(() => { captionDelayRef.current = captionDelay }, [captionDelay])
+
+  // Load YouTube IFrame API once; always clean up on unmount
   useEffect(() => {
-    if (window.YT?.Player) {
-      initPlayer()
-      return
-    }
-    if (!document.getElementById('yt-iframe-api')) {
-      const script = document.createElement('script')
-      script.id = 'yt-iframe-api'
-      script.src = 'https://www.youtube.com/iframe_api'
-      document.head.appendChild(script)
-    }
-    window.onYouTubeIframeAPIReady = initPlayer
-    return () => {
+    function cleanup() {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       window.onYouTubeIframeAPIReady = () => {}
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      if (playerRef.current) {
+        playerRef.current.destroy()
+        playerRef.current = null
+      }
     }
+
+    if (window.YT?.Player) {
+      initPlayer()
+    } else {
+      if (!document.getElementById('yt-iframe-api')) {
+        const script = document.createElement('script')
+        script.id = 'yt-iframe-api'
+        script.src = 'https://www.youtube.com/iframe_api'
+        document.head.appendChild(script)
+      }
+      window.onYouTubeIframeAPIReady = initPlayer
+    }
+
+    return cleanup
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function initPlayer() {
     if (!playerDivRef.current || !window.YT?.Player) return
     if (playerRef.current) {
-      playerRef.current.loadVideoById(videoId)
-      return
+      playerRef.current.destroy()
+      playerRef.current = null
     }
     playerRef.current = new window.YT.Player(playerDivRef.current, {
       videoId,
       playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1 },
       events: {
         onReady: () => {
-          const interval = setInterval(() => {
+          intervalRef.current = setInterval(() => {
             if (!playerRef.current) return
-            const time = playerRef.current.getCurrentTime() - captionDelay
-            updateActive(time)
-          }, 120)
-          return () => clearInterval(interval)
+            const time = playerRef.current.getCurrentTime() - captionDelayRef.current
+            updateActiveRef.current(time)
+          }, 100)
         },
       },
     })
@@ -118,42 +132,31 @@ export default function YoutubeSyncPlayer({
   const updateActive = useCallback(
     (time: number) => {
       let nextSeg = -1
-      let nextWord = -1
 
       for (let i = 0; i < segments.length; i++) {
-        const start = segments[i].start
-        const end = start + segments[i].duration
-        if (time >= start && time < end) {
+        const seg = segments[i]
+        if (time >= seg.start && time < seg.start + seg.duration) {
           nextSeg = i
-          if (!isNonSpeech(segments[i].text)) {
-            const words = segments[i].text.match(WORD_RE) ?? []
-            if (words.length) {
-              const rel = (time - start) / Math.max(segments[i].duration, 0.1)
-              nextWord = Math.min(Math.max(Math.floor(rel * words.length), 0), words.length - 1)
-            }
-          }
           break
         }
       }
 
       setActiveSegIdx((prev) => {
-        if (prev !== nextSeg) {
-          // Scroll active segment into view
-          if (nextSeg >= 0 && transcriptRef.current) {
-            const now = Date.now()
-            if (now - lastScrollRef.current > 900) {
-              const el = transcriptRef.current.querySelector(`[data-seg="${nextSeg}"]`)
-              el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-              lastScrollRef.current = now
-            }
+        if (prev !== nextSeg && nextSeg >= 0 && transcriptRef.current) {
+          const now = Date.now()
+          if (now - lastScrollRef.current > 700) {
+            const el = transcriptRef.current.querySelector(`[data-seg="${nextSeg}"]`)
+            el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+            lastScrollRef.current = now
           }
         }
         return nextSeg
       })
-      setActiveWordIdx(nextWord)
     },
     [segments],
   )
+
+  useEffect(() => { updateActiveRef.current = updateActive }, [updateActive])
 
   function toggleWord(word: string) {
     const next = new Set(selectedSet.current)
@@ -170,7 +173,6 @@ export default function YoutubeSyncPlayer({
       return Math.min(20, Math.max(-20, next))
     })
     setActiveSegIdx(-2)
-    setActiveWordIdx(-2)
   }
 
   return (
@@ -188,13 +190,13 @@ export default function YoutubeSyncPlayer({
             <span>{captionDelay > 0 ? '+' : ''}{captionDelay.toFixed(1)}s</span>
           </div>
           <p style={{ margin: '0 0 12px', color: 'var(--muted)', fontSize: '0.86rem', lineHeight: 1.45 }}>
-            If words light up before they&apos;re spoken, click Delay. If late, click Earlier.
+            If the box lights up before the words are spoken, click Delay. If it&apos;s late, click Earlier.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.7fr', gap: 8 }}>
             {['Delay +0.5s', 'Earlier -0.5s', 'Reset'].map((label, i) => (
               <button
                 key={label}
-                onClick={() => i === 2 ? setCaptionDelay(0) : adjustDelay(i === 0 ? 0.5 : -0.5)}
+                onClick={() => adjustDelay(i === 0 ? 0.5 : i === 1 ? -0.5 : -captionDelay)}
                 style={{ border: '1px solid var(--line)', borderRadius: 999, padding: '10px 12px', background: 'rgba(255,255,255,0.44)', color: 'var(--ink)', font: 'inherit', fontSize: '0.86rem', fontWeight: 900, cursor: 'pointer' }}
               >
                 {label}
@@ -211,7 +213,7 @@ export default function YoutubeSyncPlayer({
           </div>
           <div className="chip-list">
             {selectedSet.current.size === 0 ? (
-              <span style={{ color: 'var(--muted)', fontSize: '0.92rem' }}>Click words in the transcript.</span>
+              <span style={{ color: 'var(--muted)', fontSize: '0.92rem' }}>Click words in the transcript →</span>
             ) : (
               Array.from(selectedSet.current).sort().map((word) => (
                 <button key={word} className="chip" onClick={() => toggleWord(word)}>
@@ -229,23 +231,18 @@ export default function YoutubeSyncPlayer({
         style={{ maxHeight: 720, overflowY: 'auto', padding: 14, border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', scrollBehavior: 'smooth' }}
       >
         {segments.map((seg, segIdx) => {
-          const isActive = segIdx === activeSegIdx
-          const words = seg.text.match(WORD_RE) ?? []
+          const isActive  = segIdx === activeSegIdx
           const nonSpeech = isNonSpeech(seg.text)
-          let wordCounter = 0
           const parts: React.ReactNode[] = []
           let lastIdx = 0
+          let wordCounter = 0
 
-          // Re-create the word-by-word rendering
           const regex = new RegExp(WORD_RE.source, 'g')
           let match: RegExpExecArray | null
           while ((match = regex.exec(seg.text)) !== null) {
-            if (match.index > lastIdx) {
-              parts.push(seg.text.slice(lastIdx, match.index))
-            }
+            if (match.index > lastIdx) parts.push(seg.text.slice(lastIdx, match.index))
             const word = match[0]
             const norm = normalizeWord(word)
-            const isCurrent = isActive && wordCounter === activeWordIdx && !nonSpeech
             const isSelected = selectedSet.current.has(norm)
             const wc = wordCounter
             parts.push(
@@ -258,12 +255,8 @@ export default function YoutubeSyncPlayer({
                   padding: '2px 4px',
                   borderRadius: 8,
                   cursor: nonSpeech ? 'default' : 'pointer',
-                  transition: 'transform 100ms ease, background 100ms ease, color 100ms ease',
-                  background: isCurrent && isSelected ? 'var(--clay)'
-                    : isCurrent ? 'var(--ink)'
-                    : isSelected ? 'rgba(246,202,95,0.48)'
-                    : undefined,
-                  color: isCurrent ? 'var(--paper)' : undefined,
+                  transition: 'background 100ms ease',
+                  background: isSelected ? 'rgba(246,202,95,0.55)' : undefined,
                   fontWeight: isSelected ? 900 : undefined,
                   fontStyle: nonSpeech ? 'italic' : undefined,
                   pointerEvents: nonSpeech ? 'none' : undefined,
@@ -276,8 +269,6 @@ export default function YoutubeSyncPlayer({
             lastIdx = match.index + word.length
           }
           if (lastIdx < seg.text.length) parts.push(seg.text.slice(lastIdx))
-
-          void words
 
           return (
             <div

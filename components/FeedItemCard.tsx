@@ -34,13 +34,19 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
       }}
     >
       {/* Thumbnail */}
-      <Link href={`/feed/${item.id}`} style={{ display: 'block', position: 'relative', aspectRatio: '16/9', background: '#f0ebe0', overflow: 'hidden' }}>
+      <Link href={`/feed/${item.id}`} style={{ display: 'block', position: 'relative', aspectRatio: '16/9', background: item.type === 'music' ? '#1a1a2e' : '#f0ebe0', overflow: 'hidden' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={thumb}
           alt={item.title}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
+        {/* Music overlay tint */}
+        {item.type === 'music' && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(90,20,120,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '2rem', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}>♪</span>
+          </div>
+        )}
         {/* Duration badge */}
         <span
           style={{
@@ -74,6 +80,25 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
         >
           {item.level}
         </span>
+        {/* Type badge */}
+        {item.type === 'music' && (
+          <span
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              background: 'rgba(140,30,180,0.85)',
+              color: '#fff',
+              fontSize: '0.62rem',
+              fontWeight: 900,
+              padding: '2px 8px',
+              borderRadius: 999,
+              letterSpacing: '0.06em',
+            }}
+          >
+            MUSIC
+          </span>
+        )}
       </Link>
 
       {/* Body */}

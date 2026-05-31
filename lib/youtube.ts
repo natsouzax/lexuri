@@ -29,11 +29,14 @@ export async function getTranscript(url: string): Promise<VideoData> {
 
   const [title, transcriptItems] = await Promise.all([
     getVideoTitle(videoId),
-    YoutubeTranscript.fetchTranscript(videoId).catch(() => {
-      throw new Error(
-        'Could not fetch transcript. The video may not have captions available.',
-      )
-    }),
+    // Prefer English captions; fall back to auto-detected language if English isn't available.
+    YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
+      .catch(() => YoutubeTranscript.fetchTranscript(videoId))
+      .catch(() => {
+        throw new Error(
+          'Could not fetch transcript. The video may not have captions available.',
+        )
+      }),
   ])
 
   const segments: TranscriptSegment[] = transcriptItems.map((item) => ({

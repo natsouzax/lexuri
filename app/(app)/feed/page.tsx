@@ -17,10 +17,12 @@ async function apiFetch<T>(path: string): Promise<T> {
 
 const LEVELS = ['All', 'A2', 'B1', 'B2', 'C1'] as const
 type LevelFilter = (typeof LEVELS)[number]
+type TypeFilter = 'All' | 'video' | 'music'
 
 export default function FeedPage() {
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('All')
   const [cardCount, setCardCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
 
@@ -47,7 +49,9 @@ export default function FeedPage() {
   }
 
   const filtered = FEED_ITEMS.filter(
-    (item) => levelFilter === 'All' || item.level === levelFilter,
+    (item) =>
+      (levelFilter === 'All' || item.level === levelFilter) &&
+      (typeFilter === 'All' || item.type === typeFilter),
   )
 
   return (
@@ -65,29 +69,55 @@ export default function FeedPage() {
         <MetricCard label="Due today" value={dueCount} />
       </div>
 
-      {/* Filter by level */}
+      {/* Filters */}
       <div className="section-title">Browse Content</div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)' }}>Level:</span>
-        {LEVELS.map((l) => (
-          <button
-            key={l}
-            onClick={() => setLevelFilter(l)}
-            style={{
-              padding: '5px 14px',
-              borderRadius: 999,
-              border: `1.5px solid ${levelFilter === l ? 'var(--clay)' : 'var(--line)'}`,
-              background: levelFilter === l ? 'var(--clay)' : 'transparent',
-              color: levelFilter === l ? '#fff' : 'var(--muted)',
-              fontWeight: levelFilter === l ? 700 : 400,
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              transition: 'all 120ms ease',
-            }}
-          >
-            {l}
-          </button>
-        ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
+        {/* Type filter */}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Type:</span>
+          {(['All', 'video', 'music'] as TypeFilter[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTypeFilter(t)}
+              style={{
+                padding: '5px 14px',
+                borderRadius: 999,
+                border: `1.5px solid ${typeFilter === t ? 'var(--ink)' : 'var(--line)'}`,
+                background: typeFilter === t ? 'var(--ink)' : 'transparent',
+                color: typeFilter === t ? '#fff' : 'var(--muted)',
+                fontWeight: typeFilter === t ? 700 : 400,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all 120ms ease',
+              }}
+            >
+              {t === 'video' ? '▶ Video' : t === 'music' ? '♪ Music' : 'All'}
+            </button>
+          ))}
+        </div>
+        {/* Level filter */}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Level:</span>
+          {LEVELS.map((l) => (
+            <button
+              key={l}
+              onClick={() => setLevelFilter(l)}
+              style={{
+                padding: '5px 14px',
+                borderRadius: 999,
+                border: `1.5px solid ${levelFilter === l ? 'var(--clay)' : 'var(--line)'}`,
+                background: levelFilter === l ? 'var(--clay)' : 'transparent',
+                color: levelFilter === l ? '#fff' : 'var(--muted)',
+                fontWeight: levelFilter === l ? 700 : 400,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all 120ms ease',
+              }}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Feed grid */}
