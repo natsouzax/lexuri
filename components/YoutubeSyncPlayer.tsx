@@ -176,7 +176,7 @@ export default function YoutubeSyncPlayer({
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 18, alignItems: 'start' }}>
+    <div className="yt-player-grid" style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 18, alignItems: 'start' }}>
       {/* Left column: player + controls + collector */}
       <div>
         <div style={{ border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', padding: 12 }}>
@@ -228,6 +228,7 @@ export default function YoutubeSyncPlayer({
       {/* Right column: transcript */}
       <div
         ref={transcriptRef}
+        className="yt-transcript"
         style={{ maxHeight: 720, overflowY: 'auto', padding: 14, border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', scrollBehavior: 'smooth' }}
       >
         {segments.map((seg, segIdx) => {
