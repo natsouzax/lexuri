@@ -32,7 +32,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div>
-        <Link href="/" style={{ textDecoration: 'none' }}>
+        <Link href="/" className="sidebar-logo-link">
           <div className="sidebar-logo">Verbly</div>
         </Link>
         <p className="sidebar-caption">AI · Chunks · Fluency</p>

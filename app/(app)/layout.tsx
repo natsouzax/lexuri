@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase-server'
 import Sidebar from '@/components/Sidebar'
 import MobileNav from '@/components/MobileNav'
+import MobileHeader from '@/components/MobileHeader'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
@@ -10,9 +11,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="app-shell">
       <Sidebar />
-      <main className="main-content">
-        {children}
-      </main>
+      <div className="app-body">
+        <MobileHeader />
+        <main className="main-content">
+          {children}
+        </main>
+      </div>
       <MobileNav />
     </div>
   )
