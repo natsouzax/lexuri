@@ -3,10 +3,19 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Features',
-  description: 'Everything Verbly can do — video transcripts, AI chunk detection, smart flashcards, and spaced repetition.',
+  description: 'Everything Verbly can do — learning feed, video transcripts, AI chunk detection, smart flashcards, and spaced repetition.',
 }
 
 const FEATURES = [
+  {
+    icon: '◉',
+    tag: 'Discovery',
+    title: 'Learning Feed',
+    body: 'A curated social feed of TED talks, YouTube videos, and music — organized by CEFR difficulty level. Browse what the community is studying, save items to your queue, and open any content directly in the study tools.',
+    details: ['Filtered by level: A2, B1, B2, C1', 'Videos and music in one unified feed', 'Save to personal study queue', 'Jump straight into YouTube Studio or Music Lab'],
+    color: '#d97b54',
+    bg: 'rgba(200,111,74,0.08)',
+  },
   {
     icon: '▶',
     tag: 'Content Input',

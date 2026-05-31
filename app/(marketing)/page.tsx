@@ -55,6 +55,43 @@ const STEPS = [
   },
 ]
 
+const FEED_PREVIEW = [
+  {
+    type: 'video',
+    level: 'B2',
+    levelColor: '#FF9800',
+    source: 'TED',
+    title: 'How Great Leaders Inspire Action',
+    tags: ['leadership', 'collocations'],
+    thumbBg: 'linear-gradient(135deg, #2e4a2e 0%, #1a3020 100%)',
+  },
+  {
+    type: 'video',
+    level: 'B1',
+    levelColor: '#FF9800',
+    source: 'TED',
+    title: 'Try Something New for 30 Days',
+    tags: ['motivation', 'everyday English'],
+    thumbBg: 'linear-gradient(135deg, #1a3040 0%, #0d1f30 100%)',
+  },
+  {
+    type: 'music',
+    level: 'A2',
+    levelColor: '#4CAF50',
+    source: 'Bruno Mars',
+    title: 'Count on Me',
+    tags: ['pop', 'phrasal verbs'],
+    thumbBg: 'linear-gradient(135deg, #3a1050 0%, #1a0828 100%)',
+  },
+]
+
+const FEED_BULLETS = [
+  ['◈', 'Filtered by CEFR level: A2, B1, B2, and C1'],
+  ['▶', 'Videos and music in one unified feed'],
+  ['★', 'Save items to your personal study queue'],
+  ['⊞', 'Open any item directly in YouTube Studio or Music Lab'],
+] as const
+
 export default function HomePage() {
   return (
     <>
@@ -179,6 +216,109 @@ export default function HomePage() {
                 <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>{f.body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Learning Feed ─────────────────────────────────── */}
+      <section className="mkt-section mkt-section-dark">
+        <div className="mkt-container">
+          <div className="mkt-feature-row">
+            {/* Left: copy */}
+            <div className="animate-fade-up">
+              <span className="mkt-eyebrow">Learning Feed</span>
+              <h2 className="mkt-h2" style={{ color: 'var(--paper)' }}>
+                A social feed built around real English.
+              </h2>
+              <p className="mkt-lead mkt-lead-dark" style={{ marginBottom: 28 }}>
+                Discover curated TED talks, YouTube videos, and music tracks — organized by CEFR level. See what the learning community is studying, save what resonates, and jump straight into chunk extraction.
+              </p>
+              {FEED_BULLETS.map(([icon, text]) => (
+                <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                  <span style={{ color: 'var(--clay-bright)', fontWeight: 900, fontSize: '0.88rem', flexShrink: 0, marginTop: 2 }}>{icon}</span>
+                  <span style={{ color: 'var(--dark-muted)', fontSize: '0.88rem', lineHeight: 1.6 }}>{text}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 28 }}>
+                <Link href="/feed" className="btn-mkt-primary">Browse the feed →</Link>
+              </div>
+            </div>
+
+            {/* Right: feed card mockup */}
+            <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {FEED_PREVIEW.map((item, i) => (
+                  <div key={i} style={{
+                    border: '1px solid var(--dark-border)',
+                    borderRadius: 14,
+                    background: 'var(--dark-surface)',
+                    display: 'flex',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                  }}>
+                    {/* Thumbnail */}
+                    <div style={{
+                      width: 80,
+                      flexShrink: 0,
+                      background: item.thumbBg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.4rem',
+                      position: 'relative',
+                      color: 'rgba(255,250,240,0.6)',
+                    }}>
+                      {item.type === 'music' ? '♪' : '▶'}
+                      <span style={{
+                        position: 'absolute', top: 5, left: 5,
+                        background: item.levelColor,
+                        color: '#fff', fontSize: '0.52rem', fontWeight: 900,
+                        padding: '2px 6px', borderRadius: 99, letterSpacing: '0.05em',
+                      }}>
+                        {item.level}
+                      </span>
+                    </div>
+                    {/* Info */}
+                    <div style={{ padding: '10px 14px', flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.58rem', color: 'var(--dark-muted)', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                        {item.source}
+                      </div>
+                      <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '0.85rem', color: 'var(--paper)', lineHeight: 1.25, marginBottom: 6 }}>
+                        {item.title}
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {item.tags.map((tag) => (
+                          <span key={tag} style={{
+                            fontSize: '0.58rem', fontWeight: 700,
+                            padding: '2px 7px', borderRadius: 99,
+                            background: 'rgba(70,98,74,0.3)', color: '#a0d0a0',
+                          }}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Level filter pills mockup */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 14, flexWrap: 'wrap' }}>
+                {['All levels', 'A2', 'B1', 'B2', 'C1'].map((l, i) => (
+                  <span key={l} style={{
+                    padding: '5px 13px',
+                    borderRadius: 999,
+                    border: `1.5px solid ${i === 0 ? 'var(--clay-bright)' : 'var(--dark-border)'}`,
+                    background: i === 0 ? 'var(--clay-bright)' : 'transparent',
+                    color: i === 0 ? '#fff' : 'var(--dark-muted)',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                  }}>
+                    {l}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
