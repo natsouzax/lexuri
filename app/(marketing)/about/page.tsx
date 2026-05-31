@@ -42,7 +42,7 @@ export default function AboutPage() {
       {/* Mission */}
       <section className="mkt-section mkt-section-sage">
         <div className="mkt-container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+          <div className="mkt-feature-row">
             <div>
               <span className="mkt-eyebrow">Mission</span>
               <h2 className="mkt-h2">Make real fluency accessible.</h2>
@@ -50,7 +50,7 @@ export default function AboutPage() {
                 We believe fluency isn&apos;t about how many words you know — it&apos;s about how automatically you can retrieve and use natural language patterns. Verbly is designed to bridge that gap: from passive exposure to active, automatic use.
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div className="mkt-grid-2col">
               {[
                 { label: 'Chunk-first', body: 'Language units, not isolated words.' },
                 { label: 'Context-driven', body: 'Learning from content you already love.' },
@@ -102,7 +102,7 @@ export default function AboutPage() {
         <div className="mkt-container">
           <h2 className="mkt-h2" style={{ color: 'var(--paper)', marginBottom: 16 }}>Try the approach yourself.</h2>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 32px' }}>Free. No signup required to explore.</p>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
             <Link href="/youtube" className="btn-mkt-primary">Open the app →</Link>
             <Link href="/features" className="btn-mkt-ghost">See all features</Link>
           </div>
