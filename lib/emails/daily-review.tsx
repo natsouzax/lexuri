@@ -19,7 +19,7 @@ export default function DailyReviewEmail({ cardsDue, reviewUrl }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>Você tem {cardsDue} {cardsDue === 1 ? 'flashcard' : 'flashcards'} para revisar hoje no Verbly</Preview>
+      <Preview>{`Você tem ${cardsDue} ${cardsDue === 1 ? 'flashcard' : 'flashcards'} para revisar hoje no Verbly`}</Preview>
       <Body style={body}>
         <Container style={container}>
           <Text style={logo}>Verbly</Text>
