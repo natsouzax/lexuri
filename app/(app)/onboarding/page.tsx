@@ -65,7 +65,7 @@ export default function OnboardingPage() {
       return
     }
 
-    router.push('/youtube')
+    router.push('/feed/try-something-new')
     router.refresh()
   }
 

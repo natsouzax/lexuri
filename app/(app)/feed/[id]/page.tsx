@@ -27,6 +27,7 @@ export default function FeedDetailPage() {
   const { id } = useParams<{ id: string }>()
   const item = getFeedItem(id)
 
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false)
   const [saved, setSaved]                     = useState(false)
   const [videoData, setVideoData]             = useState<VideoData | null>(null)
   const [transcriptLoading, setTranscriptLoading] = useState(false)
@@ -45,6 +46,12 @@ export default function FeedDetailPage() {
   const [error, setError]                     = useState('')
 
   useEffect(() => { setSaved(isItemSaved(id)) }, [id])
+
+  useEffect(() => {
+    if (!localStorage.getItem('verbly_welcome_dismissed')) {
+      setShowWelcomeBanner(true)
+    }
+  }, [])
 
   // Auto-load transcript when the page opens
   const loadTranscript = useCallback(async () => {
@@ -161,6 +168,44 @@ export default function FeedDetailPage() {
 
   return (
     <>
+      {showWelcomeBanner && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(70,98,74,0.12) 0%, rgba(70,98,74,0.06) 100%)',
+            border: '1px solid rgba(70,98,74,0.3)',
+            borderRadius: 12,
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginBottom: 8,
+          }}
+        >
+          <span style={{ fontSize: '0.88rem', color: 'var(--moss)', fontWeight: 600 }}>
+            Bem-vindo! Este é seu primeiro estudo — experimente analisar os chunks deste vídeo.
+          </span>
+          <button
+            onClick={() => {
+              localStorage.setItem('verbly_welcome_dismissed', 'true')
+              setShowWelcomeBanner(false)
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--muted)',
+              fontSize: '1.1rem',
+              lineHeight: 1,
+              padding: '0 4px',
+              flexShrink: 0,
+            }}
+            aria-label="Fechar"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <Hero
         title={item.title}
         subtitle={item.channel ?? item.artist ?? ''}

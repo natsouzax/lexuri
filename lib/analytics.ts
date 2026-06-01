@@ -11,6 +11,7 @@ export type AnalyticsEventName =
   | 'video_sync_play'
   | 'chunk_detected'
   | 'flashcard_created'
+  | 'daily_reminder_sent'
 
 export type EventPayload = Record<string, string | number | boolean | null | undefined>
 

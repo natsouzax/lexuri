@@ -201,9 +201,26 @@ export default function FlashcardsPage() {
         </>
       )}
 
-      {!currentCard && !generating && (
-        <div className="alert-info">
-          Start with a word you noticed today. Small cards compound quickly.
+      {!currentCard && !generating && cards.length === 0 && (
+        <div
+          className="card"
+          style={{ textAlign: 'center', padding: '40px 32px', marginTop: 8 }}
+        >
+          <div style={{ fontSize: '2.4rem', marginBottom: 16 }}>🃏</div>
+          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
+            Você ainda não tem flashcards.
+          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 28, lineHeight: 1.6 }}>
+            Explore o feed para encontrar vídeos e músicas, analise os chunks e salve os que quiser aprender.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>
+              Explorar o Feed
+            </a>
+            <a href="/youtube" className="btn-secondary" style={{ textDecoration: 'none' }}>
+              Analisar um vídeo do YouTube
+            </a>
+          </div>
         </div>
       )}
     </>

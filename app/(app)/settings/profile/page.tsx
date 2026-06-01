@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-browser'
 export default function ProfileSettingsPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [emailReminders, setEmailReminders] = useState(true)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -13,10 +14,16 @@ export default function ProfileSettingsPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user) {
         setEmail(data.user.email ?? '')
         setFullName(data.user.user_metadata?.full_name ?? '')
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email_reminders')
+          .eq('id', data.user.id)
+          .single()
+        if (profile) setEmailReminders(profile.email_reminders ?? true)
       }
       setLoading(false)
     })
@@ -39,7 +46,10 @@ export default function ProfileSettingsPage() {
       // Sync to profiles table
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        await supabase.from('profiles').update({ full_name: fullName.trim(), updated_at: new Date().toISOString() }).eq('id', user.id)
+        await supabase
+        .from('profiles')
+        .update({ full_name: fullName.trim(), email_reminders: emailReminders, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
       }
       setSuccess('Profile updated.')
     }
@@ -91,6 +101,25 @@ export default function ProfileSettingsPage() {
             />
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
               Email changes are not supported yet.
+            </p>
+          </div>
+
+          <div className="auth-field-group" style={{ marginTop: 20 }}>
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+            >
+              <input
+                type="checkbox"
+                checked={emailReminders}
+                onChange={(e) => setEmailReminders(e.target.checked)}
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--clay)' }}
+              />
+              <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--ink)' }}>
+                Receber lembretes diários de revisão por email
+              </span>
+            </label>
+            <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4, marginLeft: 30 }}>
+              Avisamos quando você tem flashcards prontos para revisar.
             </p>
           </div>
 

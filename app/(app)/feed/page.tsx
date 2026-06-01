@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
 import FeedItemCard from '@/components/FeedItemCard'
-import { FEED_ITEMS } from '@/lib/feed'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
+import type { FeedItem } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
 
 async function apiFetch<T>(path: string): Promise<T> {
@@ -20,6 +20,7 @@ type LevelFilter = (typeof LEVELS)[number]
 type TypeFilter = 'All' | 'video' | 'music'
 
 export default function FeedPage() {
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([])
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('All')
@@ -28,6 +29,10 @@ export default function FeedPage() {
 
   useEffect(() => {
     setSavedIds(getSavedItemIds())
+  }, [])
+
+  useEffect(() => {
+    apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => {/* silent */})
   }, [])
 
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function FeedPage() {
     }
   }
 
-  const filtered = FEED_ITEMS.filter(
+  const filtered = feedItems.filter(
     (item) =>
       (levelFilter === 'All' || item.level === levelFilter) &&
       (typeFilter === 'All' || item.type === typeFilter),
@@ -64,7 +69,7 @@ export default function FeedPage() {
 
       {/* Metrics */}
       <div className="metrics-row">
-        <MetricCard label="Curated items" value={FEED_ITEMS.length} />
+        <MetricCard label="Curated items" value={feedItems.length} />
         <MetricCard label="Saved cards" value={cardCount} />
         <MetricCard label="Due today" value={dueCount} />
       </div>
@@ -155,7 +160,7 @@ export default function FeedPage() {
               marginBottom: 32,
             }}
           >
-            {FEED_ITEMS.filter((item) => savedIds.includes(item.id)).map((item) => (
+            {feedItems.filter((item) => savedIds.includes(item.id)).map((item) => (
               <FeedItemCard
                 key={item.id}
                 item={item}
