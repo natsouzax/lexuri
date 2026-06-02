@@ -49,12 +49,14 @@ export async function POST(request: NextRequest) {
       .map((p) => p.id),
   )
 
-  // Fetch user emails from auth.admin
-  const { data: authData } = await admin.auth.admin.listUsers({ perPage: 1000 })
+  // Fetch user emails individually — listUsers() has known pagination issues
   const emailByUserId: Record<string, string> = {}
-  for (const user of authData?.users ?? []) {
-    if (user.email) emailByUserId[user.id] = user.email
-  }
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const { data } = await admin.auth.admin.getUserById(userId)
+      if (data.user?.email) emailByUserId[userId] = data.user.email
+    }),
+  )
 
   let sent = 0
   let skipped = 0
