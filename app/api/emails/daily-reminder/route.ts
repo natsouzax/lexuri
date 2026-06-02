@@ -49,13 +49,19 @@ export async function POST(request: NextRequest) {
       .map((p) => p.id),
   )
 
-  // Fetch user emails individually — listUsers() has known pagination issues
+  // Only fetch emails for users who have reminders enabled (skips orphan user_ids)
   const emailByUserId: Record<string, string> = {}
   await Promise.all(
-    userIds.map(async (userId) => {
-      const { data } = await admin.auth.admin.getUserById(userId)
-      if (data.user?.email) emailByUserId[userId] = data.user.email
-    }),
+    userIds
+      .filter((id) => remindersEnabled.has(id))
+      .map(async (userId) => {
+        try {
+          const { data } = await admin.auth.admin.getUserById(userId)
+          if (data.user?.email) emailByUserId[userId] = data.user.email
+        } catch {
+          // user not found in auth — skip silently
+        }
+      }),
   )
 
   let sent = 0
