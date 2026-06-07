@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { href: '/review',     label: 'Review',         icon: '↺' },
   { href: '/youtube',    label: 'YouTube Studio', icon: '▶' },
   { href: '/flashcards', label: 'Flashcards',     icon: '⊞' },
-  { href: '/music',      label: 'Music Lab',       icon: '♪' },
+  { href: '/music',      label: 'Music Lab',      icon: '♪' },
 ]
 
 export default function Sidebar() {
@@ -49,6 +49,15 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
+
+        <Link
+          href="/donate"
+          className={`nav-link${pathname.startsWith('/donate') ? ' active' : ''}`}
+          style={{ color: 'var(--clay-bright, #e8845a)' }}
+        >
+          <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>♥</span>
+          <span>Support us</span>
+        </Link>
 
         <hr className="sidebar-divider" />
 

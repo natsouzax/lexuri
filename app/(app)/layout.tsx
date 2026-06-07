@@ -3,6 +3,7 @@ import { getUser } from '@/lib/supabase-server'
 import Sidebar from '@/components/Sidebar'
 import MobileNav from '@/components/MobileNav'
 import MobileHeader from '@/components/MobileHeader'
+import DonationPopup from '@/components/DonationPopup'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <MobileNav />
+      <DonationPopup />
     </div>
   )
 }
