@@ -74,7 +74,7 @@ export default function DonatePage() {
       </ul>
 
       <p style={{ marginTop: 32, fontSize: '0.9rem', color: 'var(--muted)' }}>
-        Thank you — seriously. Every contribution, big or small, keeps this project alive. 🌱
+        Thank you, seriously. Every contribution, big or small, keeps this project alive. 🌱
       </p>
     </div>
   )
