@@ -16,7 +16,7 @@ const WHAT_IT_FUNDS = [
   {
     icon: '🖥️',
     label: 'Server & infrastructure',
-    body: 'Hosting, databases, and CDN bandwidth aren\'t free. Your support keeps the app fast and reliable.',
+    body: "Hosting, databases, and CDN bandwidth aren't free. Your support keeps the app fast and reliable.",
   },
   {
     icon: '🛠️',
@@ -26,14 +26,14 @@ const WHAT_IT_FUNDS = [
   {
     icon: '🔓',
     label: 'Free access for everyone',
-    body: 'The goal is to keep the core experience free for learners who can\'t afford a subscription. Every donation helps subsidise that.',
+    body: "The goal is to keep the core experience free for learners who can't afford a subscription. Every donation helps subsidise that.",
   },
 ]
 
 const SUPPORTERS = [
-  { amount: '☕  $5', label: 'Buy me a coffee', desc: 'One-time. Covers a few AI API calls.' },
-  { amount: '🌱  $15', label: 'Monthly supporter', desc: 'Recurring. Keeps the lights on and helps plan ahead.' },
-  { amount: '🌳  $50', label: 'Patron', desc: 'Serious backing. Your name in the credits + early access to everything.' },
+  { amount: 5,  label: 'Buy me a coffee', desc: 'One-time. Covers a few AI API calls.' },
+  { amount: 15, label: 'Monthly supporter', desc: 'Keeps the lights on and helps plan ahead.' },
+  { amount: 50, label: 'Patron', desc: 'Serious backing. Your name in the credits + early access to everything.' },
 ]
 
 export default function DonatePage() {
@@ -51,14 +51,9 @@ export default function DonatePage() {
             If it helped you, consider helping back.
           </p>
           <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
-            <a
-              href="https://ko-fi.com/verbly"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-mkt-primary"
-            >
-              Donate on Ko-fi →
-            </a>
+            <Link href="#support" className="btn-mkt-primary">
+              Support now →
+            </Link>
             <Link href="/youtube" className="btn-mkt-ghost">
               Try the app first
             </Link>
@@ -114,11 +109,14 @@ export default function DonatePage() {
       </section>
 
       {/* Tiers */}
-      <section className="mkt-section mkt-section-cream">
+      <section id="support" className="mkt-section mkt-section-cream">
         <div className="mkt-container" style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span className="mkt-eyebrow">How to support</span>
             <h2 className="mkt-h2">Every bit helps.</h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: 8 }}>
+              Secure one-time payment via Stripe. No account required.
+            </p>
           </div>
           <SupportTierList supporters={SUPPORTERS} />
         </div>
@@ -134,14 +132,9 @@ export default function DonatePage() {
             Whether you donate or not, the app is yours. Go learn something real.
           </p>
           <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
-            <a
-              href="https://ko-fi.com/verbly"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-mkt-primary"
-            >
-              Support on Ko-fi →
-            </a>
+            <Link href="#support" className="btn-mkt-primary">
+              Support Verbly →
+            </Link>
             <Link href="/youtube" className="btn-mkt-ghost">Open the app</Link>
           </div>
         </div>
