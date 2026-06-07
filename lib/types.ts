@@ -50,6 +50,19 @@ export interface SongData {
   genius_url?: string
 }
 
+export interface Song {
+  id: string
+  user_id: string
+  title: string
+  artist: string
+  spotify_url: string | null
+  youtube_url: string | null
+  lrc_content: string | null
+  plain_lyrics: string
+  chunks_count: number
+  created_at: string
+}
+
 export type ChunkType =
   | 'collocation'
   | 'phrasal_verb'

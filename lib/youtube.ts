@@ -51,7 +51,7 @@ export function extractVideoId(input: string): string | null {
   return null
 }
 
-async function getVideoTitle(videoId: string): Promise<string> {
+export async function getVideoTitle(videoId: string): Promise<string> {
   try {
     const res = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
