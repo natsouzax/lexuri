@@ -1,10 +1,25 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Routes that redirect to /youtube when already logged in
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email']
-const PROTECTED_PREFIXES = ['/youtube', '/flashcards', '/music', '/onboarding', '/settings']
 
-const REQUIRES_ONBOARDING = ['/youtube', '/flashcards', '/music', '/settings']
+// Routes that require authentication
+const PROTECTED_PREFIXES = [
+  '/youtube',
+  '/flashcards',
+  '/review',
+  '/music',
+  '/leaderboard',
+  '/reports',
+  '/settings',
+  '/onboarding',
+  '/feed',
+  '/donate',
+]
+
+// Protected routes that also require completed onboarding
+const REQUIRES_ONBOARDING = ['/youtube', '/flashcards', '/music', '/settings', '/review', '/leaderboard', '/reports']
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -28,7 +43,9 @@ export async function proxy(request: NextRequest) {
     },
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
@@ -36,16 +53,19 @@ export async function proxy(request: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some((r) => pathname.startsWith(r))
   const needsOnboarding = REQUIRES_ONBOARDING.some((r) => pathname.startsWith(r))
 
+  // Redirect logged-in users away from auth pages
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL('/youtube', request.url))
   }
 
+  // Redirect unauthenticated users away from protected pages
   if (isProtected && !user) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
+  // Redirect authenticated users who haven't completed onboarding
   if (user && needsOnboarding) {
     const { data: onboarding } = await supabase
       .from('onboarding')
@@ -63,6 +83,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
