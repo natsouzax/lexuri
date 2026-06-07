@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const PRODUCT_LINKS = [
   { href: '/features', label: 'Features'  },
-  { href: '/pricing',  label: 'Pricing'   },
+  { href: '/donate',   label: 'Donate'    },
   { href: '/roadmap',  label: 'Roadmap'   },
   { href: '/youtube',  label: 'Open App'  },
 ]

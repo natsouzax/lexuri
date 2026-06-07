@@ -133,8 +133,21 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
   throw new Error(`YouTube captions failed. ${summarizeErrors(errors)}`)
 }
 
+function buildYtdlAgent() {
+  const raw = process.env.YOUTUBE_COOKIES
+  if (!raw) return undefined
+  try {
+    const cookies = JSON.parse(raw)
+    if (!Array.isArray(cookies)) return undefined
+    return ytdl.createAgent(cookies)
+  } catch {
+    return undefined
+  }
+}
+
 async function downloadAudioForTranscription(videoUrl: string, videoId: string): Promise<string> {
-  const info = await ytdl.getInfo(videoUrl)
+  const agent = buildYtdlAgent()
+  const info = await ytdl.getInfo(videoUrl, agent ? { agent } : undefined)
   const format = ytdl.chooseFormat(info.formats, {
     quality: 'lowestaudio',
     filter: 'audioonly',
@@ -147,7 +160,7 @@ async function downloadAudioForTranscription(videoUrl: string, videoId: string):
 
   const ext = format.container || 'webm'
   const filePath = path.join(os.tmpdir(), `verbly-${videoId}-${Date.now()}.${ext}`)
-  const stream = ytdl.downloadFromInfo(info, { format, highWaterMark: 1 << 25 })
+  const stream = ytdl.downloadFromInfo(info, { format, highWaterMark: 1 << 25, ...(agent && { agent }) })
 
   let downloadedBytes = 0
   stream.on('data', (chunk: Buffer) => {
