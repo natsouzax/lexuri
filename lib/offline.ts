@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Offline support — IndexedDB mutation queue.
  * Import only in browser (client components / service worker).
  */
 
-const DB_NAME = 'verbly-offline'
+const DB_NAME = 'lexuri-offline'
 const DB_VERSION = 1
 const STORE_QUEUE = 'mutation_queue'
 const STORE_CACHE  = 'flashcard_cache'

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -75,7 +75,7 @@ export default function OnboardingPage() {
     <div className="onboard-shell">
       {/* Top bar */}
       <div className="onboard-top">
-        <span className="onboard-logo">Verbly</span>
+        <span className="onboard-logo">Lexuri</span>
         <span className="onboard-step-counter">Step {step} of {TOTAL_STEPS}</span>
       </div>
 
@@ -91,7 +91,7 @@ export default function OnboardingPage() {
             <div className="onboard-step-icon">🌍</div>
             <h1 className="onboard-title">What&apos;s your native language?</h1>
             <p className="onboard-desc">
-              Verbly teaches English. We&apos;ll use your native language to show translations and explanations in a way that makes sense to you.
+              Lexuri teaches English. We&apos;ll use your native language to show translations and explanations in a way that makes sense to you.
             </p>
             <div className="onboard-options-grid">
               {NATIVE_LANGUAGES.map((lang) => (
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
             <div className="onboard-step-icon" style={{ fontSize: '3.5rem' }}>🚀</div>
             <h1 className="onboard-title">You&apos;re all set!</h1>
             <p className="onboard-desc">
-              Your profile is configured. Verbly will now surface the best chunks, vocabulary, and review sessions for your journey.
+              Your profile is configured. Lexuri will now surface the best chunks, vocabulary, and review sessions for your journey.
             </p>
 
             <div className="onboard-summary">

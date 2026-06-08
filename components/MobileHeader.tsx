@@ -1,9 +1,9 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 
 export default function MobileHeader() {
   return (
     <header className="mobile-app-header">
-      <Link href="/" className="mobile-app-logo">Verbly</Link>
+      <Link href="/" className="mobile-app-logo">Lexuri</Link>
     </header>
   )
 }

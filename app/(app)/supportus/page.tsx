@@ -1,13 +1,13 @@
-export const metadata = {
-  title: 'Support Verbly',
-  description: 'Help us keep Verbly free and build the mobile app.',
+﻿export const metadata = {
+  title: 'Support Lexuri',
+  description: 'Help us keep Lexuri free and build the mobile app.',
 }
 
 export default function DonatePage() {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 24px' }}>
       <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '2.2rem', marginBottom: 8 }}>
-        Support Verbly ♥
+        Support Lexuri ♥
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 36 }}>
         100% free · no paywalls · no ads
@@ -22,14 +22,14 @@ export default function DonatePage() {
         }}
       >
         <p style={{ fontSize: '1.05rem', lineHeight: 1.75, margin: 0 }}>
-          Verbly is built and maintained by a small team that genuinely cares about helping you
+          Lexuri is built and maintained by a small team that genuinely cares about helping you
           reach fluency. Every feature — the YouTube studio, spaced repetition, AI flashcards,
           music lyrics — is free, with no premium tier hiding the good stuff.
         </p>
       </div>
 
       <p style={{ lineHeight: 1.8, marginBottom: 24 }}>
-        If Verbly has helped you understand a song, nail a tricky phrase, or just enjoy learning a
+        If Lexuri has helped you understand a song, nail a tricky phrase, or just enjoy learning a
         language more, consider buying us a coffee. Your support keeps the servers running and,
         more excitingly, funds the mobile app we&apos;re building so you can study anywhere.
       </p>

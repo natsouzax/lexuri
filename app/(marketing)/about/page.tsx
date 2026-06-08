@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'Why Verbly exists, our learning philosophy, and the science behind chunk-based language acquisition.',
+  description: 'Why Lexuri exists, our learning philosophy, and the science behind chunk-based language acquisition.',
 }
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
             Built for people who learn seriously.
           </h1>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto' }}>
-            Verbly started from one frustration: why does traditional language learning feel so disconnected from real communication?
+            Lexuri started from one frustration: why does traditional language learning feel so disconnected from real communication?
           </p>
         </div>
       </section>
@@ -34,7 +34,7 @@ export default function AboutPage() {
             When you learn &ldquo;freak&rdquo; and &ldquo;out&rdquo; separately, you still have to assemble them during conversation — too slow. When you learn &ldquo;freaking out&rdquo; as a unit, it fires instantly.
           </p>
           <p style={{ fontSize: '0.97rem', color: 'var(--muted)', lineHeight: 1.85 }}>
-            That&apos;s the gap Verbly fills.
+            That&apos;s the gap Lexuri fills.
           </p>
         </div>
       </section>
@@ -47,7 +47,7 @@ export default function AboutPage() {
               <span className="mkt-eyebrow">Mission</span>
               <h2 className="mkt-h2">Make real fluency accessible.</h2>
               <p style={{ fontSize: '0.95rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-                We believe fluency isn&apos;t about how many words you know — it&apos;s about how automatically you can retrieve and use natural language patterns. Verbly is designed to bridge that gap: from passive exposure to active, automatic use.
+                We believe fluency isn&apos;t about how many words you know — it&apos;s about how automatically you can retrieve and use natural language patterns. Lexuri is designed to bridge that gap: from passive exposure to active, automatic use.
               </p>
             </div>
             <div className="mkt-grid-2col">
@@ -77,7 +77,7 @@ export default function AboutPage() {
             {[
               {
                 title: 'The brain stores language in chunks',
-                body: 'Cognitive linguists and neurolinguists have established that fluent speakers store and retrieve multi-word sequences as single units. Verbly\'s AI is designed to surface exactly these units — not isolated vocabulary.',
+                body: 'Cognitive linguists and neurolinguists have established that fluent speakers store and retrieve multi-word sequences as single units. Lexuri\'s AI is designed to surface exactly these units — not isolated vocabulary.',
               },
               {
                 title: 'Emotion and context accelerate retention',
@@ -85,7 +85,7 @@ export default function AboutPage() {
               },
               {
                 title: 'Repetition must be spaced, not massed',
-                body: 'Reviewing 100 cards the night before a test is the worst strategy. The spacing effect — reviewing at increasing intervals — is the most robust finding in cognitive psychology. Verbly\'s review system is built around this.',
+                body: 'Reviewing 100 cards the night before a test is the worst strategy. The spacing effect — reviewing at increasing intervals — is the most robust finding in cognitive psychology. Lexuri\'s review system is built around this.',
               },
             ].map(({ title, body }) => (
               <div key={title} style={{ borderLeft: '3px solid var(--clay)', paddingLeft: 24 }}>

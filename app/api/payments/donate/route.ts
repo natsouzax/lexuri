@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 
 const ALLOWED_AMOUNTS = [5, 15, 50] as const
@@ -30,8 +30,8 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Verbly Donation — ${TIER_LABELS[amount]}`,
-              description: 'Thank you for supporting Verbly. Every dollar keeps the app free and improving.',
+              name: `Lexuri Donation — ${TIER_LABELS[amount]}`,
+              description: 'Thank you for supporting Lexuri. Every dollar keeps the app free and improving.',
             },
             unit_amount: amount * 100,
           },

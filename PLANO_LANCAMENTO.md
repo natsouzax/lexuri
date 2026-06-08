@@ -1,4 +1,4 @@
-# Plano de Lançamento — Verbly
+﻿# Plano de Lançamento — Lexuri
 > Análise de pré-lançamento para grupo de teste (professora + alunos), sem domínio próprio.
 > Gerado em 07/06/2026 — baseado em análise completa do código-fonte.
 
@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O objetivo é lançar o Verbly para um grupo pequeno de validação — uma professora e seus alunos — usando a URL do serviço de hospedagem diretamente (ex: `verbly-eta.vercel.app`), sem comprar domínio. Nenhuma funcionalidade comercial precisa funcionar para essa validação.
+O objetivo é lançar o Lexuri para um grupo pequeno de validação — uma professora e seus alunos — usando a URL do serviço de hospedagem diretamente (ex: `lexuri-eta.vercel.app`), sem comprar domínio. Nenhuma funcionalidade comercial precisa funcionar para essa validação.
 
 ---
 
@@ -22,7 +22,7 @@ O `.env.local` já contém todas as variáveis necessárias para funcionar:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Presente | Chave anon válida |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Presente | Chave de serviço para operações admin |
 | `OPENAI_API_KEY` | ✅ Presente | Necessária para geração de flashcards e análise de chunks |
-| `NEXT_PUBLIC_APP_URL` | ✅ Presente | Aponta para `verbly-eta.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | ✅ Presente | Aponta para `lexuri-eta.vercel.app` |
 | `RESEND_API_KEY` | ✅ Presente | E-mails transacionais |
 | `GENIUS_API_KEY` | ✅ Presente | Busca de letras musicais |
 | `STRIPE_SECRET_KEY` | ⚠️ Chave de teste | Stripe em modo test — adequado para validação |
@@ -236,7 +236,7 @@ A cobertura é baixa — cobre gamificação (a mais crítica), mas não cobre: 
 **Por quê:**
 - Suporte nativo ao Next.js (mesma empresa). App Router, Server Components, API Routes — tudo funciona sem configuração extra.
 - Deploy automático via `git push`.
-- URL pública automática: `verbly-eta.vercel.app` (já configurada no `.env.local`).
+- URL pública automática: `lexuri-eta.vercel.app` (já configurada no `.env.local`).
 - SSL automático, CDN global, sem custo.
 - Limites do plano Hobby são mais que suficientes para um grupo de teste pequeno: 100GB bandwidth/mês, funções serverless incluídas.
 
@@ -291,7 +291,7 @@ A cobertura é baixa — cobre gamificação (a mais crítica), mas não cobre: 
 
 ## 9. Resumo Executivo
 
-O Verbly está **substancialmente pronto** para um lançamento de teste controlado. O core — YouTube Studio, análise de chunks com IA, flashcards SRS, gamificação e onboarding — está funcional e bem implementado.
+O Lexuri está **substancialmente pronto** para um lançamento de teste controlado. O core — YouTube Studio, análise de chunks com IA, flashcards SRS, gamificação e onboarding — está funcional e bem implementado.
 
 **Há apenas 1 bug crítico real no código:** o `middleware.ts` ausente, que deixa rotas protegidas abertas. Tudo o mais são configurações de deploy e serviços externos.
 

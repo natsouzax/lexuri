@@ -1,4 +1,4 @@
-import { Resend } from 'resend'
+﻿import { Resend } from 'resend'
 import type { ReactElement } from 'react'
 
 let _resend: Resend | null = null
@@ -19,7 +19,7 @@ export async function sendEmail(
 ): Promise<void> {
   try {
     await getResend().emails.send({
-      from: 'Verbly <onboarding@resend.dev>',
+      from: 'Lexuri <onboarding@resend.dev>',
       to,
       subject,
       react,

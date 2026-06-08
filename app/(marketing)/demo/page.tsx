@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useState } from 'react'
@@ -23,8 +23,8 @@ const DEMO_CHUNKS: ChunkItem[] = [
     text: "always meant to do",
     type: "collocation",
     ...pos("always meant to do"),
-    literal_translation: "sempre pretendeu fazer",
-    contextual_translation: "sempre quis / tinha intenção de fazer",
+    literal_translation: "always intended to do",
+    contextual_translation: "always wanted to / had been meaning to do",
     importance: "high",
     frequency_score: 8,
     confidence: 0.92,
@@ -39,8 +39,8 @@ const DEMO_CHUNKS: ChunkItem[] = [
     text: "just haven't",
     type: "conversational",
     ...pos("just haven't"),
-    literal_translation: "simplesmente não fez",
-    contextual_translation: "simplesmente nunca fez / só que não",
+    literal_translation: "simply did not",
+    contextual_translation: "just never got around to it / simply never did",
     importance: "medium",
     frequency_score: 9,
     confidence: 0.88,
@@ -55,8 +55,8 @@ const DEMO_CHUNKS: ChunkItem[] = [
     text: "try something new",
     type: "lexical_chunk",
     ...pos("try something new"),
-    literal_translation: "tentar algo novo",
-    contextual_translation: "tentar algo novo / experimentar uma novidade",
+    literal_translation: "attempt something new",
+    contextual_translation: "try / experiment with something new",
     importance: "high",
     frequency_score: 9,
     confidence: 0.95,
@@ -71,8 +71,8 @@ const DEMO_CHUNKS: ChunkItem[] = [
     text: "just the right amount of time",
     type: "formulaic",
     ...pos("just the right amount of time"),
-    literal_translation: "exatamente a quantidade certa de tempo",
-    contextual_translation: "o tempo ideal / bem na medida certa",
+    literal_translation: "exactly the right amount of time",
+    contextual_translation: "the perfect amount of time / just enough time",
     importance: "high",
     frequency_score: 7,
     confidence: 0.85,
@@ -87,8 +87,8 @@ const DEMO_CHUNKS: ChunkItem[] = [
     text: "add a new habit",
     type: "collocation",
     ...pos("add a new habit"),
-    literal_translation: "adicionar um novo hábito",
-    contextual_translation: "criar / incorporar um novo hábito",
+    literal_translation: "add a new habit",
+    contextual_translation: "build / incorporate a new habit",
     importance: "medium",
     frequency_score: 7,
     confidence: 0.87,
@@ -111,11 +111,11 @@ export default function DemoPage() {
         <div className="mkt-container" style={{ textAlign: 'center', paddingBottom: 48 }}>
           <span className="mkt-eyebrow">Live Demo</span>
           <h1 className="mkt-h1" style={{ marginBottom: 16 }}>
-            See Verbly in action.
+            See Lexuri in action.
           </h1>
           <p className="mkt-lead" style={{ margin: '0 auto 32px' }}>
             This is a real chunk analysis of a TED talk. The highlighted text shows the
-            natural language patterns detected by Verbly&apos;s AI — the phrases, idioms, and
+            natural language patterns detected by Lexuri&apos;s AI — the phrases, idioms, and
             collocations that build actual fluency.
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
@@ -228,7 +228,7 @@ export default function DemoPage() {
               Turn any video into a lesson like this.
             </h2>
             <p style={{ color: 'rgba(255,250,240,0.8)', marginBottom: 28, fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Create a free account and analyze any YouTube video or song. Verbly detects the
+              Create a free account and analyze any YouTube video or song. Lexuri detects the
               chunks, you save the ones that matter, and our spaced repetition system makes sure
               you never forget them.
             </p>
@@ -237,7 +237,7 @@ export default function DemoPage() {
               className="btn-mkt-ghost"
               style={{ borderColor: 'rgba(255,250,240,0.6)', color: '#fff', fontSize: '0.95rem', padding: '13px 32px' }}
             >
-              Crie sua conta grátis e salve esses chunks →
+              Create your free account and save these chunks →
             </Link>
           </div>
         </div>

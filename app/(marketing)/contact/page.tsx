@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Get in touch with the Verbly team — feedback, feature requests, or just to say hello.',
+  description: 'Get in touch with the Lexuri team — feedback, feature requests, or just to say hello.',
 }
 
 export default function ContactPage() {

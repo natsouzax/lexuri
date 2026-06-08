@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const STORAGE_KEY = 'verbly_donation_popup_shown'
+const STORAGE_KEY = 'lexuri_donation_popup_shown'
 
 export default function DonationPopup() {
   const [visible, setVisible] = useState(false)
@@ -36,7 +36,7 @@ export default function DonationPopup() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Support Verbly"
+      aria-label="Support Lexuri"
       style={{
         position: 'fixed',
         inset: 0,
@@ -90,10 +90,10 @@ export default function DonationPopup() {
             marginBottom: 8,
           }}
         >
-          Enjoying Verbly?
+          Enjoying Lexuri?
         </h3>
         <p style={{ fontSize: '0.86rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: 18 }}>
-          Verbly is free forever. If it&apos;s been useful, a small donation helps us keep the lights
+          Lexuri is free forever. If it&apos;s been useful, a small donation helps us keep the lights
           on and build the mobile app.
         </p>
 

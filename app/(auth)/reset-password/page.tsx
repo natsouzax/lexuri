@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
       <div className="auth-page">
         <div className="auth-card">
           <div className="auth-logo">
-            <Link href="/" className="auth-logo-text">Verbly</Link>
+            <Link href="/" className="auth-logo-text">Lexuri</Link>
           </div>
           <div className="auth-success-block">
             <div className="auth-success-icon" style={{ color: '#22c55e' }}>✓</div>
@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <Link href="/" className="auth-logo-text">Verbly</Link>
+          <Link href="/" className="auth-logo-text">Lexuri</Link>
         </div>
 
         <h1 className="auth-title">Set new password</h1>

@@ -1,4 +1,4 @@
-import fs from 'fs'
+﻿import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { pipeline } from 'stream/promises'
@@ -155,7 +155,7 @@ async function downloadAudioForTranscription(videoUrl: string, videoId: string):
   }
 
   const ext = format.container || 'webm'
-  const filePath = path.join(os.tmpdir(), `verbly-${videoId}-${Date.now()}.${ext}`)
+  const filePath = path.join(os.tmpdir(), `lexuri-${videoId}-${Date.now()}.${ext}`)
   const stream = ytdl.downloadFromInfo(info, { format, highWaterMark: 1 << 25, ...(agent && { agent }) })
 
   let downloadedBytes = 0

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -33,7 +33,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div>
         <Link href="/" className="sidebar-logo-link">
-          <div className="sidebar-logo">Verbly</div>
+          <div className="sidebar-logo">Lexuri</div>
         </Link>
         <p className="sidebar-caption">AI · Chunks · Fluency</p>
 

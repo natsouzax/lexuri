@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getAdminClient } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
 import { trackServer } from '@/lib/analytics'
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = getAdminClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://verbly.app'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://lexuri.app'
   const reviewUrl = `${appUrl}/review`
 
   // Fetch flashcards due for review

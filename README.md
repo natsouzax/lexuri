@@ -1,4 +1,4 @@
-# Verbly
+﻿# Lexuri
 
 AI-powered English learning app built with Next.js, Supabase, and OpenAI.
 

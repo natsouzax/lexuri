@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -19,7 +19,7 @@ export default function MarketingNav() {
   return (
     <nav className="mkt-nav">
       <div className="mkt-container mkt-nav-inner">
-        <Link href="/" className="mkt-nav-logo" onClick={() => setOpen(false)}>Verbly</Link>
+        <Link href="/" className="mkt-nav-logo" onClick={() => setOpen(false)}>Lexuri</Link>
 
         {/* Desktop links */}
         <div className="mkt-nav-links">

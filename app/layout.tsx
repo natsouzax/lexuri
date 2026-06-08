@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import './globals.css'
 
 export const viewport = {
@@ -9,18 +9,18 @@ export const viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Verbly',
-    template: '%s | Verbly',
+    default: 'Lexuri',
+    template: '%s | Lexuri',
   },
   description: 'Learn English from the videos and music you already love. AI-powered chunk detection, flashcards, and spaced repetition.',
   openGraph: {
-    title: 'Verbly',
+    title: 'Lexuri',
     description: 'Learn English from the videos and music you already love.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Verbly',
+    title: 'Lexuri',
     description: 'Learn English from the videos and music you already love.',
   },
 }

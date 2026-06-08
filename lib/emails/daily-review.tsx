@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Button,
   Container,
@@ -19,10 +19,10 @@ export default function DailyReviewEmail({ cardsDue, reviewUrl }: Props) {
   return (
     <Html>
       <Head />
-      <Preview>{`Você tem ${cardsDue} ${cardsDue === 1 ? 'flashcard' : 'flashcards'} para revisar hoje no Verbly`}</Preview>
+      <Preview>{`Você tem ${cardsDue} ${cardsDue === 1 ? 'flashcard' : 'flashcards'} para revisar hoje no Lexuri`}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={logo}>Verbly</Text>
+          <Text style={logo}>Lexuri</Text>
           <Hr style={hr} />
           <Text style={heading}>
             {cardsDue === 1
@@ -40,7 +40,7 @@ export default function DailyReviewEmail({ cardsDue, reviewUrl }: Props) {
           </Section>
           <Hr style={hr} />
           <Text style={footer}>
-            Verbly · Aprendizado de inglês com chunk-first analysis
+            Lexuri · Aprendizado de inglês com chunk-first analysis
             <br />
             Para parar de receber lembretes, acesse Configurações → Perfil.
           </Text>

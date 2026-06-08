@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 
 const PRODUCT_LINKS = [
   { href: '/features', label: 'Features'  },
@@ -19,7 +19,7 @@ export default function MarketingFooter() {
         <div className="mkt-footer-grid">
           {/* Brand */}
           <div>
-            <Link href="/" className="mkt-footer-logo">Verbly</Link>
+            <Link href="/" className="mkt-footer-logo">Lexuri</Link>
             <p className="mkt-footer-tagline">
               Learn English from the videos and music you already love.
               AI-powered chunk detection and spaced repetition.
@@ -44,7 +44,7 @@ export default function MarketingFooter() {
         </div>
 
         <div className="mkt-footer-bottom">
-          <span>© {new Date().getFullYear()} Verbly. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Lexuri. All rights reserved.</span>
           <span style={{ fontSize: '0.75rem', opacity: 0.5 }}>Built for serious learners.</span>
         </div>
       </div>

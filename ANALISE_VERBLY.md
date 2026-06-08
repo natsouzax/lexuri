@@ -1,4 +1,4 @@
-# Análise Completa — Verbly
+﻿# Análise Completa — Lexuri
 
 > Gerado em 06/06/2026
 
@@ -8,7 +8,7 @@
 
 ### O que o app faz
 
-**Verbly** é uma plataforma de aprendizado de inglês com IA. O loop central é:
+**Lexuri** é uma plataforma de aprendizado de inglês com IA. O loop central é:
 
 1. O usuário cola um link do YouTube (ou busca música no Genius)
 2. O transcript é extraído (via legendas do YouTube ou fallback com OpenAI Whisper)
@@ -212,4 +212,4 @@ O caminho recomendado:
 2. **Próximo**: Se a tração justificar (e.g., >500 usuários ativos), construir o app Flutter usando os endpoints existentes. A arquitetura atual suporta isso sem refatoração de backend.
 3. **Nunca**: Reescrever o backend. Ele está bem estruturado e é compartilhável entre web e mobile.
 
-O risco real não é técnico — é de produto. O YouTube player sincronizado é a feature mais impressionante do Verbly. Se ela ficar inferior no Flutter, o app mobile pode decepcionar exatamente no ponto de maior diferenciação.
+O risco real não é técnico — é de produto. O YouTube player sincronizado é a feature mais impressionante do Lexuri. Se ela ficar inferior no Flutter, o app mobile pode decepcionar exatamente no ponto de maior diferenciação.

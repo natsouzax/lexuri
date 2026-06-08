@@ -1,10 +1,10 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import SupportTierList from './SupportTierList'
 
 export const metadata: Metadata = {
-  title: 'Support Verbly',
-  description: 'Verbly is free, indie, and built by one person. If it helped you learn, consider supporting its development.',
+  title: 'Support Lexuri',
+  description: 'Lexuri is free, indie, and built by one person. If it helped you learn, consider supporting its development.',
 }
 
 const WHAT_IT_FUNDS = [
@@ -42,9 +42,9 @@ export default function DonatePage() {
       {/* Hero */}
       <section className="mkt-section-sm mkt-section-dark">
         <div className="mkt-container" style={{ textAlign: 'center' }}>
-          <span className="mkt-eyebrow">Support Verbly</span>
+          <span className="mkt-eyebrow">Support Lexuri</span>
           <h1 className="mkt-h1" style={{ color: 'var(--paper)', margin: '0 auto 16px', maxWidth: 680 }}>
-            Verbly is free. Keep it that way.
+            Lexuri is free. Keep it that way.
           </h1>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 36px' }}>
             No VC funding. No growth-hacking. Just one person building a tool for serious learners.
@@ -67,13 +67,13 @@ export default function DonatePage() {
           <span className="mkt-eyebrow">Why it matters</span>
           <h2 className="mkt-h2">Built in the open, not by a corporation.</h2>
           <p style={{ fontSize: '0.97rem', color: 'var(--muted)', lineHeight: 1.85, marginBottom: 20 }}>
-            Verbly was built because existing language apps felt wrong — isolated vocabulary, gamified streaks, no connection to real speech. So I built something different: chunk-based learning from videos and music you actually enjoy.
+            Lexuri was built because existing language apps felt wrong — isolated vocabulary, gamified streaks, no connection to real speech. So I built something different: chunk-based learning from videos and music you actually enjoy.
           </p>
           <p style={{ fontSize: '0.97rem', color: 'var(--muted)', lineHeight: 1.85, marginBottom: 20 }}>
             The app is free because language learning should be accessible. But free doesn&apos;t mean costless. AI inference, servers, and storage all have real costs — and right now, I cover them out of pocket.
           </p>
           <p style={{ fontSize: '0.97rem', color: 'var(--muted)', lineHeight: 1.85 }}>
-            Every donation, however small, directly extends how long Verbly stays free and how fast it improves.
+            Every donation, however small, directly extends how long Lexuri stays free and how fast it improves.
           </p>
         </div>
       </section>
@@ -133,7 +133,7 @@ export default function DonatePage() {
           </p>
           <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
             <Link href="#support" className="btn-mkt-primary">
-              Support Verbly →
+              Support Lexuri →
             </Link>
             <Link href="/youtube" className="btn-mkt-ghost">Open the app</Link>
           </div>

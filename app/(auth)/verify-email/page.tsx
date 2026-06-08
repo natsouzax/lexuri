@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
@@ -45,7 +45,7 @@ function VerifyEmailForm() {
     <div className="auth-page">
       <div className="auth-card" style={{ textAlign: 'center' }}>
         <div className="auth-logo">
-          <Link href="/" className="auth-logo-text">Verbly</Link>
+          <Link href="/" className="auth-logo-text">Lexuri</Link>
         </div>
 
         <div className="auth-success-block">

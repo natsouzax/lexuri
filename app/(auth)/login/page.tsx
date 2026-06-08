@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -27,7 +27,7 @@ function LoginForm() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const saved = localStorage.getItem('verbly_remember_email')
+    const saved = localStorage.getItem('lexuri_remember_email')
     if (saved) { setEmail(saved); setRememberMe(true) }
   }, [])
 
@@ -46,9 +46,9 @@ function LoginForm() {
     }
 
     if (rememberMe) {
-      localStorage.setItem('verbly_remember_email', email)
+      localStorage.setItem('lexuri_remember_email', email)
     } else {
-      localStorage.removeItem('verbly_remember_email')
+      localStorage.removeItem('lexuri_remember_email')
     }
 
     // Check if user has completed onboarding
@@ -86,7 +86,7 @@ function LoginForm() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo">
-          <Link href="/" className="auth-logo-text">Verbly</Link>
+          <Link href="/" className="auth-logo-text">Lexuri</Link>
         </div>
 
         <h1 className="auth-title">Welcome back</h1>

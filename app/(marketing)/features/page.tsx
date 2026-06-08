@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Features',
-  description: 'Everything Verbly can do — learning feed, video transcripts, AI chunk detection, smart flashcards, and spaced repetition.',
+  description: 'Everything Lexuri can do — learning feed, video transcripts, AI chunk detection, smart flashcards, and spaced repetition.',
 }
 
 const FEATURES = [
@@ -20,7 +20,7 @@ const FEATURES = [
     icon: '▶',
     tag: 'Content Input',
     title: 'YouTube Transcripts',
-    body: 'Paste any YouTube URL. Verbly fetches the transcript and syncs it with the video frame by frame. The active word highlights in real time as you listen, so your eyes and ears train together.',
+    body: 'Paste any YouTube URL. Lexuri fetches the transcript and syncs it with the video frame by frame. The active word highlights in real time as you listen, so your eyes and ears train together.',
     details: ['Auto-sync word highlighting', 'Adjustable caption delay calibration', 'Click any word to instantly collect it', 'Works with auto-generated and manual captions'],
     color: '#46624a',
     bg: 'rgba(70,98,74,0.08)',
@@ -29,7 +29,7 @@ const FEATURES = [
     icon: '◈',
     tag: 'AI Analysis',
     title: 'Language Chunk Detection',
-    body: 'Built with neuro-informed learning principles, Verbly\'s AI detects the units your brain actually stores — not isolated words, but complete expressions. Every chunk comes with a contextual Portuguese translation and a note on why it matters for fluency.',
+    body: 'Built with neuro-informed learning principles, Lexuri\'s AI detects the units your brain actually stores — not isolated words, but complete expressions. Every chunk comes with a contextual translation into your language and a note on why it matters for fluency.',
     details: ['Phrasal verbs ("give up", "freak out")', 'Idiomatic expressions ("at the end of the day")', 'Collocations ("make a decision", "break the ice")', 'Formulaic sequences and conversational patterns'],
     color: '#c86f4a',
     bg: 'rgba(200,111,74,0.07)',
@@ -39,7 +39,7 @@ const FEATURES = [
     tag: 'Memory',
     title: 'AI Flashcards',
     body: 'Every word or chunk you collect becomes a rich flashcard — with a translation, plain-English explanation, and a natural example sentence. No manual typing. The AI handles the card content automatically.',
-    details: ['Contextual + literal Portuguese translations', 'English explanation in simple language', 'Example sentence from the original content', 'Batch generation or one at a time'],
+    details: ['Contextual + literal translations into your language', 'English explanation in simple language', 'Example sentence from the original content', 'Batch generation or one at a time'],
     color: '#4a90e2',
     bg: 'rgba(74,144,226,0.08)',
   },
@@ -62,7 +62,7 @@ export default function FeaturesPage() {
         <div className="mkt-container" style={{ textAlign: 'center' }}>
           <span className="mkt-eyebrow">The Full Picture</span>
           <h1 className="mkt-h1" style={{ color: 'var(--paper)', margin: '0 auto 16px', maxWidth: 700 }}>
-            Everything Verbly can do
+            Everything Lexuri can do
           </h1>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto' }}>
             Four interlocking systems — each one designed around how the brain actually acquires language.
@@ -110,7 +110,7 @@ export default function FeaturesPage() {
         <div className="mkt-container">
           <h2 className="mkt-h2" style={{ color: 'var(--paper)', marginBottom: 16 }}>Ready to try it?</h2>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 32px' }}>Free to start. No account required.</p>
-          <Link href="/youtube" className="btn-mkt-primary">Open Verbly →</Link>
+          <Link href="/youtube" className="btn-mkt-primary">Open Lexuri →</Link>
         </div>
       </section>
     </>

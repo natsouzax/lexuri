@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <Link href="/" className="auth-logo-text">Verbly</Link>
+          <Link href="/" className="auth-logo-text">Lexuri</Link>
         </div>
 
         {sent ? (

@@ -1,16 +1,16 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Roadmap',
-  description: 'What\'s live, what\'s next, and what\'s planned for Verbly — mobile app, browser extension, Netflix mode, AI tutor, and more.',
+  description: 'What\'s live, what\'s next, and what\'s planned for Lexuri — mobile app, browser extension, Netflix mode, AI tutor, and more.',
 }
 
 const ROADMAP = {
   done: [
     { title: 'YouTube Transcript Sync', body: 'Load any YouTube video, sync transcript word by word in real time.' },
     { title: 'AI Chunk Detection', body: 'Detect phrasal verbs, idioms, collocations, and formulaic sequences with exact character offsets.' },
-    { title: 'Music Lab', body: 'Analyze song lyrics with chunk detection and contextual Portuguese translations.' },
+    { title: 'Music Lab', body: 'Analyze song lyrics with chunk detection and contextual translations into your language.' },
     { title: 'AI Flashcard Generation', body: 'Instantly generate flashcards from words or chunks — no manual input.' },
     { title: 'Spaced Repetition Review', body: 'SM-2 algorithm schedules each flashcard at the optimal review moment.' },
   ],
@@ -46,7 +46,7 @@ export default function RoadmapPage() {
         <div className="mkt-container" style={{ textAlign: 'center' }}>
           <span className="mkt-eyebrow">What&apos;s Coming</span>
           <h1 className="mkt-h1" style={{ color: 'var(--paper)', margin: '0 auto 16px', maxWidth: 680 }}>
-            The Verbly roadmap.
+            The Lexuri roadmap.
           </h1>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto' }}>
             Here&apos;s what we&apos;ve shipped, what we&apos;re building next, and where we&apos;re headed.

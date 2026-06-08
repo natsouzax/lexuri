@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Verbly — Learn English from real content',
+  title: 'Lexuri — Learn English from real content',
   description: 'AI-powered language learning. Turn videos, music, and transcripts into fluency — through chunks, not word lists.',
 }
 
@@ -41,7 +41,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Load real content',
-    body: 'Paste a YouTube URL or search for a song. Verbly fetches the transcript automatically.',
+    body: 'Paste a YouTube URL or search for a song. Lexuri fetches the transcript automatically.',
   },
   {
     n: '02',
@@ -104,7 +104,7 @@ export default function HomePage() {
               Learn English from the content you already love.
             </h1>
             <p className="mkt-lead mkt-lead-dark" style={{ marginBottom: 36 }}>
-              Stop memorizing word lists. Verbly detects the natural language chunks in videos and music — the phrases, idioms, and patterns that build real fluency.
+              Stop memorizing word lists. Lexuri detects the natural language chunks in videos and music — the phrases, idioms, and patterns that build real fluency.
             </p>
             <div className="mkt-btn-group">
               <Link href="/youtube" className="btn-mkt-primary">Start learning free →</Link>
@@ -190,7 +190,7 @@ export default function HomePage() {
               ))}
             </div>
             <div style={{ border: '1px solid rgba(70,98,74,0.35)', borderRadius: 20, padding: '28px 28px', background: 'rgba(70,98,74,0.07)' }}>
-              <div style={{ fontWeight: 900, marginBottom: 16, fontSize: '0.85rem', color: 'var(--moss)' }}>✓ Verbly approach</div>
+              <div style={{ fontWeight: 900, marginBottom: 16, fontSize: '0.85rem', color: 'var(--moss)' }}>✓ Lexuri approach</div>
               {['Learn in natural chunks', 'Real context from content you love', 'Spaced repetition for retention', 'Phrases ready to use', 'How the brain actually stores language'].map((t) => (
                 <div key={t} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10, fontSize: '0.88rem', color: 'var(--ink)' }}>
                   <span style={{ color: 'var(--moss)', fontWeight: 900, flexShrink: 0 }}>✓</span> {t}
@@ -331,7 +331,7 @@ export default function HomePage() {
             Real results from real learners
           </h2>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 48px' }}>
-            Verbly is in early access. Testimonials coming soon.
+            Lexuri is in early access. Testimonials coming soon.
           </p>
           <div className="mkt-grid-3col">
             {['B2 level in 6 months', 'Finally understood series without subtitles', 'Chunks made all the difference'].map((quote, i) => (
@@ -355,10 +355,10 @@ export default function HomePage() {
             Start learning smarter today.
           </h2>
           <p style={{ fontSize: '1.05rem', color: 'rgba(255,250,240,0.75)', maxWidth: 500, margin: '0 auto 36px', lineHeight: 1.7 }}>
-            Verbly is free to start. No credit card. No downloads. Just open the app and load your first video.
+            Lexuri is free to start. No credit card. No downloads. Just open the app and load your first video.
           </p>
           <Link href="/youtube" className="btn-mkt-ghost" style={{ borderColor: 'rgba(255,250,240,0.5)', color: '#fff', fontSize: '1rem', padding: '15px 36px' }}>
-            Open Verbly — it&apos;s free →
+            Open Lexuri — it&apos;s free →
           </Link>
         </div>
       </section>

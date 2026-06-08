@@ -1,4 +1,4 @@
-const SAVED_ITEMS_KEY = 'verbly:saved_feed_items'
+﻿const SAVED_ITEMS_KEY = 'lexuri:saved_feed_items'
 
 export function getSavedItemIds(): string[] {
   if (typeof window === 'undefined') return []
