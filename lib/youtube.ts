@@ -113,10 +113,6 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
       label: 'youtube-transcript:en-US',
       run: () => YoutubeTranscript.fetchTranscript(videoId, { lang: 'en-US' }),
     },
-    {
-      label: 'youtube-transcript:default',
-      run: () => YoutubeTranscript.fetchTranscript(videoId),
-    },
   ]
 
   const errors: string[] = []
