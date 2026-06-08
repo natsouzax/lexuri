@@ -181,15 +181,29 @@ async function transcribeAudioFallback(url: string, videoId: string): Promise<{
     const transcription = await getOpenAIClient().audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
       model: TRANSCRIPTION_MODEL,
+      response_format: 'verbose_json',
+      timestamp_granularities: ['segment'],
     })
 
     const transcript = transcription.text.trim()
     if (!transcript) throw new Error('OpenAI returned an empty transcription.')
 
-    return {
-      transcript,
-      segments: buildSyntheticSegments(transcript),
-    }
+    // Use real Whisper segment timestamps when available; fall back to
+    // synthetic estimates only if the model returns no segment data.
+    const whisperSegments = (transcription as unknown as {
+      segments?: Array<{ start: number; end: number; text: string }>
+    }).segments
+
+    const segments: TranscriptSegment[] =
+      whisperSegments && whisperSegments.length > 0
+        ? whisperSegments.map((s) => ({
+            text: s.text.trim(),
+            start: s.start,
+            duration: s.end - s.start,
+          }))
+        : buildSyntheticSegments(transcript)
+
+    return { transcript, segments }
   } finally {
     if (audioPath) {
       fs.promises.unlink(audioPath).catch(() => {})
