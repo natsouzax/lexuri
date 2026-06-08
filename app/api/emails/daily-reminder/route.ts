@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = getAdminClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://lexuri.app'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://Lexuri.app'
   const reviewUrl = `${appUrl}/review`
 
   // Fetch flashcards due for review

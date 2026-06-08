@@ -1,10 +1,10 @@
-/**
- * Verbly Service Worker — offline support
+﻿/**
+ * Lexuri Service Worker — offline support
  * Caches static assets; queues review mutations when offline.
  * Conflict policy: last-write-wins (server is authoritative).
  */
 
-const CACHE_NAME = 'verbly-v1'
+const CACHE_NAME = 'lexuri-v1'
 const STATIC_ASSETS = ['/', '/review', '/flashcards']
 
 // Install: cache static shell

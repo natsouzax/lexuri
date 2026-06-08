@@ -22,8 +22,19 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Why it exists */}
+      {/* The Name */}
       <section className="mkt-section mkt-section-cream">
+        <div className="mkt-container" style={{ maxWidth: 760, margin: '0 auto' }}>
+          <span className="mkt-eyebrow">The Name</span>
+          <h2 className="mkt-h2">Why Lexuri?</h2>
+          <p style={{ fontSize: '0.97rem', color: 'var(--muted)', lineHeight: 1.85 }}>
+            <strong style={{ color: 'var(--ink)' }}>Lexuri</strong> comes from the Portuguese roots <em>lecionar</em> (to teach) and <em>aprender</em> (to learn). The name captures both sides of the language journey — input and output, exposure and retention. It&apos;s a reminder that real fluency is not passive: you have to encounter language, process it, and eventually produce it yourself.
+          </p>
+        </div>
+      </section>
+
+      {/* Why it exists */}
+      <section className="mkt-section mkt-section-sage">
         <div className="mkt-container" style={{ maxWidth: 760, margin: '0 auto' }}>
           <span className="mkt-eyebrow">The Problem</span>
           <h2 className="mkt-h2">Why vocabulary apps fail</h2>
@@ -40,7 +51,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission */}
-      <section className="mkt-section mkt-section-sage">
+      <section className="mkt-section mkt-section-cream">
         <div className="mkt-container">
           <div className="mkt-feature-row">
             <div>

@@ -48,7 +48,7 @@ export default function FeedDetailPage() {
   useEffect(() => { setSaved(isItemSaved(id)) }, [id])
 
   useEffect(() => {
-    if (!localStorage.getItem('verbly_welcome_dismissed')) {
+    if (!localStorage.getItem('lexuri_welcome_dismissed')) {
       setShowWelcomeBanner(true)
     }
   }, [])
@@ -187,7 +187,7 @@ export default function FeedDetailPage() {
           </span>
           <button
             onClick={() => {
-              localStorage.setItem('verbly_welcome_dismissed', 'true')
+              localStorage.setItem('lexuri_welcome_dismissed', 'true')
               setShowWelcomeBanner(false)
             }}
             style={{
