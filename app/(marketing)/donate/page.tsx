@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from 'next'
 import Link from 'next/link'
-import SupportTierList from './SupportTierList'
+import DonationSection from './DonationSection'
 
 export const metadata: Metadata = {
   title: 'Support Lexuri',
@@ -30,11 +30,6 @@ const WHAT_IT_FUNDS = [
   },
 ]
 
-const SUPPORTERS = [
-  { amount: 5,  label: 'Buy me a coffee', desc: 'One-time. Covers a few AI API calls.' },
-  { amount: 15, label: 'Monthly supporter', desc: 'Keeps the lights on and helps plan ahead.' },
-  { amount: 50, label: 'Patron', desc: 'Serious backing. Your name in the credits + early access to everything.' },
-]
 
 export default function DonatePage() {
   return (
@@ -108,17 +103,17 @@ export default function DonatePage() {
         </div>
       </section>
 
-      {/* Tiers */}
+      {/* Donation options */}
       <section id="support" className="mkt-section mkt-section-cream">
-        <div className="mkt-container" style={{ maxWidth: 760, margin: '0 auto' }}>
+        <div className="mkt-container" style={{ maxWidth: 680, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span className="mkt-eyebrow">How to support</span>
             <h2 className="mkt-h2">Every bit helps.</h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: 8 }}>
-              Secure one-time payment via Stripe. No account required.
+              All amounts in USD. Processed securely via Stripe.
             </p>
           </div>
-          <SupportTierList supporters={SUPPORTERS} />
+          <DonationSection />
         </div>
       </section>
 

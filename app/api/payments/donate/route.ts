@@ -1,26 +1,45 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-
-const ALLOWED_AMOUNTS = [5, 15, 50] as const
-type DonationAmount = (typeof ALLOWED_AMOUNTS)[number]
-
-const TIER_LABELS: Record<DonationAmount, string> = {
-  5:  'Coffee supporter',
-  15: 'Monthly supporter',
-  50: 'Patron',
-}
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { amount: number }
-    const amount = body.amount as DonationAmount
-
-    if (!ALLOWED_AMOUNTS.includes(amount)) {
-      return NextResponse.json({ error: 'Invalid donation amount.' }, { status: 400 })
-    }
-
+    const body = (await request.json()) as { type: 'one-time' | 'monthly'; amount?: number }
     const stripe = getStripe()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+    if (body.type === 'monthly') {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'Lexuri Monthly Supporter',
+                description: 'Monthly support for Lexuri. Cancel anytime from your email receipt.',
+              },
+              unit_amount: 500,
+              recurring: { interval: 'month' },
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${appUrl}/donate?donated=true`,
+        cancel_url: `${appUrl}/donate`,
+      })
+      return NextResponse.json({ url: session.url })
+    }
+
+    // One-time donation — any positive integer dollar amount
+    const amount = body.amount
+    if (!amount || !Number.isFinite(amount) || amount < 1 || amount > 10000) {
+      return NextResponse.json(
+        { error: 'Please enter a valid amount between $1 and $10,000 USD.' },
+        { status: 400 },
+      )
+    }
+    const cents = Math.round(amount) * 100
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -30,10 +49,10 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Lexuri Donation — ${TIER_LABELS[amount]}`,
+              name: `Lexuri Donation — $${Math.round(amount)} USD`,
               description: 'Thank you for supporting Lexuri. Every dollar keeps the app free and improving.',
             },
-            unit_amount: amount * 100,
+            unit_amount: cents,
           },
           quantity: 1,
         },
