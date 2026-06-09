@@ -5,7 +5,11 @@ import { trackServer } from '@/lib/analytics'
 import DailyReviewEmail from '@/lib/emails/daily-review'
 import { createElement } from 'react'
 
-export async function POST(request: NextRequest) {
+// Vercel Cron sends GET; manual triggers can use POST
+export const GET = handler
+export const POST = handler
+
+async function handler(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {

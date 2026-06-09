@@ -19,7 +19,7 @@ export async function sendEmail(
 ): Promise<void> {
   try {
     await getResend().emails.send({
-      from: 'Lexuri <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM ?? 'Lexuri <onboarding@resend.dev>',
       to,
       subject,
       react,

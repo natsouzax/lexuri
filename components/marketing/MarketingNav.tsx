@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -19,7 +20,9 @@ export default function MarketingNav() {
   return (
     <nav className="mkt-nav">
       <div className="mkt-container mkt-nav-inner">
-        <Link href="/" className="mkt-nav-logo" onClick={() => setOpen(false)}>Lexuri</Link>
+        <Link href="/" className="mkt-nav-logo" onClick={() => setOpen(false)}>
+          <Image src="/logo-dark.svg" alt="Lexuri" width={124} height={32} priority />
+        </Link>
 
         {/* Desktop links */}
         <div className="mkt-nav-links">

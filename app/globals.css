@@ -646,11 +646,10 @@ h1, h2, h3 {
   height: 64px;
 }
 .mkt-nav-logo {
-  font-family: Fraunces, Georgia, serif;
-  font-weight: 900;
-  font-size: 1.3rem;
-  color: var(--paper);
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  line-height: 0;
 }
 .mkt-nav-links {
   display: flex;
@@ -684,12 +683,11 @@ h1, h2, h3 {
   margin-bottom: 48px;
 }
 .mkt-footer-logo {
-  font-family: Fraunces, Georgia, serif;
-  font-weight: 900;
-  font-size: 1.2rem;
-  color: var(--paper);
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
   margin-bottom: 8px;
+  text-decoration: none;
 }
 .mkt-footer-tagline { font-size: 0.85rem; line-height: 1.6; }
 .mkt-footer-heading { font-weight: 900; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper); margin-bottom: 14px; }

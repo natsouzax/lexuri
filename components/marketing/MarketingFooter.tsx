@@ -1,4 +1,5 @@
 ﻿import Link from 'next/link'
+import Image from 'next/image'
 
 const PRODUCT_LINKS = [
   { href: '/features', label: 'Features'  },
@@ -19,7 +20,9 @@ export default function MarketingFooter() {
         <div className="mkt-footer-grid">
           {/* Brand */}
           <div>
-            <Link href="/" className="mkt-footer-logo">Lexuri</Link>
+            <Link href="/" className="mkt-footer-logo">
+              <Image src="/logo-dark.svg" alt="Lexuri" width={110} height={28} />
+            </Link>
             <p className="mkt-footer-tagline">
               Learn English from the videos and music you already love.
               AI-powered chunk detection and spaced repetition.
