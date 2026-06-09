@@ -10,15 +10,6 @@ import { chunkToFlashcard, normalizeFlashcard } from '@/lib/types'
 import { parseLrc } from '@/lib/lyrics'
 import type { LrcLine } from '@/lib/lyrics'
 
-declare global {
-  interface Window {
-    YT: {
-      Player: new (id: string, opts: YTOpts) => YTPlayer
-      PlayerState: { PLAYING: number }
-    }
-    onYouTubeIframeAPIReady?: () => void
-  }
-}
 interface YTOpts {
   videoId?: string
   playerVars?: Record<string, unknown>

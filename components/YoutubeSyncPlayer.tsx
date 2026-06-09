@@ -9,14 +9,17 @@ declare global {
       Player: new (
         el: string | HTMLElement,
         options: {
-          videoId: string
+          videoId?: string
           playerVars?: Record<string, number>
-          events?: { onReady?: () => void }
+          events?: {
+            onReady?: () => void
+            onStateChange?: (e: { data: number }) => void
+          }
         },
       ) => YTPlayer
-      PlayerState?: Record<string, number>
+      PlayerState?: { PLAYING: number } & Record<string, number>
     }
-    onYouTubeIframeAPIReady: () => void
+    onYouTubeIframeAPIReady?: () => void
   }
 }
 
