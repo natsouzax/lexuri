@@ -151,7 +151,7 @@ export default function SongPage() {
     function createPlayer() {
       if (playerRef.current) return
       playerRef.current = new window.YT.Player(playerId, {
-        videoId,
+        videoId: videoId ?? undefined,
         playerVars: { rel: 0, modestbranding: 1 },
         events: {
           onStateChange: (e) => {
