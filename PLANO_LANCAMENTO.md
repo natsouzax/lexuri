@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O objetivo é lançar o Lexuri para um grupo pequeno de validação — uma professora e seus alunos — usando a URL do serviço de hospedagem diretamente (ex: `lexuri-eta.vercel.app`), sem comprar domínio. Nenhuma funcionalidade comercial precisa funcionar para essa validação.
+O objetivo é lançar o Lexuri para um grupo pequeno de validação — uma professora e seus alunos. Domínio próprio `lexuri.app` configurado. Nenhuma funcionalidade comercial precisa funcionar para essa validação.
 
 ---
 
@@ -22,7 +22,7 @@ O `.env.local` já contém todas as variáveis necessárias para funcionar:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Presente | Chave anon válida |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Presente | Chave de serviço para operações admin |
 | `OPENAI_API_KEY` | ✅ Presente | Necessária para geração de flashcards e análise de chunks |
-| `NEXT_PUBLIC_APP_URL` | ✅ Presente | Aponta para `lexuri-eta.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | ✅ Presente | `https://lexuri.app` |
 | `RESEND_API_KEY` | ✅ Presente | E-mails transacionais |
 | `GENIUS_API_KEY` | ✅ Presente | Busca de letras musicais |
 | `STRIPE_SECRET_KEY` | ⚠️ Chave de teste | Stripe em modo test — adequado para validação |
@@ -236,7 +236,7 @@ A cobertura é baixa — cobre gamificação (a mais crítica), mas não cobre: 
 **Por quê:**
 - Suporte nativo ao Next.js (mesma empresa). App Router, Server Components, API Routes — tudo funciona sem configuração extra.
 - Deploy automático via `git push`.
-- URL pública automática: `lexuri-eta.vercel.app` (já configurada no `.env.local`).
+- Domínio próprio: `lexuri.app` ✅
 - SSL automático, CDN global, sem custo.
 - Limites do plano Hobby são mais que suficientes para um grupo de teste pequeno: 100GB bandwidth/mês, funções serverless incluídas.
 

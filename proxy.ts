@@ -15,7 +15,6 @@ const PROTECTED_PREFIXES = [
   '/settings',
   '/onboarding',
   '/feed',
-  '/donate',
 ]
 
 // Protected routes that also require completed onboarding
