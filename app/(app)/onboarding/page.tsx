@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 
 const NATIVE_LANGUAGES = [
@@ -125,6 +126,12 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+            <p style={{ marginTop: 16, fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'center' }}>
+              Not sure?{' '}
+              <Link href="/placement-test" style={{ color: 'var(--clay)', fontWeight: 700 }}>
+                Take our placement test →
+              </Link>
+            </p>
           </div>
         )}
 

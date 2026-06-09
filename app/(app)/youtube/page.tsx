@@ -22,6 +22,14 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T
 }
 
+function awardXP(event: string) {
+  fetch('/api/gamification/award-action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event }),
+  }).catch(() => {})
+}
+
 export default function YouTubePage() {
   const [url, setUrl] = useState('')
   const [videoData, setVideoData] = useState<VideoData | null>(null)
@@ -73,6 +81,7 @@ export default function YouTubePage() {
         body: JSON.stringify({ url }),
       })
       setVideoData(data)
+      awardXP('video_studied')
     } catch (e) {
       setError(String(e))
     } finally {
@@ -148,6 +157,7 @@ export default function YouTubePage() {
         body: JSON.stringify({ cards: [card] }),
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
+      awardXP('chunk_saved')
       await loadCards()
     } catch (e) {
       setError(String(e))

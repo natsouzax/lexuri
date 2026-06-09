@@ -46,6 +46,14 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T
 }
 
+function awardXP(event: string) {
+  fetch('/api/gamification/award-action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event }),
+  }).catch(() => {})
+}
+
 function extractYouTubeId(url: string): string | null {
   const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
   return m?.[1] ?? null
@@ -207,6 +215,7 @@ export default function SongPage() {
         body: JSON.stringify({ word, context }),
       })
       setWordDef(def)
+      awardXP('word_looked_up')
     } catch (e) {
       setDefError(String(e))
     } finally {
@@ -253,6 +262,7 @@ export default function SongPage() {
         body: JSON.stringify({ text: song.plain_lyrics, level }),
       })
       setChunkAnalysis(result)
+      awardXP('chunk_analyzed')
       await apiFetch(`/api/music/songs/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -276,6 +286,7 @@ export default function SongPage() {
         body: JSON.stringify({ cards: [card] }),
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
+      awardXP('chunk_saved')
     } catch (e) {
       setAnalysisError(String(e))
     } finally {

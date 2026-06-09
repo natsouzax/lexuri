@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 
 export default function ProfileSettingsPage() {
@@ -130,6 +131,16 @@ export default function ProfileSettingsPage() {
             {saving ? <><span className="spinner" />Saving…</> : 'Save changes'}
           </button>
         </form>
+      </div>
+
+      <div className="section-title" style={{ marginTop: 32 }}>English Level</div>
+      <div className="card" style={{ maxWidth: 480 }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: 16, lineHeight: 1.6 }}>
+          Not sure of your level? Take a quick 10-question test to calibrate your CEFR level.
+        </p>
+        <Link href="/placement-test" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', fontSize: '0.88rem' }}>
+          Take placement test →
+        </Link>
       </div>
     </>
   )

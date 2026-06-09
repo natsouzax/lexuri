@@ -492,6 +492,91 @@ h1, h2, h3 {
   .mobile-nav-label { font-size: 0.58rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }
 }
 
+/* ── Rank badge ─────────────────────────────────────── */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+/* ── XP progress bar ─────────────────────────────────── */
+.xp-bar-track {
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255,250,240,0.15);
+  overflow: hidden;
+}
+.xp-bar-track-light {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--line);
+  overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--clay);
+  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Quick action card ──────────────────────────────── */
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 22px;
+  border-radius: 20px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  cursor: pointer;
+  border: none;
+}
+.quick-action-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+/* ── Mission card ───────────────────────────────────── */
+.mission-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 120ms ease;
+}
+.mission-card.completed {
+  background: rgba(70,98,74,0.05);
+  border-color: rgba(70,98,74,0.25);
+}
+
+/* ── Skeleton pulse ─────────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+.skeleton {
+  background: var(--line);
+  border-radius: 6px;
+  animation: skeleton-pulse 1.4s ease infinite;
+}
+
+/* ── XP history row ─────────────────────────────────── */
+.xp-history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.xp-history-row:last-child { border-bottom: none; }
+
 /* =====================================================
    MARKETING — landing pages
    ===================================================== */

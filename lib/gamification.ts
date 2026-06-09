@@ -154,7 +154,7 @@ interface StatSnapshot {
   points: number
 }
 
-async function checkAndAwardBadges(
+export async function checkAndAwardBadges(
   admin: SupabaseClient,
   userId: string,
   stats: StatSnapshot,
@@ -181,3 +181,88 @@ async function checkAndAwardBadges(
 
   return awarded
 }
+
+// ── Rank system ──────────────────────────────────────────────────────────────
+
+export interface Rank {
+  slug: string
+  label: string
+  icon: string
+  color: string
+  minXP: number
+  maxXP: number | null
+}
+
+export const RANKS: Rank[] = [
+  { slug: 'seed',     label: 'Seed',     icon: '◎', color: '#9E9E9E', minXP: 0,     maxXP: 199   },
+  { slug: 'sprout',   label: 'Sprout',   icon: '◈', color: '#66BB6A', minXP: 200,   maxXP: 699   },
+  { slug: 'learner',  label: 'Learner',  icon: '◉', color: '#29B6F6', minXP: 700,   maxXP: 1999  },
+  { slug: 'explorer', label: 'Explorer', icon: '◆', color: '#7E57C2', minXP: 2000,  maxXP: 4999  },
+  { slug: 'scholar',  label: 'Scholar',  icon: '★', color: '#FF9800', minXP: 5000,  maxXP: 12499 },
+  { slug: 'fluent',   label: 'Fluent',   icon: '✦', color: '#c86f4a', minXP: 12500, maxXP: 29999 },
+  { slug: 'master',   label: 'Master',   icon: '◈', color: '#E91E63', minXP: 30000, maxXP: null  },
+]
+
+export function getRankForXP(xp: number): Rank {
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (xp >= RANKS[i].minXP) return RANKS[i]
+  }
+  return RANKS[0]
+}
+
+export interface XPProgressInfo {
+  rank: Rank
+  nextRank: Rank | null
+  progressPct: number
+  xpIntoRank: number
+  xpToNext: number | null
+}
+
+export function getXPProgress(xp: number): XPProgressInfo {
+  const rank = getRankForXP(xp)
+  const idx = RANKS.findIndex((r) => r.slug === rank.slug)
+  const nextRank = idx < RANKS.length - 1 ? RANKS[idx + 1] : null
+
+  if (!nextRank) {
+    return { rank, nextRank: null, progressPct: 100, xpIntoRank: xp - rank.minXP, xpToNext: null }
+  }
+
+  const rangeSize = nextRank.minXP - rank.minXP
+  const xpIntoRank = xp - rank.minXP
+  const progressPct = Math.min(100, Math.round((xpIntoRank / rangeSize) * 100))
+
+  return { rank, nextRank, progressPct, xpIntoRank, xpToNext: nextRank.minXP - xp }
+}
+
+// ── XP rewards & action types ────────────────────────────────────────────────
+
+export const XP_REWARDS = {
+  chunk_analyzed:   20,
+  chunk_saved:       8,
+  video_studied:    30,
+  music_studied:    20,
+  word_looked_up:    5,
+  mission_complete: 25,
+} as const
+
+export type ActionEvent = keyof typeof XP_REWARDS
+
+// ── Daily missions ───────────────────────────────────────────────────────────
+
+export interface Mission {
+  id: string
+  label: string
+  description: string
+  icon: string
+  xpReward: number
+  targetCount: number
+  eventType: ActionEvent | 'flashcard_review'
+}
+
+export const DAILY_MISSIONS: Mission[] = [
+  { id: 'review_cards',   label: 'Review flashcards',  description: 'Complete 5 flashcard reviews',    icon: '↺', xpReward: 25, targetCount: 5, eventType: 'flashcard_review' },
+  { id: 'save_chunks',    label: 'Collect chunks',      description: 'Save 3 chunks from any content', icon: '◈', xpReward: 25, targetCount: 3, eventType: 'chunk_saved'      },
+  { id: 'study_video',    label: 'Watch & study',       description: 'Load a YouTube video for study', icon: '▶', xpReward: 30, targetCount: 1, eventType: 'video_studied'    },
+  { id: 'study_music',    label: 'Music Lab session',   description: 'Open a song in Music Lab',       icon: '♪', xpReward: 20, targetCount: 1, eventType: 'music_studied'    },
+  { id: 'analyze_chunks', label: 'Analyze language',    description: 'Run a language chunk analysis',  icon: '⚡', xpReward: 25, targetCount: 1, eventType: 'chunk_analyzed'   },
+]
