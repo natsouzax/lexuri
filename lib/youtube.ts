@@ -1,8 +1,7 @@
-﻿import fs from 'fs'
+import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { pipeline } from 'stream/promises'
-import ytdl from '@distube/ytdl-core'
+import { Innertube } from 'youtubei.js'
 import { YoutubeTranscript } from 'youtube-transcript'
 import { getOpenAIClient } from './openai'
 import type { TranscriptSegment, VideoData } from './types'
@@ -129,55 +128,58 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
   throw new Error(`YouTube captions failed. ${summarizeErrors(errors)}`)
 }
 
-function buildYtdlAgent() {
-  const raw = process.env.YOUTUBE_COOKIES
-  if (!raw) return undefined
-  try {
-    const cookies = JSON.parse(raw)
-    if (!Array.isArray(cookies)) return undefined
-    return ytdl.createAgent(cookies)
-  } catch {
-    return undefined
-  }
-}
+async function downloadAudioForTranscription(videoId: string): Promise<string> {
+  const yt = await Innertube.create({ retrieve_player: false })
+  const info = await yt.getInfo(videoId)
 
-async function downloadAudioForTranscription(videoUrl: string, videoId: string): Promise<string> {
-  const agent = buildYtdlAgent()
-  const info = await ytdl.getInfo(videoUrl, agent ? { agent } : undefined)
-  const format = ytdl.chooseFormat(info.formats, {
-    quality: 'lowestaudio',
-    filter: 'audioonly',
-  })
-
-  const contentLength = toFiniteNumber(format.contentLength)
-  if (contentLength && contentLength > MAX_AUDIO_BYTES) {
-    throw new Error('Audio is too large to transcribe within the serverless limit.')
-  }
-
-  const ext = format.container || 'webm'
+  const ext = 'webm'
   const filePath = path.join(os.tmpdir(), `lexuri-${videoId}-${Date.now()}.${ext}`)
-  const stream = ytdl.downloadFromInfo(info, { format, highWaterMark: 1 << 25, ...(agent && { agent }) })
+  const writeStream = fs.createWriteStream(filePath)
+
+  const stream = await info.download({
+    type: 'audio',
+    quality: 'best',
+    format: 'webm',
+  })
 
   let downloadedBytes = 0
-  stream.on('data', (chunk: Buffer) => {
-    downloadedBytes += chunk.length
-    if (downloadedBytes > MAX_AUDIO_BYTES) {
-      stream.destroy(new Error('Audio is too large to transcribe within the serverless limit.'))
+  await new Promise<void>((resolve, reject) => {
+    const reader = stream.getReader()
+
+    function pump(): void {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          writeStream.end()
+          resolve()
+          return
+        }
+        downloadedBytes += value.byteLength
+        if (downloadedBytes > MAX_AUDIO_BYTES) {
+          writeStream.destroy()
+          reject(new Error('Audio is too large to transcribe within the serverless limit.'))
+          return
+        }
+        writeStream.write(Buffer.from(value), (err) => {
+          if (err) { reject(err); return }
+          pump()
+        })
+      }).catch(reject)
     }
+
+    pump()
   })
 
-  await pipeline(stream, fs.createWriteStream(filePath))
   return filePath
 }
 
-async function transcribeAudioFallback(url: string, videoId: string): Promise<{
+async function transcribeAudioFallback(videoId: string): Promise<{
   transcript: string
   segments: TranscriptSegment[]
 }> {
   let audioPath: string | null = null
 
   try {
-    audioPath = await downloadAudioForTranscription(url, videoId)
+    audioPath = await downloadAudioForTranscription(videoId)
     const transcription = await getOpenAIClient().audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
       model: TRANSCRIPTION_MODEL,
@@ -188,8 +190,6 @@ async function transcribeAudioFallback(url: string, videoId: string): Promise<{
     const transcript = transcription.text.trim()
     if (!transcript) throw new Error('OpenAI returned an empty transcription.')
 
-    // Use real Whisper segment timestamps when available; fall back to
-    // synthetic estimates only if the model returns no segment data.
     const whisperSegments = (transcription as unknown as {
       segments?: Array<{ start: number; end: number; text: string }>
     }).segments
@@ -215,7 +215,6 @@ export async function getTranscript(url: string): Promise<VideoData> {
   const videoId = extractVideoId(url)
   if (!videoId) throw new Error('Invalid YouTube URL. Could not extract video ID.')
 
-  const normalizedUrl = `https://www.youtube.com/watch?v=${videoId}`
   const title = await getVideoTitle(videoId)
 
   try {
@@ -229,7 +228,7 @@ export async function getTranscript(url: string): Promise<VideoData> {
     }
   } catch (captionError) {
     try {
-      const fallback = await transcribeAudioFallback(normalizedUrl, videoId)
+      const fallback = await transcribeAudioFallback(videoId)
       return {
         video_id: videoId,
         title,
