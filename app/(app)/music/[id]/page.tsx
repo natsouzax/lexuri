@@ -155,7 +155,7 @@ export default function SongPage() {
         playerVars: { rel: 0, modestbranding: 1 },
         events: {
           onStateChange: (e) => {
-            if (e.data === window.YT.PlayerState.PLAYING) {
+            if (window.YT?.PlayerState && e.data === window.YT.PlayerState.PLAYING) {
               if (!pollingRef.current) pollingRef.current = setInterval(syncLine, 500)
             } else {
               if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
