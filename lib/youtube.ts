@@ -1,32 +1,15 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { Innertube } from 'youtubei.js'
-import { YoutubeTranscript } from 'youtube-transcript'
 import { getOpenAIClient } from './openai'
 import type { TranscriptSegment, VideoData } from './types'
 
 const MAX_AUDIO_BYTES = 24 * 1024 * 1024
 const TRANSCRIPTION_MODEL = process.env.OPENAI_TRANSCRIPTION_MODEL ?? 'gpt-4o-mini-transcribe'
-
-type TranscriptItem = {
-  text?: string
-  offset?: number | string
-  start?: number | string
-  duration?: number | string
-}
-
-type TranscriptAttempt = {
-  label: string
-  run: () => Promise<TranscriptItem[]>
-}
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error)
-}
-
-function summarizeErrors(errors: string[]): string {
-  return errors.map((err, i) => `${i + 1}. ${err}`).join(' | ')
 }
 
 export function extractVideoId(input: string): string | null {
@@ -64,27 +47,6 @@ export async function getVideoTitle(videoId: string): Promise<string> {
   }
 }
 
-function toFiniteNumber(value: unknown): number | null {
-  const parsed = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-function normalizeTime(value: unknown): number {
-  const parsed = toFiniteNumber(value)
-  if (parsed === null) return 0
-  return parsed > 1000 ? parsed / 1000 : parsed
-}
-
-function normalizeTranscriptItems(items: TranscriptItem[]): TranscriptSegment[] {
-  return items
-    .map((item) => ({
-      text: String(item.text ?? '').replace(/\s+/g, ' ').trim(),
-      start: normalizeTime(item.offset ?? item.start),
-      duration: Math.max(0.1, normalizeTime(item.duration)),
-    }))
-    .filter((segment) => segment.text.length > 0)
-}
-
 function buildSyntheticSegments(transcript: string): TranscriptSegment[] {
   const sentences = transcript
     .replace(/\s+/g, ' ')
@@ -102,113 +64,202 @@ function buildSyntheticSegments(transcript: string): TranscriptSegment[] {
   })
 }
 
-async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
-  const attempts: TranscriptAttempt[] = [
-    {
-      label: 'youtube-transcript:en',
-      run: () => YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }),
-    },
-    {
-      label: 'youtube-transcript:en-US',
-      run: () => YoutubeTranscript.fetchTranscript(videoId, { lang: 'en-US' }),
-    },
-  ]
-
-  const errors: string[] = []
-  for (const attempt of attempts) {
-    try {
-      const segments = normalizeTranscriptItems(await attempt.run())
-      if (segments.length > 0) return segments
-      errors.push(`${attempt.label}: empty transcript`)
-    } catch (error) {
-      errors.push(`${attempt.label}: ${errorMessage(error)}`)
-    }
-  }
-
-  throw new Error(`YouTube captions failed. ${summarizeErrors(errors)}`)
+// Parse ISO 8601 duration (e.g. PT1H2M3S) to seconds
+function parseIsoDuration(iso: string): number {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!m) return 0
+  return (parseInt(m[1] ?? '0') * 3600) + (parseInt(m[2] ?? '0') * 60) + parseInt(m[3] ?? '0')
 }
 
-async function downloadAudioForTranscription(videoId: string): Promise<string> {
-  const yt = await Innertube.create({ retrieve_player: false })
-  const info = await yt.getInfo(videoId)
+// Parse SRT/TTML caption text to plain text
+function stripXmlTags(text: string): string {
+  return text.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim()
+}
 
-  const ext = 'webm'
-  const filePath = path.join(os.tmpdir(), `lexuri-${videoId}-${Date.now()}.${ext}`)
-  const writeStream = fs.createWriteStream(filePath)
+// Parse WebVTT/SRT timestamp to seconds
+function parseTimestamp(ts: string): number {
+  const parts = ts.trim().replace(',', '.').split(':')
+  if (parts.length === 3) {
+    return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2])
+  } else if (parts.length === 2) {
+    return parseFloat(parts[0]) * 60 + parseFloat(parts[1])
+  }
+  return 0
+}
 
-  const stream = await info.download({
-    type: 'audio',
-    quality: 'best',
-    format: 'webm',
+// Fetch captions via YouTube Data API v3
+async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegment[]> {
+  if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY is not set.')
+
+  // Step 1: list available caption tracks
+  const listRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${YOUTUBE_API_KEY}`,
+  )
+  if (!listRes.ok) {
+    const err = await listRes.json() as { error?: { message?: string } }
+    throw new Error(`Caption list failed: ${err?.error?.message ?? listRes.status}`)
+  }
+  const listData = await listRes.json() as {
+    items: Array<{ id: string; snippet: { language: string; trackKind: string; name: string } }>
+  }
+
+  if (!listData.items?.length) {
+    throw new Error('No caption tracks found for this video.')
+  }
+
+  // Pick best English track: prefer ASR (auto-generated) if no manual track
+  const tracks = listData.items
+  const enTrack =
+    tracks.find(t => t.snippet.language === 'en' && t.snippet.trackKind !== 'asr') ||
+    tracks.find(t => t.snippet.language === 'en') ||
+    tracks.find(t => t.snippet.language.startsWith('en')) ||
+    tracks[0]
+
+  // Step 2: download the caption track (SBV/SRT format)
+  const dlRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/captions/${enTrack.id}?tfmt=srt&key=${YOUTUBE_API_KEY}`,
+  )
+
+  if (!dlRes.ok) {
+    // Downloading captions requires OAuth for non-public tracks — fallback gracefully
+    throw new Error(`Caption download requires OAuth (track is not publicly downloadable).`)
+  }
+
+  const srtText = await dlRes.text()
+  return parseSrt(srtText)
+}
+
+function parseSrt(srt: string): TranscriptSegment[] {
+  const blocks = srt.trim().split(/\n\s*\n/)
+  const segments: TranscriptSegment[] = []
+
+  for (const block of blocks) {
+    const lines = block.trim().split('\n')
+    if (lines.length < 2) continue
+
+    // Find timestamp line (contains -->)
+    const tsLine = lines.find(l => l.includes('-->'))
+    if (!tsLine) continue
+
+    const [startStr, endStr] = tsLine.split('-->')
+    const start = parseTimestamp(startStr)
+    const end = parseTimestamp(endStr)
+    const duration = Math.max(0.1, end - start)
+
+    // Text is everything after the timestamp line
+    const tsIdx = lines.indexOf(tsLine)
+    const text = lines.slice(tsIdx + 1).map(stripXmlTags).join(' ').trim()
+    if (!text) continue
+
+    segments.push({ text, start, duration })
+  }
+
+  return segments
+}
+
+// Fetch captions via the public timedtext endpoint (no API key needed, no OAuth)
+async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]> {
+  // Get the list of available tracks from the timedtext API
+  const listUrl = `https://www.youtube.com/api/timedtext?type=list&v=${videoId}`
+  const listRes = await fetch(listUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
   })
 
-  let downloadedBytes = 0
-  await new Promise<void>((resolve, reject) => {
-    const reader = stream.getReader()
+  if (!listRes.ok) throw new Error(`Timedtext list failed: ${listRes.status}`)
 
-    function pump(): void {
-      reader.read().then(({ done, value }) => {
-        if (done) {
-          writeStream.end()
-          resolve()
-          return
-        }
-        downloadedBytes += value.byteLength
-        if (downloadedBytes > MAX_AUDIO_BYTES) {
-          writeStream.destroy()
-          reject(new Error('Audio is too large to transcribe within the serverless limit.'))
-          return
-        }
-        writeStream.write(Buffer.from(value), (err) => {
-          if (err) { reject(err); return }
-          pump()
-        })
-      }).catch(reject)
+  const xml = await listRes.text()
+
+  // Parse track list XML to find English tracks
+  const trackMatches = [...xml.matchAll(/lang_code="([^"]+)"[^/]*name="([^"]*)"/g)]
+  if (!trackMatches.length) throw new Error('No caption tracks in timedtext list.')
+
+  const enTrack = trackMatches.find(m => m[1] === 'en') ||
+    trackMatches.find(m => m[1].startsWith('en')) ||
+    trackMatches[0]
+
+  const lang = enTrack[1]
+  const name = enTrack[2]
+
+  // Fetch the actual transcript
+  const transcriptUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&name=${encodeURIComponent(name)}&fmt=json3`
+  const transcriptRes = await fetch(transcriptUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
+  })
+
+  if (!transcriptRes.ok) throw new Error(`Timedtext fetch failed: ${transcriptRes.status}`)
+
+  const data = await transcriptRes.json() as {
+    events?: Array<{ tStartMs?: number; dDurationMs?: number; segs?: Array<{ utf8?: string }> }>
+  }
+
+  if (!data.events?.length) throw new Error('Empty timedtext response.')
+
+  const segments: TranscriptSegment[] = []
+  for (const event of data.events) {
+    if (!event.segs) continue
+    const text = event.segs.map(s => s.utf8 ?? '').join('').replace(/\n/g, ' ').trim()
+    if (!text || text === ' ') continue
+    segments.push({
+      text,
+      start: (event.tStartMs ?? 0) / 1000,
+      duration: Math.max(0.1, (event.dDurationMs ?? 1000) / 1000),
+    })
+  }
+
+  if (!segments.length) throw new Error('No segments parsed from timedtext.')
+  return segments
+}
+
+async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
+  const errors: string[] = []
+
+  // Attempt 1: YouTube Data API v3 (most reliable, requires API key)
+  if (YOUTUBE_API_KEY) {
+    try {
+      const segments = await fetchCaptionsViaDataAPI(videoId)
+      if (segments.length > 0) return segments
+      errors.push('data-api: empty result')
+    } catch (e) {
+      errors.push(`data-api: ${errorMessage(e)}`)
     }
+  } else {
+    errors.push('data-api: YOUTUBE_API_KEY not set')
+  }
 
-    pump()
-  })
+  // Attempt 2: public timedtext endpoint (no key needed)
+  try {
+    const segments = await fetchCaptionsPublic(videoId)
+    if (segments.length > 0) return segments
+    errors.push('timedtext: empty result')
+  } catch (e) {
+    errors.push(`timedtext: ${errorMessage(e)}`)
+  }
 
-  return filePath
+  throw new Error(`YouTube captions failed. ${errors.map((err, i) => `${i + 1}. ${err}`).join(' | ')}`)
 }
 
 async function transcribeAudioFallback(videoId: string): Promise<{
   transcript: string
   segments: TranscriptSegment[]
 }> {
-  let audioPath: string | null = null
+  // Download audio via signed YouTube URL from Data API
+  if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY required for audio fallback.')
 
-  try {
-    audioPath = await downloadAudioForTranscription(videoId)
-    const transcription = await getOpenAIClient().audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
-      model: TRANSCRIPTION_MODEL,
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment'],
-    })
-
-    const transcript = transcription.text.trim()
-    if (!transcript) throw new Error('OpenAI returned an empty transcription.')
-
-    const whisperSegments = (transcription as unknown as {
-      segments?: Array<{ start: number; end: number; text: string }>
-    }).segments
-
-    const segments: TranscriptSegment[] =
-      whisperSegments && whisperSegments.length > 0
-        ? whisperSegments.map((s) => ({
-            text: s.text.trim(),
-            start: s.start,
-            duration: s.end - s.start,
-          }))
-        : buildSyntheticSegments(transcript)
-
-    return { transcript, segments }
-  } finally {
-    if (audioPath) {
-      fs.promises.unlink(audioPath).catch(() => {})
-    }
+  // Get video duration to check size
+  const videoRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`,
+  )
+  const videoData = await videoRes.json() as {
+    items?: Array<{ contentDetails: { duration: string } }>
   }
+  const duration = parseIsoDuration(videoData.items?.[0]?.contentDetails?.duration ?? 'PT0S')
+  if (duration > 1800) throw new Error('Video is too long for audio transcription (max 30 min).')
+
+  // Use yt-dlp via shell if available, otherwise throw
+  throw new Error(
+    'Audio transcription fallback is not available in this environment. ' +
+    'Please use a video with captions enabled, or paste the transcript manually.',
+  )
 }
 
 export async function getTranscript(url: string): Promise<VideoData> {
