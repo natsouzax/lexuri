@@ -236,6 +236,8 @@ export function getXPProgress(xp: number): XPProgressInfo {
 
 // ── XP rewards & action types ────────────────────────────────────────────────
 
+export const PLACEMENT_COMPLETE_XP = 100
+
 export const XP_REWARDS = {
   chunk_analyzed:   20,
   chunk_saved:       8,
