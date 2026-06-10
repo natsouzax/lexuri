@@ -1,6 +1,7 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import { YoutubeTranscript } from 'youtube-transcript'
 import { getOpenAIClient } from './openai'
 import type { TranscriptSegment, VideoData } from './types'
 
@@ -157,57 +158,24 @@ function parseSrt(srt: string): TranscriptSegment[] {
   return segments
 }
 
-// Fetch captions via the public timedtext endpoint (no API key needed, no OAuth)
+// Fetch captions via the youtube-transcript package (InnerTube API + HTML scraping fallback)
 async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]> {
-  // Get the list of available tracks from the timedtext API
-  const listUrl = `https://www.youtube.com/api/timedtext?type=list&v=${videoId}`
-  const listRes = await fetch(listUrl, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
+  const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }).catch(async () => {
+    // If English specifically not available, try without language constraint
+    return YoutubeTranscript.fetchTranscript(videoId)
   })
 
-  if (!listRes.ok) throw new Error(`Timedtext list failed: ${listRes.status}`)
+  if (!items?.length) throw new Error('No transcript items returned.')
 
-  const xml = await listRes.text()
+  // The package returns durations/offsets in ms for srv3 format and seconds for classic format.
+  // Heuristic: if any duration exceeds 100 it must be in milliseconds (no caption line is 100+ seconds).
+  const inMs = items.some(item => item.duration > 100)
 
-  // Parse track list XML to find English tracks
-  const trackMatches = [...xml.matchAll(/lang_code="([^"]+)"[^/]*name="([^"]*)"/g)]
-  if (!trackMatches.length) throw new Error('No caption tracks in timedtext list.')
-
-  const enTrack = trackMatches.find(m => m[1] === 'en') ||
-    trackMatches.find(m => m[1].startsWith('en')) ||
-    trackMatches[0]
-
-  const lang = enTrack[1]
-  const name = enTrack[2]
-
-  // Fetch the actual transcript
-  const transcriptUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&name=${encodeURIComponent(name)}&fmt=json3`
-  const transcriptRes = await fetch(transcriptUrl, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' },
-  })
-
-  if (!transcriptRes.ok) throw new Error(`Timedtext fetch failed: ${transcriptRes.status}`)
-
-  const data = await transcriptRes.json() as {
-    events?: Array<{ tStartMs?: number; dDurationMs?: number; segs?: Array<{ utf8?: string }> }>
-  }
-
-  if (!data.events?.length) throw new Error('Empty timedtext response.')
-
-  const segments: TranscriptSegment[] = []
-  for (const event of data.events) {
-    if (!event.segs) continue
-    const text = event.segs.map(s => s.utf8 ?? '').join('').replace(/\n/g, ' ').trim()
-    if (!text || text === ' ') continue
-    segments.push({
-      text,
-      start: (event.tStartMs ?? 0) / 1000,
-      duration: Math.max(0.1, (event.dDurationMs ?? 1000) / 1000),
-    })
-  }
-
-  if (!segments.length) throw new Error('No segments parsed from timedtext.')
-  return segments
+  return items.map(item => ({
+    text: item.text,
+    start: inMs ? item.offset / 1000 : item.offset,
+    duration: Math.max(0.1, inMs ? item.duration / 1000 : item.duration),
+  }))
 }
 
 async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
@@ -226,13 +194,13 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push('data-api: YOUTUBE_API_KEY not set')
   }
 
-  // Attempt 2: public timedtext endpoint (no key needed)
+  // Attempt 2: youtube-transcript package (InnerTube API + HTML scraping, no key needed)
   try {
     const segments = await fetchCaptionsPublic(videoId)
     if (segments.length > 0) return segments
-    errors.push('timedtext: empty result')
+    errors.push('transcript-lib: empty result')
   } catch (e) {
-    errors.push(`timedtext: ${errorMessage(e)}`)
+    errors.push(`transcript-lib: ${errorMessage(e)}`)
   }
 
   throw new Error(`YouTube captions failed. ${errors.map((err, i) => `${i + 1}. ${err}`).join(' | ')}`)
