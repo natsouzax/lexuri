@@ -8,6 +8,7 @@ import type { TranscriptSegment, VideoData } from './types'
 const MAX_AUDIO_BYTES = 24 * 1024 * 1024
 const TRANSCRIPTION_MODEL = process.env.OPENAI_TRANSCRIPTION_MODEL ?? 'gpt-4o-mini-transcribe'
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
+const SUPADATA_API_KEY = process.env.SUPADATA_API_KEY
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error)
@@ -88,11 +89,72 @@ function parseTimestamp(ts: string): number {
   return 0
 }
 
+function parseSrt(srt: string): TranscriptSegment[] {
+  const blocks = srt.trim().split(/\n\s*\n/)
+  const segments: TranscriptSegment[] = []
+
+  for (const block of blocks) {
+    const lines = block.trim().split('\n')
+    if (lines.length < 2) continue
+
+    const tsLine = lines.find(l => l.includes('-->'))
+    if (!tsLine) continue
+
+    const [startStr, endStr] = tsLine.split('-->')
+    const start = parseTimestamp(startStr)
+    const end = parseTimestamp(endStr)
+    const duration = Math.max(0.1, end - start)
+
+    const tsIdx = lines.indexOf(tsLine)
+    const text = lines.slice(tsIdx + 1).map(stripXmlTags).join(' ').trim()
+    if (!text) continue
+
+    segments.push({ text, start, duration })
+  }
+
+  return segments
+}
+
+// NEW: Fetch transcript via Supadata.ai — bypasses YouTube IP blocks on Vercel/datacenter IPs
+// Sign up free at https://supadata.ai (100 requests/day on free tier)
+// Set SUPADATA_API_KEY in Vercel environment variables
+async function fetchCaptionsViaSupadata(videoId: string): Promise<TranscriptSegment[]> {
+  if (!SUPADATA_API_KEY) throw new Error('SUPADATA_API_KEY is not set.')
+
+  const res = await fetch(
+    `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=false`,
+    {
+      headers: {
+        'x-api-key': SUPADATA_API_KEY,
+      },
+      signal: AbortSignal.timeout(15000),
+    },
+  )
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`Supadata error ${res.status}: ${body.slice(0, 120)}`)
+  }
+
+  const data = await res.json() as {
+    content?: Array<{ text: string; offset: number; duration: number }>
+    lang?: string
+  }
+
+  if (!data.content?.length) throw new Error('Supadata returned empty transcript.')
+
+  // Supadata returns offset in milliseconds
+  return data.content.map(item => ({
+    text: item.text,
+    start: item.offset / 1000,
+    duration: Math.max(0.1, item.duration / 1000),
+  }))
+}
+
 // Fetch captions via YouTube Data API v3
 async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegment[]> {
   if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY is not set.')
 
-  // Step 1: list available caption tracks
   const listRes = await fetch(
     `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${YOUTUBE_API_KEY}`,
   )
@@ -108,7 +170,6 @@ async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegme
     throw new Error('No caption tracks found for this video.')
   }
 
-  // Pick best English track: prefer ASR (auto-generated) if no manual track
   const tracks = listData.items
   const enTrack =
     tracks.find(t => t.snippet.language === 'en' && t.snippet.trackKind !== 'asr') ||
@@ -116,13 +177,11 @@ async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegme
     tracks.find(t => t.snippet.language.startsWith('en')) ||
     tracks[0]
 
-  // Step 2: download the caption track (SBV/SRT format)
   const dlRes = await fetch(
     `https://www.googleapis.com/youtube/v3/captions/${enTrack.id}?tfmt=srt&key=${YOUTUBE_API_KEY}`,
   )
 
   if (!dlRes.ok) {
-    // Downloading captions requires OAuth for non-public tracks — fallback gracefully
     throw new Error(`Caption download requires OAuth (track is not publicly downloadable).`)
   }
 
@@ -130,45 +189,15 @@ async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegme
   return parseSrt(srtText)
 }
 
-function parseSrt(srt: string): TranscriptSegment[] {
-  const blocks = srt.trim().split(/\n\s*\n/)
-  const segments: TranscriptSegment[] = []
-
-  for (const block of blocks) {
-    const lines = block.trim().split('\n')
-    if (lines.length < 2) continue
-
-    // Find timestamp line (contains -->)
-    const tsLine = lines.find(l => l.includes('-->'))
-    if (!tsLine) continue
-
-    const [startStr, endStr] = tsLine.split('-->')
-    const start = parseTimestamp(startStr)
-    const end = parseTimestamp(endStr)
-    const duration = Math.max(0.1, end - start)
-
-    // Text is everything after the timestamp line
-    const tsIdx = lines.indexOf(tsLine)
-    const text = lines.slice(tsIdx + 1).map(stripXmlTags).join(' ').trim()
-    if (!text) continue
-
-    segments.push({ text, start, duration })
-  }
-
-  return segments
-}
-
-// Fetch captions via the youtube-transcript package (InnerTube API + HTML scraping fallback)
+// Fetch captions via youtube-transcript package (InnerTube API)
+// NOTE: This is blocked by YouTube on Vercel/datacenter IPs — kept as last resort
 async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]> {
   const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }).catch(async () => {
-    // If English specifically not available, try without language constraint
     return YoutubeTranscript.fetchTranscript(videoId)
   })
 
   if (!items?.length) throw new Error('No transcript items returned.')
 
-  // The package returns durations/offsets in ms for srv3 format and seconds for classic format.
-  // Heuristic: if any duration exceeds 100 it must be in milliseconds (no caption line is 100+ seconds).
   const inMs = items.some(item => item.duration > 100)
 
   return items.map(item => ({
@@ -181,7 +210,20 @@ async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]
 async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
   const errors: string[] = []
 
-  // Attempt 1: YouTube Data API v3 (most reliable, requires API key)
+  // Attempt 1: Supadata.ai — works on Vercel/datacenter IPs, bypasses YouTube blocks
+  if (SUPADATA_API_KEY) {
+    try {
+      const segments = await fetchCaptionsViaSupadata(videoId)
+      if (segments.length > 0) return segments
+      errors.push('supadata: empty result')
+    } catch (e) {
+      errors.push(`supadata: ${errorMessage(e)}`)
+    }
+  } else {
+    errors.push('supadata: SUPADATA_API_KEY not set')
+  }
+
+  // Attempt 2: YouTube Data API v3 (requires YOUTUBE_API_KEY)
   if (YOUTUBE_API_KEY) {
     try {
       const segments = await fetchCaptionsViaDataAPI(videoId)
@@ -194,7 +236,7 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push('data-api: YOUTUBE_API_KEY not set')
   }
 
-  // Attempt 2: youtube-transcript package (InnerTube API + HTML scraping, no key needed)
+  // Attempt 3: youtube-transcript package (blocked on Vercel IPs, kept as last resort)
   try {
     const segments = await fetchCaptionsPublic(videoId)
     if (segments.length > 0) return segments
@@ -210,10 +252,8 @@ async function transcribeAudioFallback(videoId: string): Promise<{
   transcript: string
   segments: TranscriptSegment[]
 }> {
-  // Download audio via signed YouTube URL from Data API
   if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY required for audio fallback.')
 
-  // Get video duration to check size
   const videoRes = await fetch(
     `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`,
   )
@@ -223,7 +263,6 @@ async function transcribeAudioFallback(videoId: string): Promise<{
   const duration = parseIsoDuration(videoData.items?.[0]?.contentDetails?.duration ?? 'PT0S')
   if (duration > 1800) throw new Error('Video is too long for audio transcription (max 30 min).')
 
-  // Use yt-dlp via shell if available, otherwise throw
   throw new Error(
     'Audio transcription fallback is not available in this environment. ' +
     'Please use a video with captions enabled, or paste the transcript manually.',
