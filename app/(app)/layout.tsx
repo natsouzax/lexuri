@@ -1,8 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase-server'
-import Sidebar from '@/components/Sidebar'
-import MobileNav from '@/components/MobileNav'
-import MobileHeader from '@/components/MobileHeader'
+import AppShell from '@/components/AppShell'
 import DonationPopup from '@/components/DonationPopup'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -10,17 +8,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect('/login')
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="app-body">
-        <MobileHeader />
-        <main className="main-content">
-          {children}
-        </main>
-      </div>
-      
-      <MobileNav />
+    <AppShell>
+      {children}
       <DonationPopup />
-    </div>
+    </AppShell>
   )
 }

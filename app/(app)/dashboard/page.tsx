@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 import WeeklyCalendar from '@/components/ui/WeeklyCalendar'
-import { learningLoop, recommendedLessons } from '@/lib/product'
+import FeedItemCard from '@/components/FeedItemCard'
+import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
+import { learningLoop } from '@/lib/product'
+import { getThumbnail } from '@/lib/feed'
+import type { FeedItem } from '@/lib/feed'
 import type { Rank, XPProgressInfo, Mission } from '@/lib/gamification'
 import type { Flashcard } from '@/lib/types'
 
@@ -70,6 +74,12 @@ export default function DashboardPage() {
   const [dueCount, setDueCount] = useState(0)
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([])
+  const [savedIds, setSavedIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setSavedIds(getSavedItemIds())
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -87,15 +97,26 @@ export default function DashboardPage() {
           setDueCount(getDueCards(cards).length)
         })
         .catch(() => null),
+      apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => null),
     ]).finally(() => setLoading(false))
   }, [])
+
+  function handleToggleSave(id: string) {
+    if (savedIds.includes(id)) {
+      unsaveItem(id)
+      setSavedIds((prev) => prev.filter((s) => s !== id))
+    } else {
+      saveItem(id)
+      setSavedIds((prev) => [...prev, id])
+    }
+  }
 
   const reviewGoal = 10
   const reviewedToday = stats?.missionsToday.find((m) => m.eventType === 'flashcard_review')?.progress ?? 0
   const goalPct = Math.min(100, Math.round((reviewedToday / reviewGoal) * 100))
   const rank = stats?.rank
   const xp = stats?.xpProgress
-  const currentLesson = recommendedLessons[0]
+  const currentLesson = feedItems[0]
 
   return (
     <>
@@ -110,19 +131,21 @@ export default function DashboardPage() {
             {learningLoop.map((step) => <span key={step}>{step}</span>)}
           </div>
         </div>
-        <Link href={currentLesson.href} className="continue-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={currentLesson.thumbnail} alt="" />
-          <div className="continue-card-body">
-            <span className="mini-label">Continue learning</span>
-            <h2>{currentLesson.title}</h2>
-            <p>{currentLesson.chunks - 8} / {currentLesson.chunks} chunks learned</p>
-            <div className="xp-bar-track">
-              <div className="xp-bar-fill" style={{ width: `${currentLesson.progress}%` }} />
+        {currentLesson && (
+          <Link href={`/feed/${currentLesson.id}`} className="continue-card">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={getThumbnail(currentLesson.youtube_id)} alt={currentLesson.title} />
+            <div className="continue-card-body">
+              <span className="mini-label">Start learning</span>
+              <h2>{currentLesson.title}</h2>
+              <p>{currentLesson.channel ?? currentLesson.artist} · {currentLesson.duration}</p>
+              <div className="skill-row">
+                {currentLesson.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
+              </div>
+              <span className="btn-primary">Start Lesson</span>
             </div>
-            <span className="btn-primary">Continue Learning</span>
-          </div>
-        </Link>
+          </Link>
+        )}
       </div>
 
       <div className="home-grid">
@@ -163,20 +186,21 @@ export default function DashboardPage() {
       </div>
 
       <div className="section-title">Recommended Content</div>
-      <div className="recommendation-row">
-        {recommendedLessons.map((lesson) => (
-          <Link href={lesson.href} key={lesson.title} className="recommendation-card">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={lesson.thumbnail} alt="" />
-            <div>
-              <span className="mini-label">{lesson.source} · {lesson.difficulty}</span>
-              <h3>{lesson.title}</h3>
-              <p>{lesson.chunks} chunks available</p>
-              <div className="skill-row">
-                {lesson.skills.map((skill) => <span key={skill}>{skill}</span>)}
-              </div>
-            </div>
-          </Link>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 20,
+          marginBottom: 32,
+        }}
+      >
+        {feedItems.slice(0, 6).map((item) => (
+          <FeedItemCard
+            key={item.id}
+            item={item}
+            saved={savedIds.includes(item.id)}
+            onToggleSave={handleToggleSave}
+          />
         ))}
       </div>
 

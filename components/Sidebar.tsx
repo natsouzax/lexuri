@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -14,26 +15,28 @@ interface SidebarStats {
   xpProgress: XPProgressInfo
 }
 
-const NAV_GROUPS = [
-  {
-    label: null,
-    items: [{ href: '/dashboard', label: 'Home', icon: 'H' }],
-  },
+const NAV_GROUPS: {
+  label: string | null
+  items: { href: string; label: string; Icon: () => React.ReactElement }[]
+}[] = [
   {
     label: 'Learn',
     items: [
-      { href: '/feed', label: 'Feed', icon: 'F' },
-      { href: '/youtube', label: 'YouTube', icon: 'Y' },
-      { href: '/music', label: 'Music', icon: 'M' },
+      { href: '/youtube', label: 'YouTube', Icon: YoutubeIcon },
+      { href: '/music', label: 'Music', Icon: MusicIcon },
+    ],
+  },
+  {
+    label: 'Practice',
+    items: [
+      { href: '/flashcards', label: 'Library', Icon: LibraryIcon },
+      { href: '/leaderboard', label: 'Leaderboard', Icon: TrophyIcon },
     ],
   },
   {
     label: null,
     items: [
-      { href: '/review', label: 'Review', icon: 'R' },
-      { href: '/flashcards', label: 'Library', icon: 'L' },
-      { href: '/reports', label: 'Progress', icon: 'P' },
-      { href: '/settings', label: 'Settings', icon: 'S' },
+      { href: '/supportus', label: 'Support us', Icon: HeartIcon },
     ],
   },
 ]
@@ -63,12 +66,7 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      <div>
-        <Link href="/" className="sidebar-logo-link">
-          <div className="sidebar-logo">Lexuri</div>
-        </Link>
-        <p className="sidebar-caption">AI / real content / fluency</p>
-
+      <div style={{ flex: 1 }}>
         <nav className="sidebar-nav">
           {NAV_GROUPS.map((group, groupIndex) => (
             <div key={group.label ?? groupIndex} className="sidebar-nav-group">
@@ -79,7 +77,9 @@ export default function Sidebar() {
                   href={item.href}
                   className={`nav-link${pathname.startsWith(item.href) ? ' active' : ''}`}
                 >
-                  <span className="nav-letter">{item.icon}</span>
+                  <span className="nav-icon">
+                    <item.Icon />
+                  </span>
                   <span>{item.label}</span>
                 </Link>
               ))}
@@ -123,7 +123,14 @@ export default function Sidebar() {
       <div className="sidebar-bottom">
         <hr className="sidebar-divider" style={{ marginBottom: 14 }} />
         {user ? (
-          <UserDropdown user={user} />
+          <div className="sidebar-user-row">
+            <div className="sidebar-user-dropdown">
+              <UserDropdown user={user} />
+            </div>
+            <Link href="/settings" className="sidebar-settings-btn" aria-label="Settings" title="Settings">
+              <GearIcon />
+            </Link>
+          </div>
         ) : (
           <Link href="/" className="sidebar-site-link">
             <span style={{ fontSize: '0.8rem' }}>Back</span>
@@ -132,5 +139,62 @@ export default function Sidebar() {
         )}
       </div>
     </aside>
+  )
+}
+
+function YoutubeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  )
+}
+
+function MusicIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  )
+}
+
+function LibraryIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  )
+}
+
+function TrophyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+      <path d="M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+    </svg>
+  )
+}
+
+function HeartIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
+function GearIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   )
 }
