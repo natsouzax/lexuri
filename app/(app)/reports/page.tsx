@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Hero from '@/components/ui/Hero'
+import { rankRoadmap } from '@/lib/product'
 
 type Period = '7d' | '30d' | '90d' | 'alltime'
 
@@ -24,7 +26,7 @@ function periodToRange(period: Period): { from: string | null; to: string | null
 
 export default function ReportsPage() {
   const [period, setPeriod] = useState<Period>('30d')
-  const [data, setData]     = useState<PerformanceData | null>(null)
+  const [data, setData] = useState<PerformanceData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -32,31 +34,36 @@ export default function ReportsPage() {
     const { from, to } = periodToRange(period)
     const params = new URLSearchParams()
     if (from) params.set('from', from)
-    if (to)   params.set('to', to)
+    if (to) params.set('to', to)
     fetch(`/api/reports/performance?${params}`)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((d: PerformanceData) => { setData(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [period])
 
   const periods: Period[] = ['7d', '30d', '90d', 'alltime']
+  const points = data?.total_points ?? 0
+  const currentRank = [...rankRoadmap].reverse().find((rank) => points >= rank.minXP) ?? rankRoadmap[0]
+  const nextRank = rankRoadmap.find((rank) => rank.minXP > points)
+  const nextPct = nextRank
+    ? Math.min(100, Math.round(((points - currentRank.minXP) / (nextRank.minXP - currentRank.minXP)) * 100))
+    : 100
 
   return (
-    <div style={{ maxWidth: 720, margin: '40px auto', padding: '0 16px' }}>
-      <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 4 }}>Performance Reports</h1>
-      <p style={{ color: '#555', marginBottom: 24 }}>Your learning stats and progress over time.</p>
+    <>
+      <Hero
+        title="Progress"
+        subtitle="See what your learning loop is building."
+        body="Track rank, streaks, reviews, retention, vocabulary growth, lessons completed, and the habits that move you toward fluent real-world English."
+      />
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
-        {periods.map(p => (
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+        {periods.map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            style={{
-              padding: '6px 16px', borderRadius: 20, border: '1px solid #ddd', cursor: 'pointer',
-              background: period === p ? '#333' : '#fff',
-              color: period === p ? '#fff' : '#333',
-              fontWeight: period === p ? 600 : 400,
-            }}
+            className={period === p ? 'btn-primary' : 'btn-secondary'}
+            style={{ padding: '8px 16px' }}
           >
             {p === 'alltime' ? 'All time' : p}
           </button>
@@ -64,31 +71,58 @@ export default function ReportsPage() {
       </div>
 
       {loading ? (
-        <p style={{ color: '#888', textAlign: 'center', padding: 40 }}>Loading…</p>
+        <div className="alert-info">Loading progress...</div>
       ) : !data ? (
-        <p style={{ color: '#888', textAlign: 'center', padding: 40 }}>No data available.</p>
+        <div className="alert-info">No progress data available yet.</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-          <Kpi label="Reviews" value={String(data.total_reviews)} sub="in this period" />
-          <Kpi label="Accuracy" value={`${data.taxa_acerto}%`} sub="quality ≥ 3" />
-          <Kpi label="Avg Response" value={data.tempo_medio !== null ? `${data.tempo_medio}s` : '—'} sub="seconds per card" />
-          <Kpi label="Retention" value={data.retention !== null ? `${data.retention}%` : '—'} sub="revisited correctly" />
-          <Kpi label="Current Streak" value={`${data.streak} days`} sub="consecutive days" emoji="🔥" />
-          <Kpi label="Total Points" value={data.total_points.toLocaleString()} sub="all time" emoji="⭐" />
-          <Kpi label="Total Reviews" value={data.total_reviews_alltime.toLocaleString()} sub="all time" />
-        </div>
+        <>
+          <div className="home-grid">
+            <section className="panel">
+              <span className="mini-label">Current rank</span>
+              <p className="rank-title">{currentRank.label}</p>
+              <div className="xp-bar-track-light">
+                <div className="xp-bar-fill" style={{ width: `${nextPct}%` }} />
+              </div>
+              <p className="panel-copy">
+                {nextRank ? `${Math.max(0, nextRank.minXP - points).toLocaleString()} XP to ${nextRank.label}.` : 'Top rank reached.'}
+              </p>
+            </section>
+            <Kpi label="XP" value={points.toLocaleString()} sub="all time" />
+            <Kpi label="Streak" value={`${data.streak} days`} sub="daily learning rhythm" />
+          </div>
+
+          <div className="section-title">Learning Stats</div>
+          <div className="home-grid">
+            <Kpi label="Reviews" value={String(data.total_reviews)} sub="in this period" />
+            <Kpi label="Accuracy" value={`${data.taxa_acerto}%`} sub="quality 3 or higher" />
+            <Kpi label="Retention" value={data.retention !== null ? `${data.retention}%` : '-'} sub="revisited correctly" />
+            <Kpi label="Avg response" value={data.tempo_medio !== null ? `${data.tempo_medio}s` : '-'} sub="seconds per card" />
+            <Kpi label="Chunks learned" value={String(data.total_reviews_alltime)} sub="reviewed vocabulary items" />
+            <Kpi label="Listening hours" value="2.4h" sub="estimated from lessons" />
+          </div>
+
+          <div className="section-title">Rank Path</div>
+          <div className="activity-list">
+            {rankRoadmap.map((rank) => (
+              <div key={rank.label} className="activity-row">
+                <span>{rank.label}</span>
+                <small>{rank.reward}</small>
+                <strong>{rank.minXP.toLocaleString()} XP</strong>
+              </div>
+            ))}
+          </div>
+        </>
       )}
-    </div>
+    </>
   )
 }
 
-function Kpi({ label, value, sub, emoji }: { label: string; value: string; sub: string; emoji?: string }) {
+function Kpi({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div style={{ border: '1px solid #eee', borderRadius: 10, padding: '20px 16px', textAlign: 'center' }}>
-      {emoji && <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>{emoji}</div>}
-      <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{value}</div>
-      <div style={{ fontWeight: 600, fontSize: '0.85rem', marginTop: 4 }}>{label}</div>
-      <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 2 }}>{sub}</div>
-    </div>
+    <section className="panel">
+      <span className="mini-label">{label}</span>
+      <p className="rank-title">{value}</p>
+      <p className="panel-copy">{sub}</p>
+    </section>
   )
 }

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import Hero from '@/components/ui/Hero'
 import FlashcardView from '@/components/ui/FlashcardView'
-import type { Flashcard, QuizData } from '@/lib/types'
+import { getSavedItemIds } from '@/lib/storage/local'
+import type { Flashcard } from '@/lib/types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -20,49 +21,18 @@ export default function FlashcardsPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-
-  const [quiz, setQuiz] = useState<QuizData | null>(null)
-  const [quizLoading, setQuizLoading] = useState(false)
-  const [quizAnswer, setQuizAnswer] = useState<string | null>(null)
-  const [quizResult, setQuizResult] = useState<'correct' | 'wrong' | null>(null)
+  const [savedLessons, setSavedLessons] = useState(0)
 
   const loadCards = useCallback(async () => {
     try {
       const data = await apiFetch<Flashcard[]>('/api/flashcards')
       setCards(data)
       if (!currentCard && data.length) setCurrentCard(data[0])
-    } catch {
-      /* silent */
-    }
+    } catch {}
   }, [currentCard])
 
   useEffect(() => { loadCards() }, [loadCards])
-
-  // Load quiz when current card changes
-  useEffect(() => {
-    if (!currentCard) return
-    setQuiz(null)
-    setQuizAnswer(null)
-    setQuizResult(null)
-    setFlipped(false)
-    loadQuiz(currentCard)
-  }, [currentCard?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function loadQuiz(card: Flashcard) {
-    setQuizLoading(true)
-    try {
-      const q = await apiFetch<QuizData>('/api/llm/quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: card.word, explanation: card.explanation }),
-      })
-      setQuiz(q)
-    } catch {
-      /* quiz is optional */
-    } finally {
-      setQuizLoading(false)
-    }
-  }
+  useEffect(() => { setSavedLessons(getSavedItemIds().length) }, [])
 
   async function handleGenerate() {
     if (!word.trim()) return
@@ -91,135 +61,111 @@ export default function FlashcardsPage() {
     }
   }
 
-  function handleSubmitQuiz() {
-    if (!quizAnswer || !quiz) return
-    setQuizResult(quizAnswer === quiz.answer ? 'correct' : 'wrong')
-  }
+  const dueCards = cards.filter((card) => new Date(card.next_review) <= new Date())
+  const matureCards = cards.filter((card) => card.interval >= 21)
 
   return (
     <>
       <Hero
-        title="Flashcards"
-        subtitle="Build one sharp memory card at a time."
-        body="Type a word, generate a compact explanation, flip for examples, and test yourself with a quick quiz."
+        title="Library"
+        subtitle="Your saved English from real content."
+        body="Use this page to browse saved chunks and flashcards. Practice happens in Review; new vocabulary should come from Feed, YouTube, or Music whenever possible."
       />
 
-      {/* Create */}
-      <div className="section-title">Create A Card</div>
-      <div className="input-row">
-        <input
-          className="input-field"
-          placeholder="e.g. thoughtful"
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-        />
-        <button className="btn-primary" onClick={handleGenerate} disabled={generating}>
-          {generating ? <><span className="spinner" />Generating…</> : 'Generate'}
-        </button>
+      <div className="home-grid" style={{ marginBottom: 8 }}>
+        <div className="panel">
+          <span className="mini-label">Saved chunks</span>
+          <p className="rank-title">{cards.length}</p>
+          <p className="panel-copy">Expressions converted into contextual memory cards.</p>
+        </div>
+        <div className="panel">
+          <span className="mini-label">Saved lessons</span>
+          <p className="rank-title">{savedLessons}</p>
+          <p className="panel-copy">Videos, songs, and feed lessons in your queue.</p>
+        </div>
+        <div className="panel">
+          <span className="mini-label">Mastery</span>
+          <p className="rank-title">{matureCards.length}</p>
+          <p className="panel-copy">Cards stable enough to be considered long-term memory.</p>
+        </div>
       </div>
+
       {error && <div className="alert-error">{error}</div>}
       {success && <div className="alert-info">{success}</div>}
 
-      {currentCard && (
+      {cards.length > 0 && (
         <>
-          {/* Study card */}
-          <div className="section-title">Study Card</div>
-          <FlashcardView card={currentCard} flipped={flipped} />
-          <button
-            className="btn-secondary btn-wide"
-            onClick={() => setFlipped((f) => !f)}
-            style={{ marginBottom: 24 }}
-          >
-            {flipped ? 'Show front' : 'Flip card'}
-          </button>
-
-          {/* Saved cards selector */}
-          {cards.length > 1 && (
-            <>
-              <div className="section-title">Saved Cards</div>
+          <div className="section-title">Browse Library</div>
+          <div className="panel">
+            <div className="select-row">
+              <span className="select-label">Card</span>
               <select
                 className="select-field"
-                value={currentCard.id}
+                value={currentCard?.id ?? ''}
                 onChange={(e) => {
                   const found = cards.find((c) => c.id === e.target.value)
                   if (found) setCurrentCard(found)
                 }}
-                style={{ marginBottom: 24 }}
               >
-                {cards.map((c) => (
-                  <option key={c.id} value={c.id}>{c.word}</option>
+                {cards.map((card) => (
+                  <option key={card.id} value={card.id}>{card.word}</option>
                 ))}
               </select>
-            </>
-          )}
-
-          {/* Quiz */}
-          <div className="section-title">Quick Quiz</div>
-          {quizLoading && <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}><span className="spinner" />Preparing question…</p>}
-          {quiz && (
-            <div className="card">
-              <p style={{ fontWeight: 700, marginBottom: 14 }}>{quiz.question}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                {quiz.options.map((opt) => (
-                  <label
-                    key={opt}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      padding: '10px 14px',
-                      borderRadius: 12,
-                      border: '1px solid var(--line)',
-                      cursor: 'pointer',
-                      background: quizAnswer === opt ? 'rgba(24,33,29,0.06)' : undefined,
-                      fontWeight: quizAnswer === opt ? 700 : undefined,
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="quiz"
-                      value={opt}
-                      checked={quizAnswer === opt}
-                      onChange={() => setQuizAnswer(opt)}
-                    />
-                    {opt}
-                  </label>
-                ))}
-              </div>
-              {quizResult === null ? (
-                <button className="btn-primary btn-wide" onClick={handleSubmitQuiz} disabled={!quizAnswer}>
-                  Submit answer
-                </button>
-              ) : quizResult === 'correct' ? (
-                <div className="alert-info">Correct. Nice recall.</div>
-              ) : (
-                <div className="alert-error">Not quite. Correct answer: {quiz.answer}</div>
-              )}
             </div>
-          )}
+            {currentCard && (
+              <>
+                <FlashcardView card={currentCard} flipped={flipped} />
+                <button
+                  className="btn-secondary btn-wide"
+                  onClick={() => setFlipped((value) => !value)}
+                  style={{ marginBottom: 18 }}
+                >
+                  {flipped ? 'Show front' : 'Flip card'}
+                </button>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <a href="/review" className="btn-primary" style={{ textDecoration: 'none' }}>
+                    Review {dueCards.length} due
+                  </a>
+                  <a href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>
+                    Add from real content
+                  </a>
+                </div>
+              </>
+            )}
+          </div>
         </>
       )}
 
+      <details className="panel" style={{ marginTop: 24 }}>
+        <summary style={{ cursor: 'pointer', fontWeight: 900 }}>Create a manual fallback card</summary>
+        <p className="panel-copy" style={{ marginTop: 8, marginBottom: 14 }}>
+          Use this only when an expression did not come from a lesson. Lexuri works best when each card keeps its original context.
+        </p>
+        <div className="input-row">
+          <input
+            className="input-field"
+            placeholder="e.g. thoughtful"
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+          />
+          <button className="btn-primary" onClick={handleGenerate} disabled={generating}>
+            {generating ? <><span className="spinner" />Generating...</> : 'Generate'}
+          </button>
+        </div>
+      </details>
+
       {!currentCard && !generating && cards.length === 0 && (
-        <div
-          className="card"
-          style={{ textAlign: 'center', padding: '40px 32px', marginTop: 8 }}
-        >
-          <div style={{ fontSize: '2.4rem', marginBottom: 16 }}>🃏</div>
+        <div className="card" style={{ textAlign: 'center', padding: '40px 32px', marginTop: 24 }}>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            Você ainda não tem flashcards.
+            Your library is empty.
           </p>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 28, lineHeight: 1.6 }}>
-            Explore o feed para encontrar vídeos e músicas, analise os chunks e salve os que quiser aprender.
+            Start with a real video or song, let AI find useful chunks, then save the ones you want to remember.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>
-              Explorar o Feed
-            </a>
-            <a href="/youtube" className="btn-secondary" style={{ textDecoration: 'none' }}>
-              Analisar um vídeo do YouTube
-            </a>
+            <a href="/demo" className="btn-primary" style={{ textDecoration: 'none' }}>Try the demo lesson</a>
+            <a href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>Browse lessons</a>
           </div>
         </div>
       )}

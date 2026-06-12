@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Hero from '@/components/ui/Hero'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
+import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, Song } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
 import type { LrcLibSearchHit } from '@/lib/lyrics'
@@ -215,10 +216,19 @@ export default function MusicPage() {
   return (
     <>
       <Hero
-        title="Music Lab"
-        subtitle="Learn English the way your brain actually works."
-        body="Search for a song, identify natural language chunks — phrasal verbs, idioms, collocations — and build flashcards from real spoken English."
+        title="Learn"
+        subtitle="Music workspace."
+        body="Search a song or paste a media URL, load lyrics, analyze natural spoken language, save chunks, and turn them into reviewable cards."
       />
+
+      <div className="learn-tabs">
+        {contentTabs.map((item) => (
+          <a key={item.href} href={item.href} className={`learn-tab${item.href === '/music' ? ' active' : ''}`}>
+            <strong>{item.label}</strong>
+            <span>{item.description}</span>
+          </a>
+        ))}
+      </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>

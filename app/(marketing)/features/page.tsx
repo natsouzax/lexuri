@@ -110,7 +110,7 @@ export default function FeaturesPage() {
         <div className="mkt-container">
           <h2 className="mkt-h2" style={{ color: 'var(--paper)', marginBottom: 16 }}>Ready to try it?</h2>
           <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 32px' }}>Free to start. No account required.</p>
-          <Link href="/youtube" className="btn-mkt-primary">Open Lexuri →</Link>
+          <Link href="/demo" className="btn-mkt-primary">Try the demo lesson →</Link>
         </div>
       </section>
     </>

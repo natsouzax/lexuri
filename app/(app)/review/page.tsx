@@ -53,8 +53,25 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
   // reset flip when the card changes
   useEffect(() => { setRevealed(false) }, [card.id])
 
+  function playAudio() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    const utterance = new SpeechSynthesisUtterance(card.word)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.86
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(utterance)
+  }
+
   return (
     <div>
+      <div className="panel" style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <span className="mini-label">Card {index + 1} of {total}</span>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.84rem' }}>+10 XP for a good recall response</p>
+        </div>
+        <button type="button" className="btn-secondary" onClick={playAudio}>Play Audio</button>
+      </div>
+
       {/* Progress */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <div style={{ flex: 1, height: 6, background: 'var(--line)', borderRadius: 99 }}>
@@ -63,13 +80,13 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
               height: '100%',
               borderRadius: 99,
               background: 'var(--clay)',
-              width: `${(index / total) * 100}%`,
+              width: `${((index + 1) / total) * 100}%`,
               transition: 'width 300ms ease',
             }}
           />
         </div>
         <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-          {index} / {total}
+          {index + 1} / {total}
         </span>
       </div>
 
@@ -316,8 +333,8 @@ export default function ReviewPage() {
     <>
       <Hero
         title="Review"
-        subtitle="Keep your knowledge fresh."
-        body="See the word, try to recall — then flip to check. Rate your recall to schedule the next review automatically."
+        subtitle="Recall, listen, rate, repeat."
+        body="Move through your due cards with a modern SRS flow. Reveal meaning, hear pronunciation, check context, then choose Again, Hard, Good, or Easy."
       />
 
       {/* Metrics */}

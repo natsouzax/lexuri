@@ -8,6 +8,7 @@ import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
+import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, VideoData } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
 import type { SRSCard } from '@/lib/srs'
@@ -188,16 +189,35 @@ export default function YouTubePage() {
   return (
     <>
       <Hero
-        title="YouTube Studio"
-        subtitle="Learn English the way your brain actually works."
-        body="Paste a YouTube link, click words to collect them, or let AI detect natural language chunks — phrasal verbs, idioms, collocations — and turn them into flashcards."
+        title="Learn"
+        subtitle="YouTube workspace."
+        body="Paste a video URL, import the transcript, watch in context, save useful chunks, generate cards, and schedule review without leaving the page."
       />
+
+      <div className="learn-tabs">
+        {contentTabs.map((tab) => (
+          <a key={tab.href} href={tab.href} className={`learn-tab${tab.href === '/youtube' ? ' active' : ''}`}>
+            <strong>{tab.label}</strong>
+            <span>{tab.description}</span>
+          </a>
+        ))}
+      </div>
 
       {/* Metrics */}
       <div className="metrics-row">
         <MetricCard label="Selected words" value={selectedWords.length} />
         <MetricCard label="Saved cards" value={allCards.length} />
         <MetricCard label="Due today" value={dueCards.length} />
+      </div>
+
+      <div className="panel" style={{ marginBottom: 24 }}>
+        <span className="mini-label">First session mission</span>
+        <div className="learning-loop" style={{ marginTop: 8 }}>
+          <span>Paste video</span>
+          <span>Reveal chunk map</span>
+          <span>Save 3 chunks</span>
+          <span>Review today</span>
+        </div>
       </div>
 
       {/* Load video */}
@@ -227,7 +247,7 @@ export default function YouTubePage() {
                 {videoData.title}
               </div>
               <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
-                Play the video below. The transcript syncs and highlights the current word. Click any word to collect it, or use AI chunk analysis below.
+                Play the video, read the transcript, then let AI surface the expressions worth saving. Focus on chunks you would actually use.
               </p>
             </div>
             <div>
@@ -253,7 +273,7 @@ export default function YouTubePage() {
                 ))}
               </div>
               <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
-                {analyzing ? <><span className="spinner" />Analyzing chunks…</> : 'Analyze language chunks'}
+                {analyzing ? <><span className="spinner" />Finding essential chunks...</> : 'Reveal AI chunk map'}
               </button>
             </div>
           </div>
@@ -305,6 +325,12 @@ export default function YouTubePage() {
           {/* Chunk analysis */}
           {chunkAnalysis && (
             <>
+              <div className="panel" style={{ marginBottom: 16 }}>
+                <span className="mini-label">AI chunk map ready</span>
+                <p className="panel-copy">
+                  Lexuri found {chunkAnalysis.chunks.length} natural expressions. Start with the high-importance chunks, play the audio, and save the ones you want to remember.
+                </p>
+              </div>
               <div className="section-title">Chunk Map</div>
               <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
                 <ChunkHighlighter

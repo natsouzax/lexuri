@@ -5,6 +5,7 @@ import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
 import FeedItemCard from '@/components/FeedItemCard'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
+import { contentTabs } from '@/lib/product'
 import type { FeedItem } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
 
@@ -32,7 +33,7 @@ export default function FeedPage() {
   }, [])
 
   useEffect(() => {
-    apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => {/* silent */})
+    apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function FeedPage() {
       setCardCount(cards.length)
       const { getDueCards } = await import('@/lib/srs')
       setDueCount(getDueCards(cards).length)
-    }).catch(() => {/* silent */})
+    }).catch(() => {})
   }, [])
 
   function handleToggleSave(id: string) {
@@ -62,24 +63,30 @@ export default function FeedPage() {
   return (
     <>
       <Hero
-        title="Learning Feed"
-        subtitle="Discover → Save → Study."
-        body="Browse curated videos, load transcripts, extract natural language chunks, and turn them into flashcards you'll actually remember."
+        title="Learn"
+        subtitle="Discover content, then turn it into memory."
+        body="Browse curated TED talks, podcasts, videos, and music. Open one lesson, collect useful chunks, generate cards, and send them straight to review."
       />
 
-      {/* Metrics */}
-      <div className="metrics-row">
-        <MetricCard label="Curated items" value={feedItems.length} />
-        <MetricCard label="Saved cards" value={cardCount} />
-        <MetricCard label="Due today" value={dueCount} />
+      <div className="learn-tabs">
+        {contentTabs.map((tab) => (
+          <a key={tab.href} href={tab.href} className={`learn-tab${tab.href === '/feed' ? ' active' : ''}`}>
+            <strong>{tab.label}</strong>
+            <span>{tab.description}</span>
+          </a>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className="section-title">Browse Content</div>
+      <div className="metrics-row">
+        <MetricCard label="Curated lessons" value={feedItems.length} />
+        <MetricCard label="Saved flashcards" value={cardCount} />
+        <MetricCard label="Reviews due" value={dueCount} />
+      </div>
+
+      <div className="section-title">Discover Content</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
-        {/* Type filter */}
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Type:</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Source:</span>
           {(['All', 'video', 'music'] as TypeFilter[]).map((t) => (
             <button
               key={t}
@@ -93,16 +100,14 @@ export default function FeedPage() {
                 fontWeight: typeFilter === t ? 700 : 400,
                 fontSize: '0.8rem',
                 cursor: 'pointer',
-                transition: 'all 120ms ease',
               }}
             >
-              {t === 'video' ? '▶ Video' : t === 'music' ? '♪ Music' : 'All'}
+              {t === 'video' ? 'Video' : t === 'music' ? 'Music' : 'All'}
             </button>
           ))}
         </div>
-        {/* Level filter */}
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Level:</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Difficulty:</span>
           {LEVELS.map((l) => (
             <button
               key={l}
@@ -116,7 +121,6 @@ export default function FeedPage() {
                 fontWeight: levelFilter === l ? 700 : 400,
                 fontSize: '0.8rem',
                 cursor: 'pointer',
-                transition: 'all 120ms ease',
               }}
             >
               {l}
@@ -125,7 +129,6 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* Feed grid */}
       <div
         style={{
           display: 'grid',
@@ -145,13 +148,12 @@ export default function FeedPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="alert-info">No items for that level filter yet.</div>
+        <div className="alert-info">No lessons match that filter yet.</div>
       )}
 
-      {/* Saved section */}
       {savedIds.length > 0 && (
         <>
-          <div className="section-title">Saved for Later</div>
+          <div className="section-title">Saved Lessons</div>
           <div
             style={{
               display: 'grid',

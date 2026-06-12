@@ -14,19 +14,33 @@ interface SidebarStats {
   xpProgress: XPProgressInfo
 }
 
-const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Dashboard',      icon: '◉' },
-  { href: '/feed',       label: 'Learning Feed',   icon: '◈' },
-  { href: '/review',     label: 'Review',          icon: '↺' },
-  { href: '/youtube',    label: 'YouTube Studio',  icon: '▶' },
-  { href: '/flashcards', label: 'Flashcards',      icon: '⊞' },
-  { href: '/music',      label: 'Music Lab',       icon: '♪' },
-  { href: '/leaderboard', label: 'Leaderboard',    icon: '★' },
+const NAV_GROUPS = [
+  {
+    label: null,
+    items: [{ href: '/dashboard', label: 'Home', icon: 'H' }],
+  },
+  {
+    label: 'Learn',
+    items: [
+      { href: '/feed', label: 'Feed', icon: 'F' },
+      { href: '/youtube', label: 'YouTube', icon: 'Y' },
+      { href: '/music', label: 'Music', icon: 'M' },
+    ],
+  },
+  {
+    label: null,
+    items: [
+      { href: '/review', label: 'Review', icon: 'R' },
+      { href: '/flashcards', label: 'Library', icon: 'L' },
+      { href: '/reports', label: 'Progress', icon: 'P' },
+      { href: '/settings', label: 'Settings', icon: 'S' },
+    ],
+  },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const [user, setUser]   = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [stats, setStats] = useState<SidebarStats | null>(null)
 
   useEffect(() => {
@@ -37,13 +51,12 @@ export default function Sidebar() {
       setUser(session?.user ?? null)
     })
 
-    // Fetch rank/XP for sidebar widget
     fetch('/api/gamification/stats')
       .then((r) => r.ok ? r.json() : null)
       .then((d) => {
-        if (d && d.rank) setStats({ points: d.points, rank: d.rank, xpProgress: d.xpProgress })
+        if (d?.rank) setStats({ points: d.points, rank: d.rank, xpProgress: d.xpProgress })
       })
-      .catch(() => {/* silent */})
+      .catch(() => {})
 
     return () => subscription.unsubscribe()
   }, [])
@@ -54,40 +67,30 @@ export default function Sidebar() {
         <Link href="/" className="sidebar-logo-link">
           <div className="sidebar-logo">Lexuri</div>
         </Link>
-        <p className="sidebar-caption">AI · Chunks · Fluency</p>
+        <p className="sidebar-caption">AI / real content / fluency</p>
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`nav-link${pathname.startsWith(item.href) ? ' active' : ''}`}
-            >
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
+          {NAV_GROUPS.map((group, groupIndex) => (
+            <div key={group.label ?? groupIndex} className="sidebar-nav-group">
+              {group.label && <div className="sidebar-nav-label">{group.label}</div>}
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-link${pathname.startsWith(item.href) ? ' active' : ''}`}
+                >
+                  <span className="nav-letter">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
-        <Link
-          href="/donate"
-          className={`nav-link${pathname.startsWith('/donate') ? ' active' : ''}`}
-          style={{ color: 'var(--clay-bright)', marginTop: 4 }}
-        >
-          <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>♥</span>
-          <span>Support us</span>
-        </Link>
-
         <hr className="sidebar-divider" />
 
-        {/* Rank widget */}
         {stats ? (
-          <div style={{
-            padding: '10px 12px',
-            borderRadius: 12,
-            background: 'rgba(255,250,240,0.06)',
-            border: '1px solid var(--dark-border)',
-          }}>
+          <div className="sidebar-rank-card">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
               <span style={{ color: stats.rank.color, fontSize: '0.95rem', fontWeight: 900 }}>
                 {stats.rank.icon}
@@ -105,12 +108,12 @@ export default function Sidebar() {
             {stats.xpProgress.nextRank && (
               <div style={{ marginTop: 5, fontSize: '0.62rem', color: 'var(--dark-muted)', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{stats.xpProgress.progressPct}%</span>
-                <span>→ {stats.xpProgress.nextRank.label}</span>
+                <span>Next: {stats.xpProgress.nextRank.label}</span>
               </div>
             )}
           </div>
         ) : (
-          <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(255,250,240,0.04)' }}>
+          <div className="sidebar-rank-card">
             <div className="skeleton" style={{ height: 12, width: '70%', marginBottom: 8 }} />
             <div className="skeleton" style={{ height: 4, borderRadius: 99 }} />
           </div>
@@ -123,7 +126,7 @@ export default function Sidebar() {
           <UserDropdown user={user} />
         ) : (
           <Link href="/" className="sidebar-site-link">
-            <span style={{ fontSize: '0.8rem' }}>←</span>
+            <span style={{ fontSize: '0.8rem' }}>Back</span>
             <span>Public site</span>
           </Link>
         )}

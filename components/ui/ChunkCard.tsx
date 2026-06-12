@@ -1,3 +1,5 @@
+'use client'
+
 import type { ChunkItem } from '@/lib/types'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -27,13 +29,22 @@ interface Props {
 }
 
 export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard, making, saved }: Props) {
+  function playAudio() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    const utterance = new SpeechSynthesisUtterance(chunk.text)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.86
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(utterance)
+  }
+
   return (
     <div
       onClick={() => onSelect?.(chunk)}
       style={{
         border: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
         borderLeft: `4px solid ${chunk.color}`,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: '14px 16px',
         background: isSelected ? `${chunk.color}12` : `${chunk.color}06`,
         cursor: onSelect ? 'pointer' : 'default',
@@ -41,12 +52,12 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
           <span
             style={{ width: 8, height: 8, borderRadius: '50%', background: IMPORTANCE_DOT[chunk.importance], flexShrink: 0, display: 'inline-block' }}
             title={`${chunk.importance} importance`}
           />
-          <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.08rem' }}>
+          <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.08rem', overflowWrap: 'anywhere' }}>
             {chunk.text}
           </span>
         </div>
@@ -78,18 +89,27 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
         {chunk.why_it_matters}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.7rem', color: 'var(--muted)', marginRight: 'auto' }}>
           {chunk.learner_level} · freq {chunk.frequency_score}/10
         </span>
+        <button
+          type="button"
+          className="btn-secondary"
+          style={{ fontSize: '0.73rem', padding: '4px 10px' }}
+          onClick={(e) => { e.stopPropagation(); playAudio() }}
+          title="Play pronunciation"
+        >
+          Play
+        </button>
         {chunk.flashcard_suggestion && onMakeFlashcard && (
           <button
             className="btn-primary"
-            style={{ fontSize: '0.73rem', padding: '4px 12px', marginLeft: 'auto' }}
+            style={{ fontSize: '0.73rem', padding: '4px 12px' }}
             onClick={(e) => { e.stopPropagation(); onMakeFlashcard(chunk) }}
             disabled={making || saved}
           >
-            {saved ? 'Saved' : making ? '…' : '+ Flashcard'}
+            {saved ? 'Saved' : making ? '...' : '+ Card'}
           </button>
         )}
       </div>

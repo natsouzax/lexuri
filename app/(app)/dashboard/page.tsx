@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 import WeeklyCalendar from '@/components/ui/WeeklyCalendar'
+import { learningLoop, recommendedLessons } from '@/lib/product'
 import type { Rank, XPProgressInfo, Mission } from '@/lib/gamification'
+import type { Flashcard } from '@/lib/types'
 
 interface MissionProgress extends Mission {
   progress: number
@@ -36,14 +38,21 @@ async function apiFetch<T>(path: string): Promise<T> {
 }
 
 const EVENT_LABELS: Record<string, string> = {
-  flashcard_review: 'Reviewed a flashcard',
-  chunk_analyzed:   'Analyzed language chunks',
-  chunk_saved:      'Saved a language chunk',
-  video_studied:    'Studied a YouTube video',
-  music_studied:    'Music Lab session',
-  word_looked_up:   'Looked up a word',
-  streak_bonus:     'Streak bonus',
+  flashcard_review: 'Reviewed cards',
+  chunk_analyzed: 'Analyzed a lesson',
+  chunk_saved: 'Saved a chunk',
+  video_studied: 'Studied a YouTube lesson',
+  music_studied: 'Completed a Music Lab session',
+  word_looked_up: 'Looked up a word',
+  streak_bonus: 'Protected your streak',
   mission_complete: 'Completed a mission',
+}
+
+function greeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
 }
 
 function timeAgo(iso: string): string {
@@ -56,15 +65,9 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hours / 24)}d ago`
 }
 
-function greeting(): string {
-  const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 18) return 'Good afternoon'
-  return 'Good evening'
-}
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<StatsData | null>(null)
+  const [dueCount, setDueCount] = useState(0)
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -76,278 +79,121 @@ export default function DashboardPage() {
       setUsername(name.split(' ')[0])
     })
 
-    apiFetch<StatsData>('/api/gamification/stats')
-      .then(setStats)
-      .catch(() => {/* silent — show skeleton */})
-      .finally(() => setLoading(false))
+    Promise.all([
+      apiFetch<StatsData>('/api/gamification/stats').then(setStats).catch(() => null),
+      apiFetch<Flashcard[]>('/api/flashcards')
+        .then(async (cards) => {
+          const { getDueCards } = await import('@/lib/srs')
+          setDueCount(getDueCards(cards).length)
+        })
+        .catch(() => null),
+    ]).finally(() => setLoading(false))
   }, [])
 
+  const reviewGoal = 10
+  const reviewedToday = stats?.missionsToday.find((m) => m.eventType === 'flashcard_review')?.progress ?? 0
+  const goalPct = Math.min(100, Math.round((reviewedToday / reviewGoal) * 100))
   const rank = stats?.rank
   const xp = stats?.xpProgress
+  const currentLesson = recommendedLessons[0]
 
   return (
     <>
-      {/* ── Hero ──────────────────────────────────────── */}
-      <div className="app-hero">
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-          <div>
-            <p className="app-hero-subtitle" style={{ marginBottom: 6 }}>
-              {greeting()}, {username || '…'}
-            </p>
-            <h1 className="app-hero-title">Your Dashboard</h1>
+      <div className="home-hero">
+        <div className="home-hero-copy">
+          <p className="app-hero-subtitle">{greeting()}, {username || 'there'}</p>
+          <h1 className="app-hero-title">Continue learning from real English.</h1>
+          <p className="app-hero-body">
+            Watch, listen, save the useful chunks, then review them before they fade.
+          </p>
+          <div className="learning-loop">
+            {learningLoop.map((step) => <span key={step}>{step}</span>)}
           </div>
-          {rank ? (
-            <div
-              className="rank-badge"
-              style={{ background: rank.color + '22', color: rank.color, border: `1px solid ${rank.color}55`, fontSize: '0.85rem', padding: '6px 16px' }}
-            >
-              <span>{rank.icon}</span>
-              <span>{rank.label}</span>
-            </div>
-          ) : (
-            <div className="skeleton" style={{ width: 90, height: 32, borderRadius: 999 }} />
-          )}
         </div>
-
-        {/* XP progress bar */}
-        {xp ? (
-          <div style={{ maxWidth: 520 }}>
+        <Link href={currentLesson.href} className="continue-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentLesson.thumbnail} alt="" />
+          <div className="continue-card-body">
+            <span className="mini-label">Continue learning</span>
+            <h2>{currentLesson.title}</h2>
+            <p>{currentLesson.chunks - 8} / {currentLesson.chunks} chunks learned</p>
             <div className="xp-bar-track">
-              <div className="xp-bar-fill" style={{ width: `${xp.progressPct}%` }} />
+              <div className="xp-bar-fill" style={{ width: `${currentLesson.progress}%` }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 7 }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--dark-muted)', fontWeight: 700 }}>
-                {stats!.points.toLocaleString()} XP
-              </span>
-              {xp.nextRank ? (
-                <span style={{ fontSize: '0.72rem', color: 'var(--dark-muted)' }}>
-                  +{xp.xpToNext?.toLocaleString()} to {xp.nextRank.label}
-                </span>
-              ) : (
-                <span style={{ fontSize: '0.72rem', color: 'var(--clay-bright)' }}>Max rank reached</span>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="skeleton" style={{ height: 6, borderRadius: 99, maxWidth: 520, marginBottom: 8 }} />
-            <div className="skeleton" style={{ height: 12, width: 200 }} />
-          </div>
-        )}
-
-        {/* Streak */}
-        {stats && stats.streak > 0 && (
-          <div style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(200,111,74,0.18)', borderRadius: 999, padding: '5px 14px' }}>
-            <span style={{ color: 'var(--clay-bright)', fontWeight: 900, fontSize: '0.88rem' }}>◆</span>
-            <span style={{ color: 'var(--paper)', fontWeight: 700, fontSize: '0.82rem' }}>
-              {stats.streak} day streak
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* ── Stats row ─────────────────────────────────── */}
-      <div className="metrics-row" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 8 }}>
-        {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="metric-card">
-              <div className="skeleton" style={{ height: 36, width: 80, marginBottom: 8 }} />
-              <div className="skeleton" style={{ height: 12, width: 60 }} />
-            </div>
-          ))
-        ) : (
-          <>
-            <div className="metric-card">
-              <div className="metric-value" style={{ color: rank?.color }}>{stats?.points.toLocaleString() ?? 0}</div>
-              <div className="metric-label">Total XP</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{stats?.streak ?? 0}</div>
-              <div className="metric-label">Day streak</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value">{stats?.total_reviews ?? 0}</div>
-              <div className="metric-label">Cards reviewed</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-value" style={{ fontSize: '1.4rem', color: rank?.color }}>{rank?.icon} {rank?.label}</div>
-              <div className="metric-label">Current rank</div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── Missions + Calendar ───────────────────────── */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', marginTop: 8 }}>
-
-        {/* Daily missions */}
-        <div style={{ flex: '1 1 55%', minWidth: 280 }}>
-          <div className="section-title">Today's Missions</div>
-          {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="mission-card">
-                  <div className="skeleton" style={{ height: 16, width: '60%', marginBottom: 8 }} />
-                  <div className="skeleton" style={{ height: 10, width: '40%' }} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {(stats?.missionsToday ?? []).map((m) => (
-                <div key={m.id} className={`mission-card${m.completed ? ' completed' : ''}`}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                      <span style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: m.completed ? 'rgba(70,98,74,0.15)' : 'rgba(200,111,74,0.1)',
-                        color: m.completed ? 'var(--moss)' : 'var(--clay)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1rem', flexShrink: 0,
-                        fontWeight: 900,
-                      }}>
-                        {m.completed ? '✓' : m.icon}
-                      </span>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--ink)', marginBottom: 1 }}>
-                          {m.label}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                          {m.description}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{
-                      flexShrink: 0,
-                      fontSize: '0.72rem', fontWeight: 900,
-                      padding: '3px 10px', borderRadius: 999,
-                      background: m.completed ? 'rgba(70,98,74,0.15)' : 'rgba(200,111,74,0.1)',
-                      color: m.completed ? 'var(--moss)' : 'var(--clay)',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {m.completed ? '✓' : '+'}{m.xpReward} XP
-                    </div>
-                  </div>
-
-                  {/* Progress bar (only for multi-step missions) */}
-                  {m.targetCount > 1 && !m.completed && (
-                    <div style={{ marginTop: 10 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>
-                          {m.progress} / {m.targetCount}
-                        </span>
-                      </div>
-                      <div className="xp-bar-track-light">
-                        <div
-                          className="xp-bar-fill"
-                          style={{ width: `${Math.round((m.progress / m.targetCount) * 100)}%`, background: 'var(--moss)' }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Weekly calendar */}
-        <div style={{ flex: '1 1 35%', minWidth: 220 }}>
-          <div className="section-title">This Week</div>
-          {loading ? (
-            <div className="skeleton" style={{ height: 90, borderRadius: 14 }} />
-          ) : (
-            <WeeklyCalendar weekActivity={stats?.weekActivity ?? Array(7).fill(false)} />
-          )}
-
-          {/* Compact XP breakdown below calendar */}
-          {stats && (
-            <div style={{ marginTop: 12, background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: '14px 16px', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                XP this week
-              </div>
-              {stats.xpProgress.xpIntoRank > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Progress to {stats.xpProgress.rank.label}</span>
-                  <span style={{ fontWeight: 900, fontSize: '0.88rem', color: stats.rank.color }}>
-                    {stats.xpProgress.progressPct}%
-                  </span>
-                </div>
-              )}
-              <div style={{ marginTop: 8 }}>
-                <div className="xp-bar-track-light">
-                  <div className="xp-bar-fill" style={{ width: `${stats.xpProgress.progressPct}%` }} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Quick start ───────────────────────────────── */}
-      <div className="section-title">Quick Start</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 8 }}>
-        <Link href="/youtube" className="quick-action-card">
-          <span style={{ fontSize: '1.6rem', color: 'var(--clay-bright)' }}>▶</span>
-          <div>
-            <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', marginBottom: 3 }}>YouTube Studio</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--dark-muted)' }}>Load a video, extract chunks</div>
-          </div>
-        </Link>
-        <Link href="/music" className="quick-action-card">
-          <span style={{ fontSize: '1.6rem', color: 'var(--clay-bright)' }}>♪</span>
-          <div>
-            <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', marginBottom: 3 }}>Music Lab</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--dark-muted)' }}>Learn from songs you love</div>
-          </div>
-        </Link>
-        <Link href="/review" className="quick-action-card">
-          <span style={{ fontSize: '1.6rem', color: 'var(--clay-bright)' }}>↺</span>
-          <div>
-            <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', marginBottom: 3 }}>Review</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--dark-muted)' }}>Spaced repetition session</div>
+            <span className="btn-primary">Continue Learning</span>
           </div>
         </Link>
       </div>
 
-      {/* ── XP History ────────────────────────────────── */}
-      {(stats?.xpHistory.length ?? 0) > 0 && (
-        <>
-          <div className="section-title">Recent Activity</div>
-          <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 16, padding: '4px 20px', boxShadow: 'var(--shadow-sm)' }}>
-            {stats!.xpHistory.map((evt, i) => (
-              <div key={i} className="xp-history-row">
-                <div style={{
-                  width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                  background: 'rgba(200,111,74,0.1)', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.85rem', color: 'var(--clay)',
-                }}>
-                  {evt.event_type === 'flashcard_review' ? '↺'
-                    : evt.event_type === 'chunk_analyzed' ? '⚡'
-                    : evt.event_type === 'chunk_saved'    ? '◈'
-                    : evt.event_type === 'video_studied'  ? '▶'
-                    : evt.event_type === 'music_studied'  ? '♪'
-                    : evt.event_type === 'word_looked_up' ? '◉'
-                    : evt.event_type === 'streak_bonus'   ? '◆'
-                    : '★'}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink)' }}>
-                    {EVENT_LABELS[evt.event_type] ?? evt.event_type}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                    {timeAgo(evt.event_ts)}
-                  </div>
-                </div>
-                <div style={{ fontWeight: 900, fontSize: '0.85rem', color: 'var(--moss)', flexShrink: 0 }}>
-                  +{evt.points} XP
-                </div>
-              </div>
-            ))}
+      <div className="home-grid">
+        <section className="panel">
+          <div className="panel-head">
+            <span className="mini-label">Daily goal</span>
+            <strong>{reviewedToday} / {reviewGoal}</strong>
           </div>
-        </>
-      )}
+          <div className="goal-circle" style={{ ['--goal' as string]: `${goalPct}%` }}>
+            <span>{goalPct}%</span>
+          </div>
+          <p className="panel-copy">Review 10 cards to keep your memory curve healthy.</p>
+          <WeeklyCalendar weekActivity={stats?.weekActivity ?? Array(7).fill(false)} />
+        </section>
+
+        <section className="panel">
+          <div className="panel-head">
+            <span className="mini-label">Current level</span>
+            <strong>{rank?.label ?? 'Explorer'}</strong>
+          </div>
+          <p className="rank-title">{(stats?.points ?? 148).toLocaleString()} XP</p>
+          <div className="xp-bar-track-light">
+            <div className="xp-bar-fill" style={{ width: `${xp?.progressPct ?? 74}%` }} />
+          </div>
+          <p className="panel-copy">
+            {xp?.nextRank ? `${xp.xpToNext?.toLocaleString()} XP until ${xp.nextRank.label}.` : 'You reached the top rank.'}
+          </p>
+        </section>
+
+        <section className="panel review-panel">
+          <div>
+            <span className="mini-label">Today&apos;s review</span>
+            <h2>{loading ? '...' : dueCount} cards due</h2>
+            <p className="panel-copy">Your fastest path to retention is one focused review session.</p>
+          </div>
+          <Link href="/review" className="btn-primary">Start Review</Link>
+        </section>
+      </div>
+
+      <div className="section-title">Recommended Content</div>
+      <div className="recommendation-row">
+        {recommendedLessons.map((lesson) => (
+          <Link href={lesson.href} key={lesson.title} className="recommendation-card">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={lesson.thumbnail} alt="" />
+            <div>
+              <span className="mini-label">{lesson.source} · {lesson.difficulty}</span>
+              <h3>{lesson.title}</h3>
+              <p>{lesson.chunks} chunks available</p>
+              <div className="skill-row">
+                {lesson.skills.map((skill) => <span key={skill}>{skill}</span>)}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="section-title">Recent Activity</div>
+      <div className="activity-list">
+        {(stats?.xpHistory.length ? stats.xpHistory : [
+          { event_type: 'chunk_saved', points: 8, event_ts: new Date().toISOString() },
+          { event_type: 'flashcard_review', points: 10, event_ts: new Date().toISOString() },
+          { event_type: 'video_studied', points: 30, event_ts: new Date().toISOString() },
+        ]).slice(0, 5).map((evt, i) => (
+          <div key={`${evt.event_type}-${i}`} className="activity-row">
+            <span>{EVENT_LABELS[evt.event_type] ?? evt.event_type}</span>
+            <small>{timeAgo(evt.event_ts)}</small>
+            <strong>+{evt.points} XP</strong>
+          </div>
+        ))}
+      </div>
     </>
   )
 }

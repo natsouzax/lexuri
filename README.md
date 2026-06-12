@@ -1,192 +1,151 @@
-﻿# Lexuri
+# Lexuri — Turn real content into English fluency
+![alt text](image.png)
 
-AI-powered English learning app built with Next.js, Supabase, and OpenAI.
+> AI-powered English learning. You bring the content you already enjoy. Lexuri finds every idiom, phrasal verb, and collocation — and makes sure you never forget them.
 
-## Tech stack
-
-- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
-- **Backend:** Next.js API Routes, Supabase (Postgres + Auth + Realtime)
-- **AI:** OpenAI GPT-4o (chunk detection), GPT-4-mini (flashcards)
-- **Payments:** Stripe Checkout + Billing Portal
-- **Testing:** Vitest
+**[Try it free at lexuri.app](https://lexuri.app)**
 
 ---
 
-## Getting started
+## Why Lexuri exists
+
+Most learners plateau because they study vocabulary in isolation — words, definitions, flashcards. But fluency isn't about words. It's about *chunks*: the multi-word expressions native speakers reach for automatically.
+
+> *"make sense of"*, *"at the end of the day"*, *"take it for granted"*
+
+These patterns live in the content you already consume — YouTube videos, songs, podcasts. The problem is extracting and retaining them at scale.
+
+**Lexuri automates that.** You pick the content. The AI does the heavy lifting.
+
+---
+
+## How it works
+
+```
+1. Paste a YouTube URL or search a song
+         ↓
+2. AI scans the transcript for real language patterns
+         ↓
+3. You save the chunks that matter to you
+         ↓
+4. Spaced repetition brings them back before you forget
+         ↓
+5. You speak and write like you actually consumed that content
+```
+
+---
+
+## Features
+
+| | Feature | What it does |
+|---|---|---|
+| AI | **Chunk Detection** | GPT-4o finds idioms, collocations, phrasal verbs, and spoken patterns — with meaning and example in context |
+| Import | **YouTube** | Paste any URL, get the full transcript analyzed |
+| Import | **Music** | Analyze song lyrics via Genius |
+| Learning | **Spaced Repetition (SRS)** | SM-2 algorithm — every card surfaces at the right moment |
+| Learning | **Quality-graded Review** | Rate your recall 1–5; response time factors into the next interval |
+| Progress | **Gamification** | XP, streaks, badges, leaderboard (weekly / monthly / all-time) |
+| Progress | **Performance Reports** | Accuracy, retention rate, avg response time, streak, review volume |
+| UX | **Offline Mode** | Service Worker + IndexedDB queue — works without internet, syncs on reconnect |
+| Onboarding | **Placement Test** | Determines your starting level before you begin |
+| Billing | **Free / Pro / Premium** | Stripe Checkout + Billing Portal — no friction to upgrade |
+| Notifications | **Daily Reminders** | Real-time bell + email reminders via Resend |
+
+---
+
+## Tech Stack
+
+Built end-to-end by one person.
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, TypeScript, React 19) |
+| Styling | Tailwind CSS v4 |
+| Database & Auth | Supabase (Postgres + RLS + Realtime) |
+| AI | OpenAI GPT-4o, Whisper |
+| Payments | Stripe Checkout, Billing Portal, Webhooks |
+| Email | Resend + React Email |
+| Testing | Vitest |
+| Deployment | Vercel |
+
+### Architecture highlights
+
+**Server Components by default** — data fetching on the server; client components only where interactivity requires it. Lean bundle, fast initial load.
+
+**Row Level Security at the DB layer** — every query is scoped to the authenticated user in Postgres itself, not just in app code.
+
+**Offline-first review** — reviews queue in IndexedDB when offline and sync via `/api/offline/sync` on reconnect. Last-write-wins conflict resolution.
+
+**Chunk-based SRS, not word-based** — the learning unit is the full multi-word expression with its context. Closer to how fluency actually works.
+
+---
+
+## Getting Started (local dev)
 
 ```bash
+git clone https://github.com/natsouzax/lexuri.git
+cd lexuri
 npm install
-cp .env.local .env.local.example   # fill in your keys (see below)
+cp .env.local.example .env.local
+# fill in your keys
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+**Required env vars:**
 
----
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server only) |
+| `OPENAI_API_KEY` | OpenAI key |
+| `GENIUS_API_KEY` | Genius.com lyrics API |
+| `NEXT_PUBLIC_APP_URL` | Base URL, e.g. `http://localhost:3000` |
 
-## Environment variables
+Stripe and Resend keys are optional for local dev (payments and email won't work without them).
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service-role key (server only) |
-| `OPENAI_API_KEY` | ✅ | OpenAI key |
-| `GENIUS_API_KEY` | ✅ | Genius.com lyrics API key |
-| `STRIPE_SECRET_KEY` | Payments | `sk_test_…` from Stripe dashboard |
-| `STRIPE_WEBHOOK_SECRET` | Payments | `whsec_…` from Stripe webhook settings |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Payments | `pk_test_…` from Stripe dashboard |
-| `NEXT_PUBLIC_STRIPE_PRO_PRICE_ID` | Payments | Stripe Price ID for the Pro plan |
-| `NEXT_PUBLIC_APP_URL` | Payments | App base URL, e.g. `http://localhost:3000` |
-| `LMS_API_URL` | LMS (optional) | Base URL of your LMS REST API |
-| `LMS_API_KEY` | LMS (optional) | Bearer token for LMS API |
-
----
-
-## Database migrations
-
-Run migrations in order in the Supabase SQL editor or via the Supabase CLI:
+**Database migrations** — run in order via Supabase CLI or SQL editor:
 
 ```
 supabase/migrations/0001_flashcards.sql
 supabase/migrations/0002_profiles.sql
 supabase/migrations/0003_native_language.sql
-supabase/migrations/0004_subscriptions.sql   ← Feature 1: Payments
-supabase/migrations/0005_analytics.sql       ← Feature 2: Analytics
-supabase/migrations/0006_notifications.sql   ← Feature 3: Notifications (+ enable Realtime)
-supabase/migrations/0007_gamification.sql    ← Feature 4: Gamification
+supabase/migrations/0004_subscriptions.sql
+supabase/migrations/0005_analytics.sql
+supabase/migrations/0006_notifications.sql
+supabase/migrations/0007_gamification.sql
 ```
 
-After running `0006`, enable Realtime on the `notifications` table in the Supabase dashboard:
-**Table Editor → notifications → Enable Realtime**.
+After `0006`, enable Realtime on the `notifications` table in the Supabase dashboard.
 
 ---
 
-## API reference
-
-### Feature 1 — Payments
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/payments/create-checkout-session` | Required | Start Stripe Checkout; body: `{ price_id }` |
-| `POST` | `/api/payments/webhook` | Public (signature verified) | Stripe webhook — updates `subscriptions` table |
-| `GET` | `/api/payments/status` | Required | Returns `{ subscription, is_active }` |
-| `POST` | `/api/payments/create-portal-session` | Required | Opens Stripe Customer Portal |
-
-**Stripe webhook setup:**
-1. Install Stripe CLI: `stripe listen --forward-to localhost:3000/api/payments/webhook`
-2. Copy the webhook secret to `STRIPE_WEBHOOK_SECRET`
-
-### Feature 2 — Analytics
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/analytics/track` | Required | Record an event; body: `{ event, payload }` |
-
-Allowed events: `flashcard_review`, `session_start`, `session_end`, `payment_complete`, `video_sync_play`, `chunk_detected`, `flashcard_created`.
-
-All flashcard reviews are automatically tracked via the review route.
-
-### Feature 3 — Notifications
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/notifications/send` | Required | Create notification; body: `{ user_id, title, body, data }` |
-| `PATCH` | `/api/notifications/:id/read` | Required | Mark single notification as read |
-| `PATCH` | `/api/notifications/all/read` | Required | Mark all notifications as read |
-
-The `NotificationBell` component subscribes to Supabase Realtime and shows a live badge counter.
-
-### Feature 4 — Gamification & Reports
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/gamification/award` | Required | Award points; body: `{ quality, responseTimeSec?, eventId }` |
-| `GET` | `/api/gamification/leaderboard` | Required | `?window=weekly\|monthly\|alltime&page=1` |
-| `GET` | `/api/reports/performance` | Required | `?from=ISO&to=ISO` — KPIs: accuracy, avg time, retention, streak |
-
-Points are automatically awarded on each flashcard review (via the review route).
-
-**Scoring rules:**
-- Base: 10 pts for quality ≥ 3
-- Quality multipliers: q=5 ×1.5, q=4 ×1.2, q=3 ×1.0, q<3 = 0
-- Speed: <10s +10%, >60s −20%
-- First review of day: +5 pts
-- Streak bonus: 7d=+50, 14d=+100, 30d=+250 pts
-- Daily cap: 2000 pts
-
-**Badges:** Novice (10 reviews), Consistent (7-day streak), Marathoner (500 reviews), Speedster (50 fast reviews), Streak Master (30-day streak), Centurion (1000 pts).
-
-### Feature 5 — Offline Mode
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/offline/sync` | Required | Apply queued offline review; body: `{ clientId, cardId, quality, responseTimeSec?, reviewedAt }` |
-
-**Client usage** (import from `lib/offline.ts`):
-```ts
-import { queueReview, syncPendingMutations } from '@/lib/offline'
-
-// Queue review when offline:
-await queueReview({ clientId: crypto.randomUUID(), cardId, quality, reviewedAt: new Date().toISOString(), synced: false })
-
-// Sync when back online:
-window.addEventListener('online', () => syncPendingMutations())
-```
-
-Conflict policy: **last-write-wins**. The server applies the queued review even if the card was reviewed online in the interim.
-
-Service Worker at `public/sw.js` — register it in your root layout:
-```ts
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-}
-```
-
-### Feature 6 — LMS Integration
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/lms/sync` | Required | `{ direction: "export" \| "import" }` |
-
-**Export:** POSTs user progress JSON to `LMS_API_URL/progress`.  
-**Import:** GETs progress from `LMS_API_URL/progress/:userId`.
-
-Set `LMS_API_URL` and optionally `LMS_API_KEY` to enable. Returns `501` if not configured.
-
----
-
-## Running tests
+## Tests
 
 ```bash
-npm test              # run once
-npm run test:watch    # watch mode
-npm run test:coverage # with coverage report
+npm test               # run once
+npm run test:watch     # watch mode
+npm run test:coverage  # with coverage
 ```
 
-Tests cover:
-- Gamification points calculation and streak bonuses (`__tests__/gamification.test.ts`)
-- Stripe webhook signature verification (`__tests__/payments-webhook.test.ts`)
-- Analytics event validation (`__tests__/analytics.test.ts`)
+Covered: gamification scoring, Stripe webhook verification, analytics event validation.
 
 ---
 
-## Pages added
+## Partnerships
 
-| Route | Description |
-|---|---|
-| `/settings/billing` | Subscription status + upgrade/portal buttons |
-| `/leaderboard` | Points leaderboard (weekly / monthly / all time) |
-| `/reports` | Personal performance KPIs |
+The source code is open for learning, reference, and transparency.
+
+The platform at [lexuri.app](https://lexuri.app) is an independent product.
+
+If you're interested in **collaborating, integrating, or partnering** — reach out:
+
+**natanoliveiraad855@gmail.com**
 
 ---
 
-## Deployment
+## License
 
-Deploy on [Vercel](https://vercel.com). Set all env vars in the Vercel project settings.
+Copyright (c) 2026 Natan Oliveira — All rights reserved.
 
-For Stripe webhooks in production:
-1. Go to Stripe Dashboard → Developers → Webhooks
-2. Add endpoint: `https://yourdomain.com/api/payments/webhook`
-3. Select events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
-4. Copy the webhook secret to `STRIPE_WEBHOOK_SECRET`
+Source code is publicly visible for portfolio and transparency purposes. The platform, brand, and product are not open for redistribution or commercial use without written permission. Partnerships welcome — see above.

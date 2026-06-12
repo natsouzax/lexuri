@@ -183,7 +183,7 @@ export default function FeedDetailPage() {
           }}
         >
           <span style={{ fontSize: '0.88rem', color: 'var(--moss)', fontWeight: 600 }}>
-            Bem-vindo! Este é seu primeiro estudo — experimente analisar os chunks deste vídeo.
+            Welcome. Start by revealing the AI chunk map, then save three useful expressions.
           </span>
           <button
             onClick={() => {
@@ -215,7 +215,7 @@ export default function FeedDetailPage() {
       {/* Back + meta row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
         <Link href="/feed" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>
-          ← Feed
+          Back to Feed
         </Link>
         <span style={{ fontSize: '0.72rem', fontWeight: 900, padding: '2px 10px', borderRadius: 999, background: levelColor, color: '#fff' }}>
           {item.level}
@@ -240,7 +240,7 @@ export default function FeedDetailPage() {
             cursor: 'pointer',
           }}
         >
-          {saved ? '★ Saved' : '☆ Save'}
+          {saved ? 'Saved' : 'Save'}
         </button>
       </div>
 
@@ -248,7 +248,7 @@ export default function FeedDetailPage() {
       {transcriptLoading && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 0', color: 'var(--muted)' }}>
           <span className="spinner" />
-          <span>Loading video and transcript…</span>
+          <span>Loading video and transcript...</span>
         </div>
       )}
 
@@ -271,7 +271,7 @@ export default function FeedDetailPage() {
                 {videoData.title}
               </div>
               <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: 0 }}>
-                Play the video — the transcript syncs word by word. Click any word to collect it, or use AI chunk analysis below.
+                Play the video, read the transcript, then let AI surface the expressions worth saving. Focus on chunks you would actually use.
               </p>
             </div>
             <div>
@@ -297,7 +297,7 @@ export default function FeedDetailPage() {
                 ))}
               </div>
               <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
-                {analyzing ? <><span className="spinner" />Analyzing chunks…</> : 'Analyze language chunks'}
+                {analyzing ? <><span className="spinner" />Finding essential chunks...</> : 'Reveal AI chunk map'}
               </button>
             </div>
           </div>
@@ -331,7 +331,7 @@ export default function FeedDetailPage() {
                 onClick={handleGenerateFlashcards}
                 disabled={generatingCards}
               >
-                {generatingCards ? <><span className="spinner" />Generating flashcards…</> : 'Generate Flashcards'}
+                {generatingCards ? <><span className="spinner" />Generating flashcards...</> : 'Generate flashcards'}
               </button>
             </>
           )}
@@ -344,7 +344,7 @@ export default function FeedDetailPage() {
               <div className="section-title">
                 Generated Flashcards
                 <Link href="/review" style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', textDecoration: 'none' }}>
-                  Go to Review →
+                  Go to Review
                 </Link>
               </div>
               {generatedCards.map((card) => (
@@ -356,6 +356,12 @@ export default function FeedDetailPage() {
           {/* Chunk analysis */}
           {chunkAnalysis && (
             <>
+              <div className="panel" style={{ marginBottom: 16 }}>
+                <span className="mini-label">AI chunk map ready</span>
+                <p className="panel-copy">
+                  Lexuri found {chunkAnalysis.chunks.length} natural expressions. Save the high-importance chunks first; those are the expressions most likely to improve real comprehension.
+                </p>
+              </div>
               <div className="section-title">Chunk Map</div>
               <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
                 <ChunkHighlighter

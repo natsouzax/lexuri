@@ -1,51 +1,49 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
+import { recommendedLessons } from '@/lib/product'
 
-const NATIVE_LANGUAGES = [
-  'Portuguese', 'Spanish', 'French', 'German', 'Italian',
-  'Chinese', 'Japanese', 'Korean', 'Arabic', 'Russian',
-  'Hindi', 'Turkish', 'Other',
-]
-const LEVELS = [
-  { code: 'A1', label: 'A1', desc: 'Beginner' },
-  { code: 'A2', label: 'A2', desc: 'Elementary' },
-  { code: 'B1', label: 'B1', desc: 'Intermediate' },
-  { code: 'B2', label: 'B2', desc: 'Upper Intermediate' },
-  { code: 'C1', label: 'C1', desc: 'Advanced' },
-  { code: 'C2', label: 'C2', desc: 'Proficient' },
-]
 const GOALS = [
-  { id: 'vocabulary',   label: 'Vocabulary', icon: '📚' },
-  { id: 'conversation', label: 'Conversation', icon: '💬' },
-  { id: 'pronunciation', label: 'Pronunciation', icon: '🗣️' },
-  { id: 'grammar',      label: 'Grammar', icon: '✏️' },
-  { id: 'business',     label: 'Business Language', icon: '💼' },
-  { id: 'exam',         label: 'Exam Preparation', icon: '🎯' },
+  { id: 'travel', label: 'Travel' },
+  { id: 'work', label: 'Work' },
+  { id: 'fluency', label: 'Fluency' },
+  { id: 'exams', label: 'Exams' },
+  { id: 'conversation', label: 'Daily Conversation' },
 ]
 
-const TOTAL_STEPS = 4
+const INTERESTS = [
+  'Technology',
+  'Business',
+  'Science',
+  'Sports',
+  'Music',
+  'Movies',
+]
+
+const TOTAL_STEPS = 3
 
 export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [nativeLanguage, setNativeLanguage] = useState('Portuguese')
-  const [level, setLevel] = useState('B1')
-  const [goals, setGoals] = useState<string[]>(['vocabulary'])
+  const [goal, setGoal] = useState('fluency')
+  const [interests, setInterests] = useState<string[]>(['Technology', 'Music'])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  function toggleGoal(id: string) {
-    setGoals((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
+  function toggleInterest(label: string) {
+    setInterests((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
     )
   }
 
   async function handleFinish() {
-    if (goals.length === 0) { setError('Select at least one goal.'); return }
+    if (!goal || interests.length === 0) {
+      setError('Choose one goal and at least one interest.')
+      return
+    }
+
     setError('')
     setSaving(true)
 
@@ -55,9 +53,9 @@ export default function OnboardingPage() {
 
     const { error: dbError } = await supabase.from('onboarding').upsert({
       user_id: user.id,
-      native_language: nativeLanguage,
-      current_level: level,
-      learning_goals: goals,
+      native_language: 'Portuguese',
+      current_level: 'B1',
+      learning_goals: [goal, ...interests.map((interest) => `interest:${interest}`)],
     })
 
     if (dbError) {
@@ -66,7 +64,7 @@ export default function OnboardingPage() {
       return
     }
 
-    router.push('/feed/try-something-new')
+    router.push('/demo')
     router.refresh()
   }
 
@@ -74,142 +72,97 @@ export default function OnboardingPage() {
 
   return (
     <div className="onboard-shell">
-      {/* Top bar */}
       <div className="onboard-top">
         <span className="onboard-logo">Lexuri</span>
         <span className="onboard-step-counter">Step {step} of {TOTAL_STEPS}</span>
       </div>
 
-      {/* Progress bar */}
       <div className="onboard-progress-track">
         <div className="onboard-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className="onboard-body">
-        {/* Step 1 — Native language */}
         {step === 1 && (
           <div className="onboard-step animate-fade-up">
-            <div className="onboard-step-icon">🌍</div>
-            <h1 className="onboard-title">What&apos;s your native language?</h1>
+            <h1 className="onboard-title">Choose your English goal.</h1>
             <p className="onboard-desc">
-              Lexuri teaches English. We&apos;ll use your native language to show translations and explanations in a way that makes sense to you.
+              Lexuri will recommend real content and chunks that match why you are learning.
             </p>
-            <div className="onboard-options-grid">
-              {NATIVE_LANGUAGES.map((lang) => (
+            <div className="onboard-goals-grid">
+              {GOALS.map((item) => (
                 <button
-                  key={lang}
-                  className={`onboard-option${nativeLanguage === lang ? ' selected' : ''}`}
-                  onClick={() => setNativeLanguage(lang)}
+                  key={item.id}
+                  className={`onboard-goal${goal === item.id ? ' selected' : ''}`}
+                  onClick={() => setGoal(item.id)}
                 >
-                  {lang}
+                  <span>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 2 — Level */}
         {step === 2 && (
           <div className="onboard-step animate-fade-up">
-            <div className="onboard-step-icon">📊</div>
-            <h1 className="onboard-title">What&apos;s your current level?</h1>
-            <p className="onboard-desc">Be honest — this helps us pick the right content difficulty.</p>
-            <div className="onboard-level-grid">
-              {LEVELS.map((l) => (
+            <h1 className="onboard-title">Choose what you like to consume.</h1>
+            <p className="onboard-desc">
+              Your first lessons should feel like something you would actually watch or listen to.
+            </p>
+            <div className="onboard-options-grid">
+              {INTERESTS.map((interest) => (
                 <button
-                  key={l.code}
-                  className={`onboard-level${level === l.code ? ' selected' : ''}`}
-                  onClick={() => setLevel(l.code)}
+                  key={interest}
+                  className={`onboard-option${interests.includes(interest) ? ' selected' : ''}`}
+                  onClick={() => toggleInterest(interest)}
                 >
-                  <span className="onboard-level-code">{l.label}</span>
-                  <span className="onboard-level-desc">{l.desc}</span>
+                  {interest}
                 </button>
               ))}
             </div>
-            <p style={{ marginTop: 16, fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'center' }}>
-              Not sure?{' '}
-              <Link href="/placement-test" style={{ color: 'var(--clay)', fontWeight: 700 }}>
-                Take our placement test →
-              </Link>
-            </p>
+            {error && <p className="auth-error" style={{ marginTop: 12 }}>{error}</p>}
           </div>
         )}
 
-        {/* Step 3 — Goals */}
         {step === 3 && (
           <div className="onboard-step animate-fade-up">
-            <div className="onboard-step-icon">🎯</div>
-            <h1 className="onboard-title">What are your learning goals?</h1>
-            <p className="onboard-desc">Pick everything that applies — you can change this later.</p>
-            <div className="onboard-goals-grid">
-              {GOALS.map((g) => (
-                <button
-                  key={g.id}
-                  className={`onboard-goal${goals.includes(g.id) ? ' selected' : ''}`}
-                  onClick={() => toggleGoal(g.id)}
-                >
-                  <span className="onboard-goal-icon">{g.icon}</span>
-                  <span>{g.label}</span>
-                </button>
+            <h1 className="onboard-title">Your first lesson is ready.</h1>
+            <p className="onboard-desc">
+              Lexuri will start with a guided demo so you can see AI chunks, save your first three expressions, and complete a tiny review before you reach the dashboard.
+            </p>
+            <div style={{ border: '1px solid var(--auth-border)', borderRadius: 16, padding: 18, marginBottom: 18, background: 'rgba(248,250,252,0.04)' }}>
+              <div style={{ color: 'var(--auth-text)', fontWeight: 900, marginBottom: 8 }}>First mission</div>
+              <div style={{ display: 'grid', gap: 8, color: 'var(--auth-muted)', fontSize: '0.86rem' }}>
+                <span>1. Reveal the AI chunk map</span>
+                <span>2. Save three useful chunks</span>
+                <span>3. Generate your first cards</span>
+                <span>4. Review them once</span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {recommendedLessons.slice(0, 3).map((lesson) => (
+                <div key={lesson.title} className="onboard-summary-row" style={{ border: '1px solid var(--auth-border)', borderRadius: 12 }}>
+                  <span className="onboard-summary-key">{lesson.source}</span>
+                  <span className="onboard-summary-val">{lesson.title}</span>
+                </div>
               ))}
             </div>
             {error && <p className="auth-error" style={{ marginTop: 12 }}>{error}</p>}
           </div>
         )}
 
-        {/* Step 4 — Ready */}
-        {step === 4 && (
-          <div className="onboard-step animate-fade-up" style={{ textAlign: 'center', alignItems: 'center' }}>
-            <div className="onboard-step-icon" style={{ fontSize: '3.5rem' }}>🚀</div>
-            <h1 className="onboard-title">You&apos;re all set!</h1>
-            <p className="onboard-desc">
-              Your profile is configured. Lexuri will now surface the best chunks, vocabulary, and review sessions for your journey.
-            </p>
-
-            <div className="onboard-summary">
-              <div className="onboard-summary-row">
-                <span className="onboard-summary-key">Native language</span>
-                <span className="onboard-summary-val">{nativeLanguage}</span>
-              </div>
-              <div className="onboard-summary-row">
-                <span className="onboard-summary-key">Level</span>
-                <span className="onboard-summary-val">{level}</span>
-              </div>
-              <div className="onboard-summary-row">
-                <span className="onboard-summary-key">Goals</span>
-                <span className="onboard-summary-val">{goals.join(', ')}</span>
-              </div>
-            </div>
-
-            {error && <p className="auth-error" style={{ marginTop: 12 }}>{error}</p>}
-          </div>
-        )}
-
-        {/* Navigation */}
         <div className="onboard-nav">
           {step > 1 && (
-            <button
-              className="onboard-btn-secondary"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={saving}
-            >
-              ← Back
+            <button className="onboard-btn-secondary" onClick={() => setStep((s) => s - 1)} disabled={saving}>
+              Back
             </button>
           )}
           {step < TOTAL_STEPS ? (
-            <button
-              className="onboard-btn-primary"
-              onClick={() => setStep((s) => s + 1)}
-            >
-              Continue →
+            <button className="onboard-btn-primary" onClick={() => setStep((s) => s + 1)}>
+              Continue
             </button>
           ) : (
-            <button
-              className="onboard-btn-primary"
-              onClick={handleFinish}
-              disabled={saving}
-            >
-              {saving ? <><span className="auth-spinner" />Saving…</> : 'Start learning →'}
+            <button className="onboard-btn-primary" onClick={handleFinish} disabled={saving}>
+              {saving ? <><span className="auth-spinner" />Saving...</> : 'Start guided lesson'}
             </button>
           )}
         </div>

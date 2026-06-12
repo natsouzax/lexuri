@@ -42,3 +42,14 @@ next-env.d.ts
 
 # temp files from youtube-transcript / ytdl
 *-player-script.js
+
+# internal docs — not for public repo
+REDESIGN_PROMPT.md
+PLANO_LANCAMENTO.md
+ANALISE_VERBLY.md
+
+# dev scripts with env access
+scripts/diagnose.ps1
+
+# supabase cli temp
+supabase/.temp/
