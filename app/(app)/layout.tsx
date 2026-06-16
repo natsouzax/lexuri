@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase-server'
 import AppShell from '@/components/AppShell'
-import DonationPopup from '@/components/DonationPopup'
+import PremiumPopup from '@/components/PremiumPopup'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AppShell>
       {children}
-      <DonationPopup />
+      <PremiumPopup />
     </AppShell>
   )
 }

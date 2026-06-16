@@ -1,10 +1,12 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import type { ChunkItem } from '@/lib/types'
+
+const NATIVE_LANG_KEY = 'lexuri-native-lang'
 
 const DEMO_TEXT =
   "Is there something you've always meant to do, wanted to do, but just haven't? " +
@@ -101,8 +103,98 @@ const DEMO_CHUNKS: ChunkItem[] = [
   },
 ]
 
+// Per-language translations for each demo chunk
+const CHUNK_NATIVE_TRANSLATIONS: Record<string, Record<string, string>> = {
+  'always meant to do': {
+    'pt-BR': 'sempre quis fazer',
+    'es':    'siempre pensé en hacer',
+    'fr':    "j'avais toujours voulu faire",
+    'de':    'hatte immer geplant zu tun',
+    'it':    'avevo sempre intenzione di fare',
+    'ja':    'ずっとやろうと思っていた',
+    'ko':    '늘 하려고 했던',
+    'zh':    '一直打算做的',
+    'ar':    'كنت دائماً أنوي القيام به',
+    'tr':    'her zaman yapmayı düşündüm',
+    'ru':    'всегда собирался сделать',
+    'hi':    'हमेशा करने का इरादा था',
+  },
+  "just haven't": {
+    'pt-BR': 'simplesmente não fiz',
+    'es':    'simplemente no lo hice',
+    'fr':    "n'ai tout simplement pas fait",
+    'de':    'einfach nicht getan',
+    'it':    'semplicemente non l\'ho fatto',
+    'ja':    'ただやらなかった',
+    'ko':    '그냥 하지 않았다',
+    'zh':    '就是没去做',
+    'ar':    'لم أفعله فحسب',
+    'tr':    'sadece yapmadım',
+    'ru':    'просто не сделал',
+    'hi':    'बस नहीं किया',
+  },
+  'try something new': {
+    'pt-BR': 'tentar algo novo',
+    'es':    'probar algo nuevo',
+    'fr':    'essayer quelque chose de nouveau',
+    'de':    'etwas Neues ausprobieren',
+    'it':    'provare qualcosa di nuovo',
+    'ja':    '新しいことを試す',
+    'ko':    '새로운 것을 시도하다',
+    'zh':    '尝试新事物',
+    'ar':    'تجربة شيء جديد',
+    'tr':    'yeni bir şey denemek',
+    'ru':    'попробовать что-то новое',
+    'hi':    'कुछ नया आज़माना',
+  },
+  'just the right amount of time': {
+    'pt-BR': 'exatamente o tempo certo',
+    'es':    'justo la cantidad correcta de tiempo',
+    'fr':    'exactement la bonne durée',
+    'de':    'genau die richtige Menge Zeit',
+    'it':    'esattamente il tempo giusto',
+    'ja':    'ちょうどいい期間',
+    'ko':    '딱 알맞은 시간',
+    'zh':    '恰好合适的时间',
+    'ar':    'المقدار المناسب من الوقت تماماً',
+    'tr':    'tam doğru süre',
+    'ru':    'ровно столько времени',
+    'hi':    'बिल्कुल सही समय की मात्रा',
+  },
+  'add a new habit': {
+    'pt-BR': 'adquirir um novo hábito',
+    'es':    'adquirir un nuevo hábito',
+    'fr':    'adopter une nouvelle habitude',
+    'de':    'eine neue Gewohnheit aufbauen',
+    'it':    'acquisire una nuova abitudine',
+    'ja':    '新しい習慣を取り入れる',
+    'ko':    '새로운 습관을 만들다',
+    'zh':    '养成一个新习惯',
+    'ar':    'إضافة عادة جديدة',
+    'tr':    'yeni bir alışkanlık edinmek',
+    'ru':    'приобрести новую привычку',
+    'hi':    'एक नई आदत जोड़ना',
+  },
+}
+
 export default function DemoPage() {
   const [selectedChunk, setSelectedChunk] = useState<ChunkItem | null>(null)
+  const [lang, setLang] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLang(localStorage.getItem(NATIVE_LANG_KEY))
+    function onLangChange() { setLang(localStorage.getItem(NATIVE_LANG_KEY)) }
+    window.addEventListener('lexuri-lang-changed', onLangChange)
+    return () => window.removeEventListener('lexuri-lang-changed', onLangChange)
+  }, [])
+
+  // Build the per-chunk native-translation map for the current language
+  const nativeTranslations: Record<string, string> = {}
+  if (lang && lang !== 'en') {
+    for (const [chunkText, langs] of Object.entries(CHUNK_NATIVE_TRANSLATIONS)) {
+      if (langs[lang]) nativeTranslations[chunkText] = langs[lang]
+    }
+  }
 
   return (
     <>
@@ -137,8 +229,13 @@ export default function DemoPage() {
         <div className="mkt-container">
           {/* Transcript panel */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Transcript — chunk map
+            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span>Transcript — chunk map</span>
+              {lang && lang !== 'en' && (
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--clay)', textTransform: 'none', letterSpacing: 0 }}>
+                  Hover any word or phrase to see translations
+                </span>
+              )}
             </div>
             <div
               style={{
@@ -154,6 +251,8 @@ export default function DemoPage() {
                 chunks={DEMO_CHUNKS}
                 selectedChunk={selectedChunk}
                 onChunkClick={setSelectedChunk}
+                lang={lang}
+                nativeTranslations={nativeTranslations}
               />
             </div>
           </div>

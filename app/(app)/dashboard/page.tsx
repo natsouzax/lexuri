@@ -116,7 +116,8 @@ export default function DashboardPage() {
   const goalPct = Math.min(100, Math.round((reviewedToday / reviewGoal) * 100))
   const rank = stats?.rank
   const xp = stats?.xpProgress
-  const currentLesson = feedItems[0]
+  const musicItems = feedItems.filter((i) => i.type === 'music')
+  const currentLesson = musicItems[0] ?? feedItems[0]
 
   return (
     <>
@@ -194,7 +195,7 @@ export default function DashboardPage() {
           marginBottom: 32,
         }}
       >
-        {feedItems.slice(0, 6).map((item) => (
+        {(musicItems.length > 0 ? musicItems : feedItems).slice(0, 6).map((item) => (
           <FeedItemCard
             key={item.id}
             item={item}

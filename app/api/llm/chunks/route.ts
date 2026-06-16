@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient, safeJsonParse } from '@/lib/openai'
 import { createClient } from '@/lib/supabase-server'
+import { getUserPremiumStatus, getWeeklyUsage, incrementWeeklyUsage, FREE_LIMITS } from '@/lib/subscription'
 import type { ChunkAnalysis, ChunkItem } from '@/lib/types'
 
 function buildSystemPrompt(nativeLang: string) {
@@ -87,6 +88,22 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const [{ isPremium }, usage] = await Promise.all([
+      getUserPremiumStatus(user.id),
+      getWeeklyUsage(user.id),
+    ])
+
+    if (!isPremium && usage.chunkAnalyses >= FREE_LIMITS.weeklyChunkAnalyses) {
+      return NextResponse.json(
+        {
+          error: `Free plan limit reached. You can run ${FREE_LIMITS.weeklyChunkAnalyses} chunk analyses per week. Upgrade to Premium for unlimited access.`,
+          limitReached: true,
+          upgradeUrl: '/plans',
+        },
+        { status: 403 },
+      )
+    }
+
     const body = (await request.json()) as { text: string; level?: string }
     const { text, level = 'B1' } = body
 
@@ -123,6 +140,10 @@ export async function POST(request: Request) {
       .filter((c): c is ChunkItem => typeof c.text === 'string' && c.text.trim().length > 0)
       .map((c) => correctOffset(c, text))
       .filter((c): c is ChunkItem => c !== null)
+
+    if (!isPremium) {
+      await incrementWeeklyUsage(user.id, 'chunk_analyses')
+    }
 
     return NextResponse.json({ original_text: text, chunks: validChunks } satisfies ChunkAnalysis)
   } catch (e) {

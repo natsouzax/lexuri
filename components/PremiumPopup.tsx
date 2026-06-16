@@ -1,23 +1,22 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const STORAGE_KEY = 'lexuri_donation_popup_shown'
+const STORAGE_KEY = 'lexuri_premium_popup_shown'
 
-export default function DonationPopup() {
+export default function PremiumPopup() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     try {
       const alreadyShown = localStorage.getItem(STORAGE_KEY)
       if (!alreadyShown) {
-        // Small delay so it doesn't flash immediately on page load
         const timer = setTimeout(() => setVisible(true), 1200)
         return () => clearTimeout(timer)
       }
     } catch {
-      // localStorage may be unavailable (SSR / private mode edge cases)
+      // localStorage may be unavailable in private mode
     }
   }, [])
 
@@ -36,7 +35,7 @@ export default function DonationPopup() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Support Lexuri"
+      aria-label="Go Premium"
       style={{
         position: 'fixed',
         inset: 0,
@@ -61,7 +60,6 @@ export default function DonationPopup() {
           position: 'relative',
         }}
       >
-        {/* Close button */}
         <button
           onClick={dismiss}
           aria-label="Close"
@@ -81,7 +79,7 @@ export default function DonationPopup() {
           ✕
         </button>
 
-        <p style={{ fontSize: '1.3rem', marginBottom: 6 }}>♥</p>
+        <p style={{ fontSize: '1.3rem', marginBottom: 6 }}>⚡</p>
         <h3
           style={{
             fontFamily: 'Fraunces, Georgia, serif',
@@ -90,16 +88,16 @@ export default function DonationPopup() {
             marginBottom: 8,
           }}
         >
-          Enjoying Lexuri?
+          Go Premium — 1 month free
         </h3>
         <p style={{ fontSize: '0.86rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: 18 }}>
-          Lexuri is free forever. If it&apos;s been useful, a small donation helps us keep the lights
-          on and build the mobile app.
+          Unlock unlimited content, advanced AI chunk detection, and automated SRS scheduling.
+          Use coupon <strong>LEARN</strong> — no credit card required.
         </p>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <Link
-            href="/donate"
+            href="/plans#coupon"
             onClick={dismiss}
             style={{
               flex: 1,
@@ -114,7 +112,7 @@ export default function DonationPopup() {
               textAlign: 'center',
             }}
           >
-            Support us ♥
+            Activate Premium ⚡
           </Link>
           <button
             onClick={dismiss}

@@ -65,6 +65,13 @@ export default function YouTubePage() {
 
   useEffect(() => { loadCards() }, [loadCards])
 
+  // Auto-analyze chunks as soon as a video is loaded
+  useEffect(() => {
+    if (!videoData) return
+    handleAnalyzeChunks()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoData])
+
   async function handleLoadVideo() {
     if (!url.trim()) return
     setLoading(true)
@@ -285,6 +292,9 @@ export default function YouTubePage() {
             segments={videoData.segments}
             selectedWords={selectedWords}
             onWordsChange={setSelectedWords}
+            chunks={chunkAnalysis?.chunks}
+            selectedChunk={selectedChunk}
+            onChunkSelect={setSelectedChunk}
           />
 
           {/* Word collector actions */}

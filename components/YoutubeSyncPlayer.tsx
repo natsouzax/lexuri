@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { TranscriptSegment } from '@/lib/types'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ChunkItem, TranscriptSegment } from '@/lib/types'
 
 declare global {
   interface Window {
@@ -29,14 +29,10 @@ interface YTPlayer {
 }
 
 const WORD_RE = /[A-Za-z]+(?:'[A-Za-z]+)?/g
+const IMPORTANCE_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 }
 
 function normalizeWord(word: string): string {
   return word.replace(/[^A-Za-z']/g, '').toLowerCase().replace(/^'+|'+$/g, '')
-}
-
-function formatTime(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds))
-  return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(safe % 60).padStart(2, '0')}`
 }
 
 function isNonSpeech(text: string): boolean {
@@ -47,11 +43,87 @@ function isNonSpeech(text: string): boolean {
   return false
 }
 
+// Split a text into alternating plain/chunk regions (same algorithm as ChunkHighlighter)
+function splitByChunks(
+  text: string,
+  chunks: ChunkItem[],
+): Array<{ text: string; chunk?: ChunkItem }> {
+  const sorted = [...chunks].sort((a, b) => {
+    const imp = IMPORTANCE_ORDER[a.importance] - IMPORTANCE_ORDER[b.importance]
+    return imp !== 0 ? imp : (b.end - b.start) - (a.end - a.start)
+  })
+  const selected: ChunkItem[] = []
+  for (const c of sorted) {
+    if (!selected.some((s) => c.start < s.end && c.end > s.start)) selected.push(c)
+  }
+  selected.sort((a, b) => a.start - b.start)
+
+  const parts: Array<{ text: string; chunk?: ChunkItem }> = []
+  let cursor = 0
+  for (const c of selected) {
+    if (c.start > cursor) parts.push({ text: text.slice(cursor, c.start) })
+    parts.push({ text: text.slice(c.start, c.end), chunk: c })
+    cursor = c.end
+  }
+  if (cursor < text.length) parts.push({ text: text.slice(cursor) })
+  return parts
+}
+
+// Render plain text as individually clickable words.
+// No per-word background — the overlay container provides the single dark bar.
+// Only selected words get a highlight.
+function renderWords(
+  text: string,
+  keyPrefix: string,
+  selected: Set<string>,
+  toggleWord: (w: string) => void,
+): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  let lastIdx = 0
+  let wc = 0
+  const regex = new RegExp(WORD_RE.source, 'g')
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIdx) {
+      parts.push(<span key={`${keyPrefix}-g${wc}`}>{text.slice(lastIdx, match.index)}</span>)
+    }
+    const word = match[0]
+    const norm = normalizeWord(word)
+    const isSel = selected.has(norm)
+    parts.push(
+      <span
+        key={`${keyPrefix}-w${wc++}`}
+        onClick={() => toggleWord(norm)}
+        style={{
+          cursor: 'pointer',
+          pointerEvents: 'auto',
+          borderRadius: 4,
+          padding: isSel ? '1px 4px' : undefined,
+          background: isSel ? 'rgba(246,202,95,0.9)' : undefined,
+          color:  '#1a1a1a',
+          fontWeight: isSel ? 900 : undefined,
+          transition: 'background 100ms ease',
+        }}
+      >
+        {word}
+      </span>,
+    )
+    lastIdx = match.index + word.length
+  }
+  if (lastIdx < text.length) {
+    parts.push(<span key={`${keyPrefix}-tail`}>{text.slice(lastIdx)}</span>)
+  }
+  return parts
+}
+
 interface Props {
   videoId: string
   segments: TranscriptSegment[]
   selectedWords: string[]
   onWordsChange: (words: string[]) => void
+  chunks?: ChunkItem[]
+  selectedChunk?: ChunkItem | null
+  onChunkSelect?: (chunk: ChunkItem) => void
 }
 
 export default function YoutubeSyncPlayer({
@@ -59,20 +131,51 @@ export default function YoutubeSyncPlayer({
   segments,
   selectedWords,
   onWordsChange,
+  chunks,
+  selectedChunk,
+  onChunkSelect,
 }: Props) {
-  const playerRef       = useRef<YTPlayer | null>(null)
-  const playerDivRef    = useRef<HTMLDivElement>(null)
-  const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null)
-  const selectedSet     = useRef(new Set(selectedWords))
-  const [, forceUpdate] = useState(0)
+  const playerRef        = useRef<YTPlayer | null>(null)
+  const playerDivRef     = useRef<HTMLDivElement>(null)
+  const containerRef     = useRef<HTMLDivElement>(null)
+  const intervalRef      = useRef<ReturnType<typeof setInterval> | null>(null)
+  const rafRef           = useRef<number | null>(null)
+  const anchorRef        = useRef({ videoTime: 0, wallTime: 0 })
+  const isPlayingRef     = useRef(false)
+  const holdRef          = useRef({ idx: -1, until: 0 })
+  const selectedSet      = useRef(new Set(selectedWords))
+  const [, forceUpdate]  = useState(0)
   const [captionDelay, setCaptionDelay] = useState(0)
   const [activeSegIdx, setActiveSegIdx] = useState(-1)
-  const lastScrollRef   = useRef(0)
-  const transcriptRef   = useRef<HTMLDivElement>(null)
-
-  // Refs so the interval always reads the latest values without being recreated
+  const [showCaptions, setShowCaptions] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const captionDelayRef  = useRef(0)
   const updateActiveRef  = useRef<(t: number) => void>(() => {})
+
+  // Pre-compute each segment's start offset in the full transcript (segments joined by ' ')
+  const segmentOffsets = useMemo(() => {
+    const offsets: number[] = []
+    let pos = 0
+    for (const seg of segments) {
+      offsets.push(pos)
+      pos += seg.text.length + 1
+    }
+    return offsets
+  }, [segments])
+
+  // Chunks that overlap the active segment, with positions relative to that segment's text
+  const activeChunks = useMemo(() => {
+    if (!chunks?.length || activeSegIdx < 0) return []
+    const segStart = segmentOffsets[activeSegIdx] ?? 0
+    const segEnd   = segStart + (segments[activeSegIdx]?.text.length ?? 0)
+    return chunks
+      .filter((c) => c.start < segEnd && c.end > segStart)
+      .map((c) => ({
+        ...c,
+        start: Math.max(0, c.start - segStart),
+        end:   Math.min(segments[activeSegIdx].text.length, c.end - segStart),
+      }))
+  }, [chunks, activeSegIdx, segments, segmentOffsets])
 
   useEffect(() => {
     selectedSet.current = new Set(selectedWords)
@@ -81,19 +184,19 @@ export default function YoutubeSyncPlayer({
 
   useEffect(() => { captionDelayRef.current = captionDelay }, [captionDelay])
 
-  // Load YouTube IFrame API once; always clean up on unmount
+  useEffect(() => {
+    function onFsChange() { setIsFullscreen(!!document.fullscreenElement) }
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
+
   useEffect(() => {
     function cleanup() {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       window.onYouTubeIframeAPIReady = () => {}
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-      if (playerRef.current) {
-        playerRef.current.destroy()
-        playerRef.current = null
-      }
+      if (rafRef.current !== null) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      if (intervalRef.current !== null) { clearInterval(intervalRef.current); intervalRef.current = null }
+      if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null }
     }
 
     if (window.YT?.Player) {
@@ -101,7 +204,7 @@ export default function YoutubeSyncPlayer({
     } else {
       if (!document.getElementById('yt-iframe-api')) {
         const script = document.createElement('script')
-        script.id = 'yt-iframe-api'
+        script.id  = 'yt-iframe-api'
         script.src = 'https://www.youtube.com/iframe_api'
         document.head.appendChild(script)
       }
@@ -111,22 +214,36 @@ export default function YoutubeSyncPlayer({
     return cleanup
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  function syncAnchor() {
+    if (!playerRef.current) return
+    anchorRef.current = { videoTime: playerRef.current.getCurrentTime(), wallTime: performance.now() }
+  }
+
+  function getInterpolatedTime(): number {
+    const { videoTime, wallTime } = anchorRef.current
+    if (!isPlayingRef.current) return videoTime
+    return videoTime + (performance.now() - wallTime) / 1000
+  }
+
   function initPlayer() {
     if (!playerDivRef.current || !window.YT?.Player) return
-    if (playerRef.current) {
-      playerRef.current.destroy()
-      playerRef.current = null
-    }
+    if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null }
     playerRef.current = new window.YT.Player(playerDivRef.current, {
       videoId,
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1 },
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 },
       events: {
         onReady: () => {
-          intervalRef.current = setInterval(() => {
-            if (!playerRef.current) return
-            const time = playerRef.current.getCurrentTime() - captionDelayRef.current
+          intervalRef.current = setInterval(syncAnchor, 500)
+          function tick() {
+            const time = getInterpolatedTime() - captionDelayRef.current
             updateActiveRef.current(time)
-          }, 100)
+            rafRef.current = requestAnimationFrame(tick)
+          }
+          rafRef.current = requestAnimationFrame(tick)
+        },
+        onStateChange: (e) => {
+          isPlayingRef.current = e.data === 1
+          syncAnchor()
         },
       },
     })
@@ -135,26 +252,16 @@ export default function YoutubeSyncPlayer({
   const updateActive = useCallback(
     (time: number) => {
       let nextSeg = -1
-
       for (let i = 0; i < segments.length; i++) {
         const seg = segments[i]
-        if (time >= seg.start && time < seg.start + seg.duration) {
-          nextSeg = i
-          break
-        }
+        if (time >= seg.start && time < seg.start + seg.duration) { nextSeg = i; break }
       }
-
-      setActiveSegIdx((prev) => {
-        if (prev !== nextSeg && nextSeg >= 0 && transcriptRef.current) {
-          const now = Date.now()
-          if (now - lastScrollRef.current > 700) {
-            const el = transcriptRef.current.querySelector(`[data-seg="${nextSeg}"]`)
-            el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-            lastScrollRef.current = now
-          }
-        }
-        return nextSeg
-      })
+      if (nextSeg === -1 && holdRef.current.idx >= 0 && time < holdRef.current.until) {
+        nextSeg = holdRef.current.idx
+      } else if (nextSeg >= 0) {
+        holdRef.current = { idx: nextSeg, until: segments[nextSeg].start + segments[nextSeg].duration + 0.25 }
+      }
+      setActiveSegIdx((prev) => (prev === nextSeg ? prev : nextSeg))
     },
     [segments],
   )
@@ -171,29 +278,103 @@ export default function YoutubeSyncPlayer({
   }
 
   function adjustDelay(delta: number) {
-    setCaptionDelay((prev) => {
-      const next = Math.round((prev + delta) * 10) / 10
-      return Math.min(20, Math.max(-20, next))
-    })
+    setCaptionDelay((prev) => Math.min(20, Math.max(-20, Math.round((prev + delta) * 10) / 10)))
     setActiveSegIdx(-2)
   }
 
-  return (
-    <div className="yt-player-grid" style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 18, alignItems: 'start' }}>
-      {/* Left column: player + controls + collector */}
-      <div>
-        <div style={{ border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', padding: 12 }}>
-          <div ref={playerDivRef} style={{ width: '100%', aspectRatio: '16/9', borderRadius: 18, overflow: 'hidden', background: '#101813' }} />
-        </div>
+  function toggleFullscreen() {
+    if (!containerRef.current) return
+    document.fullscreenElement ? document.exitFullscreen() : containerRef.current.requestFullscreen()
+  }
 
+  const activeSeg = activeSegIdx >= 0 ? segments[activeSegIdx] : null
+
+  // Subtitle: chunks as inline colored underlines, plain words individually clickable.
+  // The overlay container provides the single dark background — no per-element boxes.
+  function renderSubtitle(): React.ReactNode {
+    if (!activeSeg || isNonSpeech(activeSeg.text)) return null
+    const parts = splitByChunks(activeSeg.text, activeChunks)
+    return parts.map((part, i) => {
+      if (part.chunk) {
+        const c = part.chunk
+        const isSelected = selectedChunk?.text === c.text
+        return (
+          <span
+            key={i}
+            onClick={() => onChunkSelect?.(c)}
+            title={c.contextual_translation}
+            style={{
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              borderBottom: `2.5px solid ${c.color}`,
+              borderRadius: 2,
+              paddingBottom: 1,
+              background: isSelected ? c.color + '55' : 'transparent',
+              color: '#1a1a1a',
+              fontWeight: isSelected ? 900 : 700,
+              transition: 'background 120ms ease',
+            }}
+          >
+            {part.text}
+          </span>
+        )
+      }
+      return <span key={i}>{renderWords(part.text, String(i), selectedSet.current, toggleWord)}</span>
+    })
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Video — full width */}
+      <div style={{ border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', padding: 12 }}>
+        <div ref={containerRef} className="yt-video-container">
+          <div ref={playerDivRef} className="yt-player-div" />
+
+          {/* Subtitle overlay: chunks + words */}
+          {showCaptions && activeSeg && !isNonSpeech(activeSeg.text) && (
+            <div className="subtitle-overlay">
+              {renderSubtitle()}
+            </div>
+          )}
+
+          {/* CC + fullscreen — bottom right */}
+          <div className="subtitle-controls-bar" style={{ top: 'auto', bottom: 10 }}>
+            <button
+              onClick={() => setShowCaptions((c) => !c)}
+              className={`btn-subtitle-ctrl${showCaptions ? ' on' : ''}`}
+              title={showCaptions ? 'Hide subtitles' : 'Show subtitles'}
+            >
+              CC
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="btn-subtitle-ctrl"
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                </svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 14 }}>
         {/* Sync calibration */}
-        <div style={{ marginTop: 14, padding: 14, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.72)', boxShadow: 'var(--shadow-md)' }}>
+        <div style={{ padding: 14, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.72)', boxShadow: 'var(--shadow-md)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, marginBottom: 10 }}>
             <span>Sync calibration</span>
             <span>{captionDelay > 0 ? '+' : ''}{captionDelay.toFixed(1)}s</span>
           </div>
           <p style={{ margin: '0 0 12px', color: 'var(--muted)', fontSize: '0.86rem', lineHeight: 1.45 }}>
-            If the box lights up before the words are spoken, click Delay. If it&apos;s late, click Earlier.
+            If the subtitle appears before the words are spoken, click Delay. If it&apos;s late, click Earlier.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.7fr', gap: 8 }}>
             {['Delay +0.5s', 'Earlier -0.5s', 'Reset'].map((label, i) => (
@@ -209,14 +390,16 @@ export default function YoutubeSyncPlayer({
         </div>
 
         {/* Word collector */}
-        <div style={{ marginTop: 14, padding: 16, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ padding: 16, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, marginBottom: 10 }}>
             <span>Selected words</span>
             <span>{selectedSet.current.size}</span>
           </div>
           <div className="chip-list">
             {selectedSet.current.size === 0 ? (
-              <span style={{ color: 'var(--muted)', fontSize: '0.92rem' }}>Click words in the transcript →</span>
+              <span style={{ color: 'var(--muted)', fontSize: '0.92rem' }}>
+                {chunks?.length ? 'Click chunks or words on the subtitle' : 'Click words on the subtitle to select them'}
+              </span>
             ) : (
               Array.from(selectedSet.current).sort().map((word) => (
                 <button key={word} className="chip" onClick={() => toggleWord(word)}>
@@ -226,78 +409,6 @@ export default function YoutubeSyncPlayer({
             )}
           </div>
         </div>
-      </div>
-
-      {/* Right column: transcript */}
-      <div
-        ref={transcriptRef}
-        className="yt-transcript"
-        style={{ maxHeight: 720, overflowY: 'auto', padding: 14, border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', scrollBehavior: 'smooth' }}
-      >
-        {segments.map((seg, segIdx) => {
-          const isActive  = segIdx === activeSegIdx
-          const nonSpeech = isNonSpeech(seg.text)
-          const parts: React.ReactNode[] = []
-          let lastIdx = 0
-          let wordCounter = 0
-
-          const regex = new RegExp(WORD_RE.source, 'g')
-          let match: RegExpExecArray | null
-          while ((match = regex.exec(seg.text)) !== null) {
-            if (match.index > lastIdx) parts.push(seg.text.slice(lastIdx, match.index))
-            const word = match[0]
-            const norm = normalizeWord(word)
-            const isSelected = selectedSet.current.has(norm)
-            const wc = wordCounter
-            parts.push(
-              <span
-                key={`${segIdx}-${wc}`}
-                onClick={nonSpeech ? undefined : () => toggleWord(norm)}
-                style={{
-                  display: 'inline-block',
-                  margin: '0 1px',
-                  padding: '2px 4px',
-                  borderRadius: 8,
-                  cursor: nonSpeech ? 'default' : 'pointer',
-                  transition: 'background 100ms ease',
-                  background: isSelected ? 'rgba(246,202,95,0.55)' : undefined,
-                  fontWeight: isSelected ? 900 : undefined,
-                  fontStyle: nonSpeech ? 'italic' : undefined,
-                  pointerEvents: nonSpeech ? 'none' : undefined,
-                }}
-              >
-                {word}
-              </span>,
-            )
-            wordCounter++
-            lastIdx = match.index + word.length
-          }
-          if (lastIdx < seg.text.length) parts.push(seg.text.slice(lastIdx))
-
-          return (
-            <div
-              key={segIdx}
-              data-seg={segIdx}
-              style={{
-                padding: 14,
-                border: `1px solid ${isActive ? 'rgba(200,111,74,0.55)' : 'transparent'}`,
-                borderRadius: 18,
-                marginBottom: 10,
-                lineHeight: 1.8,
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(246,202,95,0.28), rgba(255,250,240,0.92))'
-                  : 'rgba(255,255,255,0.36)',
-                boxShadow: isActive ? '0 14px 34px rgba(200,111,74,0.14)' : undefined,
-                transition: 'background 120ms ease, border 120ms ease, box-shadow 120ms ease',
-              }}
-            >
-              <div style={{ display: 'inline-flex', marginBottom: 8, padding: '4px 8px', borderRadius: 999, background: 'rgba(24,33,29,0.08)', color: '#46624a', fontSize: '0.72rem', fontWeight: 900, letterSpacing: '0.08em' }}>
-                {formatTime(seg.start)}
-              </div>
-              <div>{parts}</div>
-            </div>
-          )
-        })}
       </div>
     </div>
   )

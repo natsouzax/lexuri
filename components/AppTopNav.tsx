@@ -15,10 +15,9 @@ interface AppStats {
 }
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Home' },
-  { href: '/feed', label: 'Feed' },
-  { href: '/review', label: 'Review' },
-  { href: '/reports', label: 'Progress' },
+  { href: '/dashboard', label: 'Home', icon: <HomeIcon /> },
+  { href: '/feed', label: 'Feed', icon: <FeedIcon /> },
+  { href: '/reports', label: 'Progress', icon: <ProgressIcon /> },
 ]
 
 const MOBILE_EXTRA_ITEMS = [
@@ -82,6 +81,7 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
               href={item.href}
               className={`app-top-link${pathname.startsWith(item.href) ? ' active' : ''}`}
             >
+              {item.icon}
               {item.label}
             </Link>
           ))}
@@ -143,6 +143,34 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
         </nav>
       )}
     </header>
+  )
+}
+
+function HomeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
+      <polyline points="9 21 9 12 15 12 15 21" />
+    </svg>
+  )
+}
+
+function FeedIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  )
+}
+
+function ProgressIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
   )
 }
 

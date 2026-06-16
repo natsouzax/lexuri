@@ -1,34 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import HeroDemo from '@/components/marketing/HeroDemo'
 
 export const metadata: Metadata = {
   title: 'Lexuri - Turn real content into English fluency',
   description: 'AI-powered English learning. Turn YouTube videos, songs, and transcripts into chunks, flashcards, and smart reviews.',
 }
-
-const CHUNKS = [
-  {
-    text: 'take it for granted',
-    type: 'Collocation',
-    meaning: 'to stop appreciating something because it feels normal',
-    example: 'Many people take clean water for granted.',
-    color: '#4A90E2',
-  },
-  {
-    text: 'at the end of the day',
-    type: 'Idiom',
-    meaning: 'when everything important is considered',
-    example: 'At the end of the day, consistency matters more than talent.',
-    color: '#FF6B6B',
-  },
-  {
-    text: 'make sense of',
-    type: 'Phrasal verb',
-    meaning: 'to understand something confusing',
-    example: 'I watched the clip twice to make sense of the argument.',
-    color: '#4CAF50',
-  },
-]
 
 const STEPS = [
   ['01', 'Open real content', 'Choose a YouTube video, song, podcast, or curated lesson.'],
@@ -37,26 +14,15 @@ const STEPS = [
   ['04', 'Review before forgetting', 'Every saved chunk becomes a contextual SRS card with audio and examples.'],
 ]
 
-const PLANS = [
-  {
-    name: 'Free',
-    price: '$0',
-    body: 'For feeling the Aha moment.',
-    features: ['Demo lesson', '3 imports per month', '30 saved chunks', 'Basic review'],
-  },
-  {
-    name: 'Pro',
-    price: '$9/mo',
-    body: 'For consistent learners.',
-    features: ['More AI imports', 'Full chunk analysis', 'Smart SRS', 'Audio pronunciation', 'Progress reports'],
-    featured: true,
-  },
-  {
-    name: 'Premium',
-    price: '$19/mo',
-    body: 'For serious fluency goals.',
-    features: ['Advanced learning tracks', 'Custom plans', 'Priority AI processing', 'Exports', 'Deep progress insights'],
-  },
+const FREE_FEATURES = ['Demo lesson', '5 imports per week', '30 saved chunks', 'Basic review']
+
+const PREMIUM_FEATURES = [
+  'Unlimited YouTube & music imports',
+  'Advanced AI chunk detection',
+  'Automated SRS scheduling',
+  'Progress reports & analytics',
+  'Priority support',
+  'Early access to new features',
 ]
 
 export default function HomePage() {
@@ -67,10 +33,12 @@ export default function HomePage() {
           <div className="animate-fade-up">
             <span className="mkt-eyebrow">AI chunk-based English learning</span>
             <h1 className="mkt-h1" style={{ color: 'var(--paper)' }}>
-              Turn any video into personalized English flashcards.
+              <span style={{ display: 'block', marginBottom: '0.25em' }}>Stop memorizing words.</span>
+              <span style={{ display: 'block', fontSize: '1.6rem', lineHeight: 1, margin: '0.1em 0', color: 'var(--clay-bright)' }}>→</span>
+              <span style={{ display: 'block', marginTop: '0.25em' }}>Start speaking English.</span>
             </h1>
             <p className="mkt-lead mkt-lead-dark" style={{ marginBottom: 30 }}>
-              Lexuri finds the real expressions native speakers use, explains them in context, and schedules reviews before you forget them.
+              Lexuri finds the real expressions native speakers actually use — from videos and music you already watch — and builds them into your memory before you forget.
             </p>
             <div className="mkt-btn-group">
               <Link href="/demo" className="btn-mkt-primary">Try the demo lesson</Link>
@@ -83,25 +51,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="aha-demo-card animate-fade-up" style={{ animationDelay: '100ms' }}>
-            <div className="aha-demo-header">
-              <span>Demo lesson</span>
-              <strong>18 chunks detected</strong>
-            </div>
-            <div className="aha-transcript">
-              I used to <mark style={{ ['--chunk' as string]: '#4A90E2' }}>take it for granted</mark> that I could understand English, but <mark style={{ ['--chunk' as string]: '#FF6B6B' }}>at the end of the day</mark> I still could not <mark style={{ ['--chunk' as string]: '#4CAF50' }}>make sense of</mark> fast conversations.
-            </div>
-            <div className="aha-chunk-grid">
-              {CHUNKS.map((chunk) => (
-                <div key={chunk.text} className="aha-chunk-card" style={{ borderColor: `${chunk.color}66` }}>
-                  <span style={{ color: chunk.color }}>{chunk.type}</span>
-                  <h3>{chunk.text}</h3>
-                  <p>{chunk.meaning}</p>
-                  <small>{chunk.example}</small>
-                </div>
-              ))}
-            </div>
-          </div>
+          <HeroDemo />
         </div>
       </section>
 
@@ -135,7 +85,7 @@ export default function HomePage() {
               <span className="mkt-eyebrow">Why it works</span>
               <h2 className="mkt-h2">Words are too small. Chunks are what fluent speakers retrieve.</h2>
               <p className="mkt-lead">
-                Learning “make” and “sense” separately does not prepare you for real English. Learning “make sense of” as one reusable unit does.
+                Learning &quot;make&quot; and &quot;sense&quot; separately does not prepare you for real English. Learning &quot;make sense of&quot; as one reusable unit does.
               </p>
             </div>
             <div className="mkt-comparison mkt-grid-2col">
@@ -160,22 +110,72 @@ export default function HomePage() {
         <div className="mkt-container">
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span className="mkt-eyebrow">Pricing</span>
-            <h2 className="mkt-h2">Start free. Pay when Lexuri becomes your learning system.</h2>
+            <h2 className="mkt-h2">Start free. Go Premium when you&apos;re ready.</h2>
+            <p className="mkt-lead" style={{ margin: '0 auto' }}>
+              No pressure. The free plan is real — not a demo trap.
+            </p>
           </div>
-          <div className="pricing-grid">
-            {PLANS.map((plan) => (
-              <div key={plan.name} className={`pricing-card${plan.featured ? ' featured' : ''}`}>
-                <span className="mkt-eyebrow">{plan.name}</span>
-                <h3>{plan.price}</h3>
-                <p>{plan.body}</p>
-                <div>
-                  {plan.features.map((feature) => <span key={feature}>{feature}</span>)}
-                </div>
-                <Link href={plan.name === 'Free' ? '/demo' : '/register'} className={plan.featured ? 'btn-mkt-primary' : 'btn-mkt-ghost'}>
-                  {plan.name === 'Free' ? 'Try free' : 'Start with Pro'}
-                </Link>
+
+          <div className="mkt-grid-2col" style={{ gap: 20, maxWidth: 780, margin: '0 auto' }}>
+            {/* Free */}
+            <div className="pricing-card">
+              <span className="mkt-eyebrow">Free</span>
+              <h3>$0</h3>
+              <p>For feeling the Aha moment.</p>
+              <div>
+                {FREE_FEATURES.map((f) => <span key={f}>{f}</span>)}
               </div>
-            ))}
+              <Link href="/demo" className="btn-mkt-ghost" style={{ display: 'block', textAlign: 'center', marginTop: 'auto' }}>
+                Try free
+              </Link>
+            </div>
+
+            {/* Premium with coupon highlight */}
+            <div className="pricing-card featured" style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', top: -13, left: 24,
+                background: 'var(--clay)', color: '#fff',
+                fontSize: '0.7rem', fontWeight: 900,
+                padding: '4px 14px', borderRadius: 999, letterSpacing: '0.08em',
+              }}>
+                1 MONTH FREE
+              </span>
+              <span className="mkt-eyebrow" style={{ color: 'var(--clay-bright)' }}>Premium</span>
+              <h3>$5<span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--muted)' }}>/mo</span></h3>
+              <p>For serious learners who want it all.</p>
+              <div>
+                {PREMIUM_FEATURES.map((f) => <span key={f}>{f}</span>)}
+              </div>
+
+              {/* Coupon offer */}
+              <div style={{
+                margin: '16px 0',
+                padding: '12px 16px',
+                borderRadius: 12,
+                background: 'rgba(200,111,74,0.08)',
+                border: '1.5px dashed var(--clay)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+              }}>
+                <div>
+                  <div style={{ fontSize: '0.68rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--clay)', marginBottom: 2 }}>
+                    Validation coupon
+                  </div>
+                  <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.06em', color: 'var(--ink)' }}>
+                    LEARN
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--muted)', textAlign: 'right', lineHeight: 1.4 }}>
+                  1 month<br />free
+                </div>
+              </div>
+
+              <Link href="/plans#coupon" className="btn-mkt-primary" style={{ display: 'block', textAlign: 'center' }}>
+                Redeem coupon →
+              </Link>
+            </div>
           </div>
         </div>
       </section>

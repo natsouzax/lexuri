@@ -269,6 +269,68 @@ async function transcribeAudioFallback(videoId: string): Promise<{
   )
 }
 
+// Merge raw caption segments into display-ready subtitle blocks.
+//
+// Two modes, detected automatically:
+//
+//  WELL-FORMATTED (human captions, e.g. TED talks): >35% of segments already end
+//  with sentence-ending punctuation. Trust the original structure — pass each segment
+//  through as its own block. Only merge tiny stray fragments (<3 words, tiny gap).
+//
+//  ASR (auto-generated, no punctuation): use time-based heuristics —
+//  pause >300ms, word-count cap, or max 5s duration.
+function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
+  if (!raw.length) return raw
+
+  const withSentenceEnd = raw.filter((s) => /[.!?]/.test(s.text)).length
+  const wellFormatted   = withSentenceEnd / raw.length > 0.35
+
+  const result: TranscriptSegment[] = []
+  let buf: TranscriptSegment[] = []
+
+  function flush() {
+    if (!buf.length) return
+    const text  = buf.map((s) => s.text.trim()).filter(Boolean).join(' ')
+    const start = buf[0].start
+    const last  = buf[buf.length - 1]
+    result.push({
+      text,
+      start,
+      duration: Math.max(0.1, last.start + last.duration - start),
+      synthetic: buf.some((s) => s.synthetic),
+    })
+    buf = []
+  }
+
+  for (let i = 0; i < raw.length; i++) {
+    buf.push(raw[i])
+
+    const tail        = raw[i].text.trim()
+    const next        = raw[i + 1]
+    const gap         = next ? next.start - (raw[i].start + raw[i].duration) : 999
+    const accumulated = buf.reduce((s, seg) => s + seg.duration, 0)
+    const wordCount   = buf.reduce((n, seg) => n + (seg.text.match(/\S+/g)?.length ?? 0), 0)
+
+    if (wellFormatted) {
+      // Trust original caption breaks: flush as soon as we have a "real" segment (≥3 words).
+      // Only hold tiny fragments (<3 words, <80ms gap) to merge with what follows.
+      const isStrayFragment = wordCount < 3 && gap < 0.08
+      const sentenceEnd     = /[.!?]$/.test(tail)
+      if (!isStrayFragment || sentenceEnd || accumulated >= 6.0) flush()
+    } else {
+      // ASR mode: no punctuation — rely on pauses, word count, and duration.
+      const sentenceEnd  = /[.!?]$/.test(tail)
+      const longPause    = gap > 0.30
+      const wordCapReached = wordCount >= 12 && /[,;]$/.test(tail)
+      const tooLong      = accumulated >= 5.0
+      if (sentenceEnd || longPause || wordCapReached || tooLong) flush()
+    }
+  }
+
+  flush()
+  return result
+}
+
 export async function getTranscript(url: string): Promise<VideoData> {
   const videoId = extractVideoId(url)
   if (!videoId) throw new Error('Invalid YouTube URL. Could not extract video ID.')
@@ -276,7 +338,8 @@ export async function getTranscript(url: string): Promise<VideoData> {
   const title = await getVideoTitle(videoId)
 
   try {
-    const segments = await fetchCaptions(videoId)
+    const raw      = await fetchCaptions(videoId)
+    const segments = mergeIntoSentences(raw)
     return {
       video_id: videoId,
       title,

@@ -30,13 +30,14 @@ const NAV_GROUPS: {
     label: 'Practice',
     items: [
       { href: '/flashcards', label: 'Library', Icon: LibraryIcon },
+      { href: '/review', label: 'Review', Icon: ReviewIcon },
       { href: '/leaderboard', label: 'Leaderboard', Icon: TrophyIcon },
     ],
   },
   {
     label: null,
     items: [
-      { href: '/supportus', label: 'Support us', Icon: HeartIcon },
+      { href: '/plans', label: 'Upgrade to Premium', Icon: StarIcon },
     ],
   },
 ]
@@ -169,6 +170,16 @@ function LibraryIcon() {
   )
 }
 
+function ReviewIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M12 7v5l4 2" />
+    </svg>
+  )
+}
+
 function TrophyIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -182,10 +193,10 @@ function TrophyIcon() {
   )
 }
 
-function HeartIcon() {
+function StarIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 }

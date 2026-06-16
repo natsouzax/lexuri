@@ -74,6 +74,12 @@ export default function FeedDetailPage() {
 
   useEffect(() => { loadTranscript() }, [loadTranscript])
 
+  useEffect(() => {
+    if (!videoData) return
+    handleAnalyzeChunks()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoData])
+
   function handleToggleSave() {
     if (saved) { unsaveItem(id); setSaved(false) }
     else       { saveItem(id);   setSaved(true)  }
@@ -309,6 +315,9 @@ export default function FeedDetailPage() {
             segments={videoData.segments}
             selectedWords={selectedWords}
             onWordsChange={setSelectedWords}
+            chunks={chunkAnalysis?.chunks}
+            selectedChunk={selectedChunk}
+            onChunkSelect={setSelectedChunk}
           />
 
           {/* Word collector */}

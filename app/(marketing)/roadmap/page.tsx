@@ -13,12 +13,17 @@ const ROADMAP = {
     { title: 'Music Lab', body: 'Analyze song lyrics with chunk detection and contextual translations into your language.' },
     { title: 'AI Flashcard Generation', body: 'Instantly generate flashcards from words or chunks — no manual input.' },
     { title: 'Spaced Repetition Review', body: 'SM-2 algorithm schedules each flashcard at the optimal review moment.' },
+    { title: 'User Accounts & Sync', body: 'Sign in with email, sync your deck and progress across all devices in real time.' },
+    { title: 'Gamification & Leaderboard', body: 'XP system, 7 learner ranks (Seed → Native), daily streaks, milestone bonuses, and a live global leaderboard.' },
+    { title: 'Progress Reports & Analytics', body: 'Retention rates, vocabulary growth charts, study pace, and streak history — all in your dashboard.' },
+    { title: 'Native Language Translations', body: 'Pick your native language once. Hover any word, phrase, or chunk in any transcript and see an instant translation — across 12 languages.' },
+    { title: 'Interactive Demo Lesson', body: 'A fully interactive demo on the marketing site — hover translations, chunk tooltips, and audio, no account needed.' },
   ],
   next: [
-    { title: 'User Accounts', body: 'Sign in to sync your flashcards and progress across devices.' },
     { title: 'Mobile App', body: 'Review your flashcards on the go. iOS and Android, built with React Native.' },
     { title: 'Browser Extension', body: 'Detect chunks and save vocabulary directly from any webpage or video.' },
-    { title: 'Progress Dashboard', body: 'Track retention rates, streaks, vocabulary growth, and learning pace over time.' },
+    { title: 'Podcast + Audio Mode', body: 'Import podcast transcripts and analyze them with the same chunk detection pipeline.' },
+    { title: 'Offline Review Mode', body: 'Download your due cards and review without an internet connection — syncs back when you reconnect.' },
   ],
   planned: [
     { title: 'Netflix Learning Mode', body: 'Watch Netflix with chunk highlighting and one-click flashcard saving built into the subtitle track.' },
@@ -26,7 +31,6 @@ const ROADMAP = {
     { title: 'Pronunciation Feedback', body: 'Record yourself saying a chunk. Get feedback on stress, intonation, and connected speech.' },
     { title: 'Community Vocabulary Sets', body: 'Share and import curated chunk sets for shows, songs, and topics.' },
     { title: 'Language Challenges', body: 'Weekly challenges built around real content — compete with other learners using the same source material.' },
-    { title: 'Podcast + Audio Mode', body: 'Import podcast transcripts and analyze them with the same chunk detection pipeline.' },
   ],
 }
 
