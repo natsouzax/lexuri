@@ -53,3 +53,6 @@ scripts/diagnose.ps1
 
 # supabase cli temp
 supabase/.temp/
+
+#outros
+stripe_backup_code (1).txt

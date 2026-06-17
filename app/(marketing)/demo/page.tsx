@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { EASE_OUT, EASE_SPRING } from '@/lib/easing'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import type { ChunkItem } from '@/lib/types'
@@ -103,7 +105,6 @@ const DEMO_CHUNKS: ChunkItem[] = [
   },
 ]
 
-// Per-language translations for each demo chunk
 const CHUNK_NATIVE_TRANSLATIONS: Record<string, Record<string, string>> = {
   'always meant to do': {
     'pt-BR': 'sempre quis fazer',
@@ -159,7 +160,7 @@ const CHUNK_NATIVE_TRANSLATIONS: Record<string, Record<string, string>> = {
     'ar':    'المقدار المناسب من الوقت تماماً',
     'tr':    'tam doğru süre',
     'ru':    'ровно столько времени',
-    'hi':    'बिल्कुल सही समय की मात्रा',
+    'hi':    'बिल्कुल सही समय की مात्रा',
   },
   'add a new habit': {
     'pt-BR': 'adquirir um novo hábito',
@@ -177,9 +178,25 @@ const CHUNK_NATIVE_TRANSLATIONS: Record<string, Record<string, string>> = {
   },
 }
 
+const LEGEND = [
+  { label: 'Collocation', color: '#4A90E2' },
+  { label: 'Conversational', color: '#607D8B' },
+  { label: 'Lexical Chunk', color: '#9C27B0' },
+  { label: 'Formulaic', color: '#FF9800' },
+]
+
 export default function DemoPage() {
   const [selectedChunk, setSelectedChunk] = useState<ChunkItem | null>(null)
   const [lang, setLang] = useState<string | null>(null)
+
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroInView = useInView(heroRef, { once: true })
+  const transcriptRef = useRef<HTMLDivElement>(null)
+  const transcriptInView = useInView(transcriptRef, { once: true, margin: '-60px 0px' })
+  const cardsRef = useRef<HTMLDivElement>(null)
+  const cardsInView = useInView(cardsRef, { once: true, margin: '-60px 0px' })
+  const ctaRef = useRef<HTMLDivElement>(null)
+  const ctaInView = useInView(ctaRef, { once: true, margin: '-60px 0px' })
 
   useEffect(() => {
     setLang(localStorage.getItem(NATIVE_LANG_KEY))
@@ -188,7 +205,6 @@ export default function DemoPage() {
     return () => window.removeEventListener('lexuri-lang-changed', onLangChange)
   }, [])
 
-  // Build the per-chunk native-translation map for the current language
   const nativeTranslations: Record<string, string> = {}
   if (lang && lang !== 'en') {
     for (const [chunkText, langs] of Object.entries(CHUNK_NATIVE_TRANSLATIONS)) {
@@ -200,27 +216,54 @@ export default function DemoPage() {
     <>
       {/* Hero */}
       <section className="mkt-section mkt-section-sage" style={{ paddingBottom: 0 }}>
-        <div className="mkt-container" style={{ textAlign: 'center', paddingBottom: 48 }}>
-          <span className="mkt-eyebrow">Live Demo</span>
-          <h1 className="mkt-h1" style={{ marginBottom: 16 }}>
+        <div className="mkt-container" style={{ textAlign: 'center', paddingBottom: 48 }} ref={heroRef}>
+          <motion.span
+            className="mkt-eyebrow"
+            initial={{ opacity: 0, y: 12 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.4, ease: EASE_OUT }}
+          >
+            Live Demo
+          </motion.span>
+          <motion.h1
+            className="mkt-h1"
+            style={{ marginBottom: 16 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.55, delay: 0.12, ease: EASE_OUT }}
+          >
             See Lexuri in action.
-          </h1>
-          <p className="mkt-lead" style={{ margin: '0 auto 32px' }}>
+          </motion.h1>
+          <motion.p
+            className="mkt-lead"
+            style={{ margin: '0 auto 32px' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.55, delay: 0.22, ease: EASE_OUT }}
+          >
             This is a real chunk analysis of a TED talk. The highlighted text shows the
             natural language patterns detected by Lexuri&apos;s AI — the phrases, idioms, and
             collocations that build actual fluency.
-          </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 14px', borderRadius: 999, background: '#FF980022', color: '#FF9800', border: '1px solid #FF980040' }}>
-              B1 Level
-            </span>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 14px', borderRadius: 999, background: 'rgba(70,98,74,0.15)', color: 'var(--moss)' }}>
-              TED · Matt Cutts
-            </span>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 14px', borderRadius: 999, background: 'rgba(70,98,74,0.15)', color: 'var(--moss)' }}>
-              3:27
-            </span>
-          </div>
+          </motion.p>
+          <motion.div
+            style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.34, ease: EASE_OUT }}
+          >
+            {[
+              { label: 'B1 Level', bg: '#FF980022', color: '#FF9800', border: '1px solid #FF980040' },
+              { label: 'TED · Matt Cutts', bg: 'rgba(70,98,74,0.15)', color: 'var(--moss)', border: 'none' },
+              { label: '3:27', bg: 'rgba(70,98,74,0.15)', color: 'var(--moss)', border: 'none' },
+            ].map(({ label, bg, color, border }) => (
+              <span
+                key={label}
+                style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 14px', borderRadius: 999, background: bg, color, border }}
+              >
+                {label}
+              </span>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -228,7 +271,13 @@ export default function DemoPage() {
       <section className="mkt-section mkt-section-cream">
         <div className="mkt-container">
           {/* Transcript panel */}
-          <div style={{ marginBottom: 12 }}>
+          <motion.div
+            ref={transcriptRef}
+            style={{ marginBottom: 12 }}
+            initial={{ opacity: 0, y: 28 }}
+            animate={transcriptInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.55, ease: EASE_OUT }}
+          >
             <div style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
               <span>Transcript — chunk map</span>
               {lang && lang !== 'en' && (
@@ -255,18 +304,21 @@ export default function DemoPage() {
                 nativeTranslations={nativeTranslations}
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Legend */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-            {[
-              { label: 'Collocation', color: '#4A90E2' },
-              { label: 'Conversational', color: '#607D8B' },
-              { label: 'Lexical Chunk', color: '#9C27B0' },
-              { label: 'Formulaic', color: '#FF9800' },
-            ].map(({ label, color }) => (
-              <span
+          <motion.div
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}
+            initial={{ opacity: 0 }}
+            animate={transcriptInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.4, delay: 0.2, ease: EASE_OUT }}
+          >
+            {LEGEND.map(({ label, color }, i) => (
+              <motion.span
                 key={label}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={transcriptInView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.3, delay: 0.25 + i * 0.07, ease: EASE_SPRING }}
                 style={{
                   fontSize: '0.7rem',
                   fontWeight: 700,
@@ -277,16 +329,22 @@ export default function DemoPage() {
                 }}
               >
                 {label}
-              </span>
+              </motion.span>
             ))}
-          </div>
+          </motion.div>
 
           {/* Chunk cards */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+            <motion.div
+              style={{ fontSize: '0.72rem', fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}
+              initial={{ opacity: 0 }}
+              animate={transcriptInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.4, delay: 0.3, ease: EASE_OUT }}
+            >
               Detected chunks — click to highlight
-            </div>
+            </motion.div>
             <div
+              ref={cardsRef}
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -294,19 +352,29 @@ export default function DemoPage() {
                 marginBottom: 48,
               }}
             >
-              {DEMO_CHUNKS.map((chunk) => (
-                <ChunkCard
+              {DEMO_CHUNKS.map((chunk, i) => (
+                <motion.div
                   key={chunk.text}
-                  chunk={chunk}
-                  isSelected={selectedChunk?.text === chunk.text}
-                  onSelect={setSelectedChunk}
-                />
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={cardsInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.4, delay: i * 0.1, ease: EASE_OUT }}
+                >
+                  <ChunkCard
+                    chunk={chunk}
+                    isSelected={selectedChunk?.text === chunk.text}
+                    onSelect={setSelectedChunk}
+                  />
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* CTA */}
-          <div
+          <motion.div
+            ref={ctaRef}
+            initial={{ opacity: 0, y: 32 }}
+            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.55, ease: EASE_OUT }}
             style={{
               background: 'linear-gradient(135deg, var(--clay) 0%, #8B3A1E 100%)',
               borderRadius: 20,
@@ -331,14 +399,16 @@ export default function DemoPage() {
               chunks, you save the ones that matter, and our spaced repetition system makes sure
               you never forget them.
             </p>
-            <Link
-              href="/register"
-              className="btn-mkt-ghost"
-              style={{ borderColor: 'rgba(255,250,240,0.6)', color: '#fff', fontSize: '0.95rem', padding: '13px 32px' }}
-            >
-              Create your free account and save these chunks →
-            </Link>
-          </div>
+            <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                href="/register"
+                className="btn-mkt-ghost"
+                style={{ borderColor: 'rgba(255,250,240,0.6)', color: '#fff', fontSize: '0.95rem', padding: '13px 32px' }}
+              >
+                Create your free account and save these chunks →
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
     </>

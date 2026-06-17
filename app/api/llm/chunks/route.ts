@@ -9,23 +9,25 @@ function buildSystemPrompt(nativeLang: string) {
 
 Your goal is to identify chunks that the brain stores as single cognitive units — NOT isolated words.
 
-DETECT (in order of priority):
-- phrasal verbs: "give up", "freak out", "look forward to"
-- idiomatic expressions: "at the end of the day", "no way", "kind of"
-- collocations: words that naturally co-occur ("make a decision", "break the ice", "highly recommend")
-- lexical chunks: multi-word units common in speech ("I've been thinking", "the thing is", "you know what I mean")
-- formulaic sequences: fixed or semi-fixed phrases ("sounds good", "take your time", "as soon as possible")
-- emotional expressions: ("freaking out", "I can't believe", "oh my god", "kind of freaking out")
-- conversational patterns: discourse markers and fillers ("well", "I mean", "you know", "sort of", "kind of")
-- grammar patterns with communicative value: ("I've been + gerund", "used to + verb", "I wish I could")
+BE COMPREHENSIVE. A 100-word passage should yield 8–15 chunks minimum. Do NOT skip a chunk just because it seems common or simple — "get up", "let go", "used to be", "go back", "come on" are HIGH-VALUE learning units for non-native speakers and must always be detected.
 
-RULES:
-- Return EXACT character offsets (start inclusive, end exclusive) relative to the original text — count from 0
-- Overlapping chunks ARE allowed: "freaking out" can exist inside "kind of freaking out"
-- Preserve contractions, slang, informal spelling, and oral patterns
-- Do NOT split natural units into isolated words
-- Translations must be in ${nativeLang} and reflect real meaning and emotional tone, NOT literal word-for-word renderings
-- Use consistent colors per chunk type as specified below
+DETECT (all of the following — miss none):
+- phrasal verbs (always detect, even short/common ones): "get up", "let go", "give up", "go back", "come on", "pick up", "find out", "used to be", "grow up", "turn out", "put away", "hold on", "wake up", "look for", "end up", "take off", "break down", "get over", "go on"
+- idiomatic expressions: "at the end of the day", "no way", "kind of", "on the other hand", "used to think", "back in the day"
+- collocations: words that naturally co-occur ("make a decision", "break the ice", "highly recommend", "pay attention", "make sense")
+- lexical chunks: multi-word units common in speech ("I've been thinking", "the thing is", "you know what I mean", "sort of", "kind of like")
+- formulaic sequences: fixed or semi-fixed phrases ("sounds good", "take your time", "as soon as possible", "to be honest", "you know")
+- grammar patterns with communicative value: "used to + verb" (e.g. "used to be", "used to live", "used to think"), "I wish I could", "I've been + gerund", "going to + verb", "have to + verb", "would rather"
+- emotional expressions: "I can't believe", "freaking out", "oh my god", "I miss", "it hurts"
+- conversational patterns and discourse markers: "well", "I mean", "you know", "sort of", "kind of", "I think", "actually", "basically", "honestly"
+
+CRITICAL RULES:
+- Detect EVERY multi-word expression — never omit something because it looks too simple or too common
+- Return EXACT character offsets (start inclusive, end exclusive) counting from 0 in the text
+- Overlapping chunks ARE allowed and expected: "freaking out" AND "kind of freaking out" can both be chunks
+- Preserve contractions, slang, informal spelling ("gonna", "wanna", "kinda")
+- Translations must be in ${nativeLang} and reflect real meaning and emotional tone
+- A learner's most needed chunks are often the shortest and most common ones — do not filter them out
 
 COLOR CODES (use exactly as specified, per type):
 - phrasal_verb: "#4CAF50"
@@ -41,7 +43,7 @@ Return ONLY valid JSON. No markdown fences. No explanations outside JSON.`
 }
 
 function buildUserPrompt(text: string, level: string, nativeLang: string) {
-  return `Analyze this English text and detect all natural language chunks for a ${level} learner.
+  return `Analyze this English text and detect ALL natural language chunks for a ${level} learner. Be exhaustive — include every phrasal verb, idiom, collocation, grammar pattern, and multi-word expression, even if it seems simple or common. Do NOT under-detect.
 
 Return exact character offsets for each chunk so the frontend can highlight them in the original text.
 The "start" and "end" values must match the exact substring in the text below.

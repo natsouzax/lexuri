@@ -1482,10 +1482,13 @@ h1, h2, h3 {
    ===================================================== */
 
 .onboard-shell {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   background: var(--auth-bg);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .onboard-top {
@@ -1683,6 +1686,104 @@ h1, h2, h3 {
 }
 .onboard-btn-secondary:hover:not(:disabled) { color: var(--auth-text); border-color: rgba(248,250,252,0.25); }
 .onboard-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Language picker popup */
+.lang-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lang-picker-modal {
+  background: var(--auth-bg);
+  border: 1px solid var(--auth-border);
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
+}
+.lang-picker-title {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.4rem;
+  color: var(--auth-text);
+  margin-bottom: 8px;
+}
+.lang-picker-subtitle {
+  font-size: 0.85rem;
+  color: var(--auth-muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.lang-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.lang-picker-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 8px;
+  border: 1px solid var(--auth-border);
+  border-radius: 12px;
+  background: rgba(248,250,252,0.04);
+  color: var(--auth-text);
+  font: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.lang-picker-btn:hover { background: rgba(248,250,252,0.09); border-color: rgba(248,250,252,0.2); }
+.lang-picker-btn.selected { background: rgba(79,70,229,0.18); border-color: var(--auth-primary); }
+.lang-picker-flag { font-size: 1.5rem; line-height: 1; }
+.lang-picker-name { font-size: 0.72rem; font-weight: 700; }
+
+/* Tutorial step */
+.onboard-tutorial-list {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+.onboard-tutorial-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--auth-border);
+  border-radius: 14px;
+  background: rgba(248,250,252,0.04);
+}
+.onboard-tutorial-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--auth-primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.onboard-tutorial-en {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--auth-text);
+  margin-bottom: 4px;
+}
+.onboard-tutorial-pt {
+  font-size: 0.8rem;
+  color: var(--auth-muted);
+  line-height: 1.5;
+}
 
 /* =====================================================
    USER DROPDOWN
@@ -2562,3 +2663,11 @@ h1, h2, h3 {
 
 @keyframes fade-in  { from { opacity: 0 } to { opacity: 1 } }
 @keyframes slide-up { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: translateY(0) } }
+
+/* ── Social proof grid responsive ───────────────────────────── */
+@media (max-width: 900px) {
+  .social-proof-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+  .social-proof-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+}

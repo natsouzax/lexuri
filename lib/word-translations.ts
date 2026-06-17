@@ -12,6 +12,11 @@ export const WORD_TRANSLATIONS: Record<string, Record<string, string>> = {
     'it': 'tu / Lei', 'ja': 'あなた', 'ko': '당신', 'zh': '你',
     'ar': 'أنت', 'tr': 'sen / siz', 'ru': 'ты / вы', 'hi': 'आप / तुम',
   },
+  'your': {
+    'pt-BR': 'seu / sua', 'es': 'tu / su', 'fr': 'ton / votre', 'de': 'dein / Ihr',
+    'it': 'il tuo / la tua', 'ja': 'あなたの', 'ko': '당신의', 'zh': '你的',
+    'ar': 'ملكك / خاصتك', 'tr': 'senin / sizin', 'ru': 'твой / ваш', 'hi': 'आपका / तुम्हारा',
+  },
   'it': {
     'pt-BR': 'isso / ele / ela', 'es': 'eso / él / ella', 'fr': 'il / elle / ça', 'de': 'es',
     'it': 'esso / ciò', 'ja': 'それ', 'ko': '그것', 'zh': '它',
@@ -21,6 +26,31 @@ export const WORD_TRANSLATIONS: Record<string, Record<string, string>> = {
     'pt-BR': 'que / isso', 'es': 'que / eso', 'fr': 'que / cela', 'de': 'dass / das',
     'it': 'che / quello', 'ja': 'ということ', 'ko': '~는 것', 'zh': '那 / 那个',
     'ar': 'أن / ذلك', 'tr': 'ki / o', 'ru': 'что / это', 'hi': 'कि / वह',
+  },
+  'there': {
+    'pt-BR': 'lá / existe', 'es': 'allí / hay', 'fr': 'là / il y a', 'de': 'dort / es gibt',
+    'it': 'là / c\'è', 'ja': 'そこに / ある', 'ko': '거기에 / 있다', 'zh': '那里 / 有',
+    'ar': 'هناك', 'tr': 'orada / var', 'ru': 'там / есть', 'hi': 'वहाँ / है',
+  },
+  'is': {
+    'pt-BR': 'é / está', 'es': 'es / está', 'fr': 'est', 'de': 'ist',
+    'it': 'è', 'ja': 'です / いる', 'ko': '이다 / 있다', 'zh': '是 / 在',
+    'ar': 'هو / يكون', 'tr': '-dır / -dir', 'ru': 'есть / является', 'hi': 'है',
+  },
+  'have': {
+    'pt-BR': 'ter', 'es': 'tener / haber', 'fr': 'avoir', 'de': 'haben',
+    'it': 'avere', 'ja': '持つ / している', 'ko': '가지다 / 했다', 'zh': '有 / 已',
+    'ar': 'يملك / لديه', 'tr': 'sahip olmak', 'ru': 'иметь', 'hi': 'रखना / है',
+  },
+  'something': {
+    'pt-BR': 'algo / alguma coisa', 'es': 'algo', 'fr': 'quelque chose', 'de': 'etwas',
+    'it': 'qualcosa', 'ja': '何か', 'ko': '뭔가', 'zh': '什么 / 某事',
+    'ar': 'شيء ما', 'tr': 'bir şey', 'ru': 'что-то', 'hi': 'कुछ',
+  },
+  'just': {
+    'pt-BR': 'apenas / simplesmente', 'es': 'solo / apenas', 'fr': 'juste / simplement', 'de': 'gerade / nur',
+    'it': 'solo / appena', 'ja': 'ちょうど / ただ', 'ko': '그냥 / 딱', 'zh': '就是 / 刚',
+    'ar': 'فقط / للتو', 'tr': 'sadece / tam', 'ru': 'только / просто', 'hi': 'बस / अभी',
   },
   'but': {
     'pt-BR': 'mas', 'es': 'pero', 'fr': 'mais', 'de': 'aber',
@@ -36,6 +66,26 @@ export const WORD_TRANSLATIONS: Record<string, Record<string, string>> = {
     'pt-BR': 'ou', 'es': 'o', 'fr': 'ou', 'de': 'oder',
     'it': 'o', 'ja': 'または', 'ko': '또는', 'zh': '或者',
     'ar': 'أو', 'tr': 'veya', 'ru': 'или', 'hi': 'या',
+  },
+  'for': {
+    'pt-BR': 'por / para', 'es': 'por / para', 'fr': 'pour', 'de': 'für',
+    'it': 'per', 'ja': '〜の間 / ために', 'ko': '위해서 / 동안', 'zh': '为了 / 期间',
+    'ar': 'لـ / من أجل', 'tr': 'için', 'ru': 'для / за', 'hi': 'के लिए',
+  },
+  'from': {
+    'pt-BR': 'de / a partir de', 'es': 'de / desde', 'fr': 'de / depuis', 'de': 'von / aus',
+    'it': 'da', 'ja': 'から', 'ko': '~부터 / 에서', 'zh': '从',
+    'ar': 'من', 'tr': '-den / -dan', 'ru': 'от / из', 'hi': 'से',
+  },
+  'to': {
+    'pt-BR': 'para / a', 'es': 'para / a', 'fr': 'pour / à', 'de': 'zu / für',
+    'it': 'per / a', 'ja': '〜するために', 'ko': '~에게 / ~하기 위해', 'zh': '为了 / 到',
+    'ar': 'إلى / لـ', 'tr': 'için / -e', 'ru': 'к / в / для', 'hi': 'के लिए / को',
+  },
+  'do': {
+    'pt-BR': 'fazer', 'es': 'hacer', 'fr': 'faire', 'de': 'machen / tun',
+    'it': 'fare', 'ja': 'する', 'ko': '하다', 'zh': '做',
+    'ar': 'يفعل', 'tr': 'yapmak', 'ru': 'делать', 'hi': 'करना',
   },
   'can': {
     'pt-BR': 'pode / consegue', 'es': 'puede', 'fr': 'peut', 'de': 'kann',
@@ -253,7 +303,8 @@ export function tokenizeText(text: string, lang: string): Token[] {
     if (phraseTranslation) {
       tokens.push({ kind: 'phrase', content: full, translation: phraseTranslation })
     } else if (/[a-zA-Z]/.test(full)) {
-      const wordKey = lower.replace(/[^a-z]/g, '')
+      // Split on apostrophe so "you've" → "you", "it's" → "it", "can't" → "can"
+      const wordKey = lower.split("'")[0]
       const wordTranslation = WORD_TRANSLATIONS[wordKey]?.[lang]
       tokens.push(wordTranslation
         ? { kind: 'word',  content: full, translation: wordTranslation }

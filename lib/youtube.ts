@@ -331,6 +331,55 @@ function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
   return result
 }
 
+// For ASR (auto-generated) captions: add missing punctuation and fix capitalisation.
+// Sends segments in numbered batches to gpt-4o-mini; timing is preserved unchanged.
+async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
+  if (!segments.length) return segments
+
+  // Only run on ASR transcripts (≤35 % of segments already end with sentence punctuation)
+  const withEnd = segments.filter((s) => /[.!?]$/.test(s.text.trim())).length
+  if (withEnd / segments.length > 0.35) return segments
+
+  const BATCH = 60
+  const result: TranscriptSegment[] = []
+
+  for (let i = 0; i < segments.length; i += BATCH) {
+    const batch = segments.slice(i, i + BATCH)
+    const numbered = batch.map((s, idx) => `${idx + 1}. ${s.text}`).join('\n')
+
+    try {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a transcript editor. Add proper punctuation and capitalisation to each line.\n' +
+              'Rules:\n' +
+              '- Return EXACTLY the same number of lines, each starting with "N. " (same number as input)\n' +
+              '- Only add or fix punctuation and capitalisation — do NOT change, add, or remove words\n' +
+              '- Each line should end with appropriate punctuation (. ! ?)\n' +
+              '- Keep contractions, slang, and informal speech exactly as written',
+          },
+          { role: 'user', content: numbered },
+        ],
+        temperature: 0,
+      })
+
+      const lines = (response.choices[0].message.content ?? '').split('\n').filter(Boolean)
+      batch.forEach((seg, idx) => {
+        const raw = lines[idx]?.replace(/^\d+\.\s*/, '').trim()
+        result.push({ ...seg, text: raw ?? seg.text })
+      })
+    } catch {
+      // On failure keep original batch unchanged
+      result.push(...batch)
+    }
+  }
+
+  return result
+}
+
 export async function getTranscript(url: string): Promise<VideoData> {
   const videoId = extractVideoId(url)
   if (!videoId) throw new Error('Invalid YouTube URL. Could not extract video ID.')
@@ -339,7 +388,8 @@ export async function getTranscript(url: string): Promise<VideoData> {
 
   try {
     const raw      = await fetchCaptions(videoId)
-    const segments = mergeIntoSentences(raw)
+    const merged   = mergeIntoSentences(raw)
+    const segments = await repairASRPunctuation(merged)
     return {
       video_id: videoId,
       title,

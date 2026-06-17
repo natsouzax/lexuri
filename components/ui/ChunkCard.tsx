@@ -42,7 +42,9 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
     <div
       onClick={() => onSelect?.(chunk)}
       style={{
-        border: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
+        borderTop: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
+        borderRight: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
+        borderBottom: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
         borderLeft: `4px solid ${chunk.color}`,
         borderRadius: 8,
         padding: '14px 16px',

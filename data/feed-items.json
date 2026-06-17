@@ -207,5 +207,126 @@
     "level": "C1",
     "tags": ["rock", "theatrical", "complex vocabulary", "opera"],
     "preview": "One of the most complex songs in English pop music — shifting registers, theatrical vocabulary, Italian phrases, dramatic narrative. A challenge for advanced learners."
+  },
+  {
+    "id": "music-let-it-be",
+    "type": "music",
+    "title": "Let It Be",
+    "artist": "The Beatles",
+    "youtube_id": "CGj85pVzRJs",
+    "duration": "3:52",
+    "level": "A2",
+    "tags": ["classic rock", "ballad", "simple vocabulary", "hope"],
+    "preview": "Paul McCartney's timeless ballad with slow, clear pronunciation and simple, comforting vocabulary. Perfect for A2 learners to practice listening comprehension and present tense expressions."
+  },
+  {
+    "id": "music-hey-jude",
+    "type": "music",
+    "title": "Hey Jude",
+    "artist": "The Beatles",
+    "youtube_id": "A_MjCqQoLLA",
+    "duration": "7:11",
+    "level": "A2",
+    "tags": ["classic rock", "chorus", "phrasal verbs", "encouragement"],
+    "preview": "One of the most iconic choruses in rock history. Simple and repetitive structure with common phrasal verbs like 'take a sad song' and 'make it better' — great for A2 learners building vocabulary through repetition."
+  },
+  {
+    "id": "music-yesterday",
+    "type": "music",
+    "title": "Yesterday",
+    "artist": "The Beatles",
+    "youtube_id": "2eAhqbmXfqU",
+    "duration": "2:05",
+    "level": "B1",
+    "tags": ["ballad", "past tense", "grammar", "emotions"],
+    "preview": "Short and slow, rich in past tense and conditional structures ('Yesterday, all my troubles seemed so far away'). A grammar gem for B1 learners — packed with past simple and used-to patterns."
+  },
+  {
+    "id": "music-come-together",
+    "type": "music",
+    "title": "Come Together",
+    "artist": "The Beatles",
+    "youtube_id": "45cYwDMibGo",
+    "duration": "4:19",
+    "level": "B2",
+    "tags": ["classic rock", "abstract", "rhythm", "figurative language"],
+    "preview": "John Lennon's hypnotic lyrics are full of abstract imagery and unusual expressions. A B2 challenge that exposes learners to creative, non-literal English and the rhythm of native speech."
+  },
+  {
+    "id": "music-in-my-life",
+    "type": "music",
+    "title": "In My Life",
+    "artist": "The Beatles",
+    "youtube_id": "QR1CwJTXUIk",
+    "duration": "2:26",
+    "level": "B1",
+    "tags": ["classic rock", "nostalgia", "past tense", "comparative"],
+    "preview": "A reflective song about memory and love, rich in past tense and comparative structures. Lennon's clear diction and poetic simplicity make this perfect for intermediate learners."
+  },
+  {
+    "id": "music-under-the-bridge",
+    "type": "music",
+    "title": "Under the Bridge",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "GLvohMXgcBo",
+    "duration": "4:24",
+    "level": "B1",
+    "tags": ["rock", "storytelling", "emotions", "phrasal verbs"],
+    "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace."
+  },
+  {
+    "id": "music-californication",
+    "type": "music",
+    "title": "Californication",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "YlUKcNNmywk",
+    "duration": "5:21",
+    "level": "B2",
+    "tags": ["rock", "American culture", "advanced vocabulary", "figurative language"],
+    "preview": "A critique of Hollywood culture packed with cultural references and advanced vocabulary. Challenging and rewarding for B2 learners interested in American idioms and figurative language."
+  },
+  {
+    "id": "music-scar-tissue",
+    "type": "music",
+    "title": "Scar Tissue",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "mzJj5-lubeM",
+    "duration": "3:37",
+    "level": "B1",
+    "tags": ["rock", "metaphors", "imagery", "emotional"],
+    "preview": "Slow, melodic, and full of vivid metaphors. The measured pace and poetic imagery ('scar tissue that I wish you saw') make it excellent for intermediate learners studying figurative language."
+  },
+  {
+    "id": "music-otherside",
+    "type": "music",
+    "title": "Otherside",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "rn_YodiJO6k",
+    "duration": "4:15",
+    "level": "B1",
+    "tags": ["rock", "emotional vocabulary", "imagery", "storytelling"],
+    "preview": "A haunting song about struggle and recovery. The measured pace and emotional vocabulary make it accessible for B1 learners wanting to explore deeper English expression through music."
+  },
+  {
+    "id": "music-sweet-child-o-mine",
+    "type": "music",
+    "title": "Sweet Child O' Mine",
+    "artist": "Guns N' Roses",
+    "youtube_id": "1w7OgIMMRc4",
+    "duration": "5:55",
+    "level": "B1",
+    "tags": ["rock", "80s", "romantic", "descriptive vocabulary"],
+    "preview": "Axl Rose's iconic rock ballad paints a vivid portrait with descriptive vocabulary and a clear verse-chorus structure. The emotional delivery and consistent rhyme scheme help B1 learners build listening stamina."
+  },
+  {
+    "id": "music-hotel-california",
+    "type": "music",
+    "title": "Hotel California",
+    "artist": "Eagles",
+    "youtube_id": "dLl4PZtxia8",
+    "duration": "6:30",
+    "level": "B2",
+    "tags": ["classic rock", "metaphor", "storytelling", "American culture"],
+    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge."
   }
 ]
