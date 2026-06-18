@@ -418,28 +418,6 @@ export default function YouTubePage() {
         </>
       )}
 
-      {/* SRS Review deck */}
-      <div className="section-title">Today&apos;s Review</div>
-      {dueCards.length === 0 ? (
-        <div className="alert-info">
-          No cards to review today. Add vocabulary from a video to start building your deck.
-        </div>
-      ) : (
-        <>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 16 }}>
-            Rate recall from 0 to 5. Higher scores schedule the card further into the future.
-          </p>
-          {dueCards.map((card) => (
-            <DeckCard
-              key={card.id}
-              card={card}
-              onReview={(q) => handleReview(card.id, q)}
-              reviewing={reviewingId === card.id}
-            />
-          ))}
-        </>
-      )}
-
     </>
   )
 }
