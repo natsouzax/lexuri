@@ -8,18 +8,8 @@
     "duration": "3:53",
     "level": "A1",
     "tags": ["pop", "simple vocabulary", "positive mood"],
-    "preview": "One of the most positive songs in modern pop. The vocabulary is super simple and repetitive — perfect for absolute beginners learning everyday feelings."
-  },
-  {
-    "id": "music-count-on-me",
-    "type": "music",
-    "title": "Count on Me",
-    "artist": "Bruno Mars",
-    "youtube_id": "6k8cpUkKK4c",
-    "duration": "3:16",
-    "level": "A1",
-    "tags": ["pop", "friendship", "simple vocabulary"],
-    "preview": "Warm and simple lyrics about friendship. Short sentences, high-frequency words and clear pronunciation make this ideal for A1 learners."
+    "preview": "One of the most positive songs in modern pop. The vocabulary is super simple and repetitive — perfect for absolute beginners learning everyday feelings.",
+    "featured": true
   },
   {
     "id": "music-somewhere-rainbow",
@@ -41,7 +31,8 @@
     "duration": "3:39",
     "level": "A2",
     "tags": ["pop", "phrasal verbs", "informal"],
-    "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context."
+    "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context.",
+    "featured": true
   },
   {
     "id": "music-roar",
@@ -55,28 +46,6 @@
     "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself."
   },
   {
-    "id": "video-mrbeast-circle",
-    "type": "video",
-    "title": "Last To Leave Circle Wins $500,000",
-    "channel": "MrBeast",
-    "youtube_id": "zxYjTTXc-J8",
-    "duration": "27:46",
-    "level": "B1",
-    "tags": ["challenge", "competition", "American English", "colloquial"],
-    "preview": "Contestants stand in small circles for as long as they can to win half a million dollars. Casual American English packed with encouragement phrases, colloquialisms and high-pressure negotiation — addictive B1 listening practice."
-  },
-  {
-    "id": "video-mrbeast-solitary",
-    "type": "video",
-    "title": "I Spent 50 Hours In Solitary Confinement",
-    "channel": "MrBeast",
-    "youtube_id": "9RhWXPcKBI8",
-    "duration": "16:17",
-    "level": "B1",
-    "tags": ["storytelling", "emotional", "narrative", "challenge"],
-    "preview": "MrBeast narrates 50 hours in complete isolation. First-person storytelling rich in descriptive vocabulary about time, emotions and physical sensations — excellent B1 practice for expressing inner states and sequential narration."
-  },
-  {
     "id": "music-hall-of-fame",
     "type": "music",
     "title": "Hall of Fame",
@@ -85,7 +54,8 @@
     "duration": "3:47",
     "level": "B1",
     "tags": ["pop", "motivation", "collocations"],
-    "preview": "Inspiring lyrics about achieving your dreams. Great collocations: 'make a difference', 'touch the sky', 'go the extra mile' — practical B1 vocabulary."
+    "preview": "Inspiring lyrics about achieving your dreams. Great collocations: 'make a difference', 'touch the sky', 'go the extra mile' — practical B1 vocabulary.",
+    "featured": true
   },
   {
     "id": "music-someone-like-you",
@@ -110,17 +80,6 @@
     "preview": "Powerful and emotionally charged. Packed with idiomatic expressions like 'rolling in the deep', 'turning tables' and vivid imagery of heartbreak — excellent B1 listening and vocabulary practice."
   },
   {
-    "id": "video-yes-theory-flight",
-    "type": "video",
-    "title": "I Asked 100 Strangers To Buy Me a Flight",
-    "channel": "Yes Theory",
-    "youtube_id": "FNoT5aLSMqI",
-    "duration": "12:53",
-    "level": "B1",
-    "tags": ["adventure", "real speech", "social English", "conversation"],
-    "preview": "Yes Theory asks 100 strangers to fund a spontaneous flight anywhere in the world. Authentic conversational English full of polite requests, small talk and natural reactions — perfect for B1 learners practising real-world social interactions."
-  },
-  {
     "id": "music-fix-you",
     "type": "music",
     "title": "Fix You",
@@ -129,7 +88,8 @@
     "duration": "4:54",
     "level": "B1",
     "tags": ["ballad", "emotional", "vocabulary"],
-    "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension."
+    "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension.",
+    "featured": true
   },
   {
     "id": "music-believer",
@@ -151,7 +111,8 @@
     "duration": "3:22",
     "level": "B2",
     "tags": ["pop", "conversational", "nostalgia", "slang"],
-    "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns."
+    "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns.",
+    "featured": true
   },
   {
     "id": "video-kurzgesagt-egg",
@@ -162,7 +123,8 @@
     "duration": "8:32",
     "level": "B2",
     "tags": ["philosophy", "storytelling", "complex vocabulary", "narrative"],
-    "preview": "A beautifully animated short story by Andy Weir. Dense philosophical vocabulary, second-person narration and rich metaphors about identity and existence — a thought-provoking B2 challenge with stunning visuals."
+    "preview": "A beautifully animated short story by Andy Weir. Dense philosophical vocabulary, second-person narration and rich metaphors about identity and existence — a thought-provoking B2 challenge with stunning visuals.",
+    "featured": true
   },
   {
     "id": "video-kurzgesagt-nihilism",
@@ -174,17 +136,6 @@
     "level": "B2",
     "tags": ["philosophy", "abstract", "academic vocabulary", "science"],
     "preview": "Kurzgesagt asks: if the universe is indifferent, does anything matter? Rich in abstract nouns, conditional reasoning and hedging language ('it seems', 'it might be'). A concise B2 dose of philosophical English."
-  },
-  {
-    "id": "music-dont-stop-me-now",
-    "type": "music",
-    "title": "Don't Stop Me Now",
-    "artist": "Queen",
-    "youtube_id": "MHi9mKq0slA",
-    "duration": "3:29",
-    "level": "B2",
-    "tags": ["rock", "idioms", "exaggeration"],
-    "preview": "Freddie Mercury at his most energetic. Packed with hyperbole, idiomatic expressions and playful language — great for B2 learners studying rhetorical style."
   },
   {
     "id": "music-hello-adele",
@@ -228,18 +179,8 @@
     "duration": "19:43",
     "level": "C1",
     "tags": ["science", "physics", "academic English", "hedging language"],
-    "preview": "Derek explores the many-worlds interpretation of quantum mechanics with stunning clarity. Dense scientific vocabulary, expert hedging ('it appears', 'one interpretation suggests') and complex causal reasoning — a demanding C1 challenge for science-minded learners."
-  },
-  {
-    "id": "music-bohemian-rhapsody",
-    "type": "music",
-    "title": "Bohemian Rhapsody",
-    "artist": "Queen",
-    "youtube_id": "jFKBR1ggTMY",
-    "duration": "5:55",
-    "level": "C1",
-    "tags": ["rock", "theatrical", "complex vocabulary", "opera"],
-    "preview": "One of the most complex songs in English pop music — shifting registers, theatrical vocabulary, Italian phrases, dramatic narrative. A challenge for advanced learners."
+    "preview": "Derek explores the many-worlds interpretation of quantum mechanics with stunning clarity. Dense scientific vocabulary, expert hedging ('it appears', 'one interpretation suggests') and complex causal reasoning — a demanding C1 challenge for science-minded learners.",
+    "featured": true
   },
   {
     "id": "music-under-the-bridge",

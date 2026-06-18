@@ -97,7 +97,7 @@ function parseGeniusHTML(html: string): string {
   return blocks.join('\n\n')
 }
 
-async function fetchLyricsFromGenius(artist: string, title: string): Promise<string | null> {
+export async function fetchLyricsFromGeniusPublic(artist: string, title: string): Promise<string | null> {
   const token = process.env.GENIUS_API_KEY
   if (!token) return null
 
@@ -167,7 +167,7 @@ export async function fetchLyrics(artist: string, title: string): Promise<Lyrics
   } catch { /* fall through */ }
 
   // 2. Genius — large human-curated database, no sync
-  const geniusLyrics = await fetchLyricsFromGenius(artist, title)
+  const geniusLyrics = await fetchLyricsFromGeniusPublic(artist, title)
   if (geniusLyrics) {
     return {
       title,
@@ -242,9 +242,16 @@ export function parseLrc(lrc: string): LrcLine[] {
 }
 
 export function extractPlainFromLrc(lrc: string): string {
-  return lrc
-    .split('\n')
-    .map((line) => line.replace(/^\[\d{1,2}:\d{2}\.\d+\]/, '').trim())
-    .filter(Boolean)
-    .join('\n')
+  const lines: string[] = []
+  for (const raw of lrc.split('\n')) {
+    const line = raw.trim()
+    // Skip LRC metadata tags: [ti:...], [ar:...], [al:...], [by:...], [offset:...]
+    if (/^\[[a-zA-Z]/.test(line)) continue
+    // Timestamp lines — strip the [mm:ss.xx] prefix, keep empty strings as stanza breaks
+    if (/^\[\d{1,2}:\d{2}[.:]\d+\]/.test(line)) {
+      lines.push(line.replace(/^\[\d{1,2}:\d{2}[.:]\d+\]\s*/, ''))
+    }
+    // Lines with no timestamp (bare blank lines in some LRC files) — skip
+  }
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim()
 }

@@ -3,7 +3,7 @@ import { parseLrc, extractPlainFromLrc } from './lyrics'
 import type { SpotifyLyricsLine } from './spotify'
 
 export interface LyricsSourceInput {
-  name: 'youtube' | 'spotify' | 'genius' | 'lrclib' | 'happi'
+  name: 'youtube' | 'spotify' | 'genius' | 'lrclib' | 'happi' | 'lyricsovh'
   plain_text?: string
   // YouTube segments with timing
   segments?: Array<{ text: string; start: number; duration: number }>

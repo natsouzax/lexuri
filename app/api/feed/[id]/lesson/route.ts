@@ -4,6 +4,8 @@ import { getAdminClient } from '@/lib/supabase'
 import { getUserPremiumStatus, getWeeklyUsage, incrementWeeklyUsage, FREE_LIMITS } from '@/lib/subscription'
 import { getTranscript } from '@/lib/youtube'
 import { analyzeChunks } from '@/lib/chunks'
+import { getFeedItem } from '@/lib/feed'
+import { getStaticLesson } from '@/data/featured-lessons'
 import type { TranscriptSegment, ChunkItem } from '@/lib/types'
 
 export async function GET(
@@ -12,12 +14,24 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const url = new URL(request.url)
-    const level = url.searchParams.get('level') ?? 'B1'
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // ── Static featured lesson — zero DB/AI calls, no quota cost ─────────────
+    const staticLesson = getStaticLesson(id)
+    if (staticLesson) {
+      const item = getFeedItem(id)
+      return NextResponse.json({
+        video_id: staticLesson.video_id,
+        title: item?.title ?? '',
+        transcript: staticLesson.transcript,
+        segments: staticLesson.segments,
+        original_text: staticLesson.transcript,
+        chunks: staticLesson.chunks,
+      })
+    }
 
     const [{ isPremium }, usage] = await Promise.all([
       getUserPremiumStatus(user.id),
@@ -37,7 +51,7 @@ export async function GET(
 
     const admin = getAdminClient()
 
-    // Native language from onboarding (cache key for chunks)
+    // Native language from onboarding — cache key for chunks (language-specific translations)
     const { data: onboarding } = await supabase
       .from('onboarding')
       .select('native_language')
@@ -69,9 +83,25 @@ export async function GET(
       transcript = cachedLesson.transcript
       segments = cachedLesson.segments as TranscriptSegment[]
     } else {
-      const videoData = await getTranscript(
-        `https://www.youtube.com/watch?v=${feedItem.youtube_id}`,
-      )
+      let videoData
+      try {
+        videoData = await getTranscript(
+          `https://www.youtube.com/watch?v=${feedItem.youtube_id}`,
+        )
+      } catch {
+        // Caption extraction failed — return unverified signal instead of 500
+        if (!isPremium) await incrementWeeklyUsage(user.id, 'feed_opens')
+        return NextResponse.json({
+          video_id: feedItem.youtube_id,
+          title: feedItem.title,
+          unverified: true,
+          transcript: '',
+          segments: [],
+          original_text: '',
+          chunks: [],
+        })
+      }
+
       transcript = videoData.transcript
       segments = videoData.segments
 
@@ -82,13 +112,13 @@ export async function GET(
     }
 
     // ── Chunk cache ───────────────────────────────────────────────────────────
+    // Chunks are universal (all CEFR levels detected in one pass), cached per feed_item + native_lang
     let chunks: ChunkItem[]
 
     const { data: cachedChunks } = await admin
       .from('feed_lesson_chunks')
       .select('chunks')
       .eq('feed_item_id', id)
-      .eq('level', level)
       .eq('native_lang', nativeLang)
       .maybeSingle()
 
@@ -96,12 +126,12 @@ export async function GET(
       chunks = cachedChunks.chunks as ChunkItem[]
       chunksWereCached = true
     } else {
-      const analysis = await analyzeChunks(transcript, level, nativeLang)
+      const analysis = await analyzeChunks(transcript, nativeLang)
       chunks = analysis.chunks
       chunksWereCached = false
 
       void Promise.resolve(
-        admin.from('feed_lesson_chunks').upsert({ feed_item_id: id, level, native_lang: nativeLang, chunks, original_text: transcript }),
+        admin.from('feed_lesson_chunks').upsert({ feed_item_id: id, native_lang: nativeLang, chunks, original_text: transcript }),
       ).catch((e: unknown) => console.error('[feed-lesson] chunks cache write failed:', e))
     }
 

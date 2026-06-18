@@ -63,6 +63,12 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
         >
           {item.duration}
         </span>
+        {/* Featured banner */}
+        {item.featured && !item.maintenance && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(90,20,180,0.88)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.06em' }}>
+            ★ FEATURED LESSON
+          </div>
+        )}
         {/* Maintenance overlay strip */}
         {item.maintenance && (
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(217,119,6,0.92)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.05em' }}>
@@ -103,6 +109,24 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
             }}
           >
             MUSIC
+          </span>
+        )}
+        {item.type === 'video' && (
+          <span
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              background: 'rgba(220,38,38,0.85)',
+              color: '#fff',
+              fontSize: '0.62rem',
+              fontWeight: 900,
+              padding: '2px 8px',
+              borderRadius: 999,
+              letterSpacing: '0.06em',
+            }}
+          >
+            ▶ VIDEO
           </span>
         )}
       </Link>

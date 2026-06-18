@@ -1,8 +1,6 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
 import { YoutubeTranscript } from 'youtube-transcript'
 import { getOpenAIClient } from './openai'
+import { getAdminClient } from './supabase'
 import type { TranscriptSegment, VideoData } from './types'
 
 // Convert YOUTUBE_COOKIES JSON array → "name=value; name2=value2" string for youtubei.js
@@ -228,6 +226,33 @@ async function fetchCaptionsViaYoutubei(videoId: string): Promise<TranscriptSegm
     }))
 }
 
+// Fetch captions via the Edge function (runs on Cloudflare IPs, bypassing
+// YouTube's datacenter IP block that affects Vercel Lambda / AWS).
+async function fetchCaptionsViaPage(videoId: string): Promise<TranscriptSegment[]> {
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+  const cookie = buildCookieString() ?? ''
+
+  const res = await fetch(`${appUrl}/api/youtube/fetch-page?videoId=${videoId}`, {
+    headers: { 'x-yt-cookie': cookie },
+    signal: AbortSignal.timeout(25000),
+  })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` })) as { error?: string }
+    throw new Error(`Edge fetch: ${body.error ?? res.status}`)
+  }
+
+  const data = await res.json() as {
+    segments: TranscriptSegment[]
+    isASR: boolean
+    hasMusicalSymbol: boolean
+    error?: string
+  }
+
+  if (data.error || !data.segments?.length) throw new Error(data.error ?? 'No segments returned by Edge function')
+  return data.segments
+}
+
 // Fetch captions via youtube-transcript package (InnerTube API)
 // NOTE: This is blocked by YouTube on Vercel/datacenter IPs — kept as last resort
 async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]> {
@@ -275,7 +300,16 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push('data-api: YOUTUBE_API_KEY not set')
   }
 
-  // Attempt 3: youtubei.js — full InnerTube client with session cookies
+  // Attempt 3: Direct page fetch with browser headers + session cookies (json3 format)
+  try {
+    const segments = await fetchCaptionsViaPage(videoId)
+    if (segments.length > 0) return segments
+    errors.push('page-fetch: empty result')
+  } catch (e) {
+    errors.push(`page-fetch: ${errorMessage(e)}`)
+  }
+
+  // Attempt 4: youtubei.js — full InnerTube client with session cookies
   try {
     const segments = await fetchCaptionsViaYoutubei(videoId)
     if (segments.length > 0) return segments
@@ -284,7 +318,7 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push(`youtubei: ${errorMessage(e)}`)
   }
 
-  // Attempt 4: youtube-transcript package (blocked on Vercel IPs, kept as last resort)
+  // Attempt 5: youtube-transcript package (blocked on Vercel IPs, kept as last resort)
   try {
     const segments = await fetchCaptionsPublic(videoId)
     if (segments.length > 0) return segments
@@ -379,6 +413,31 @@ function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
   return result
 }
 
+// After merge + punctuation repair: split any segment that still contains multiple
+// sentences into one segment per sentence. Also splits [Music] / [Verse] / [Chorus]
+// style markers off into their own segments (isNonSpeech filters them from display).
+function splitAtSentenceBoundaries(segs: TranscriptSegment[]): TranscriptSegment[] {
+  const result: TranscriptSegment[] = []
+  for (const seg of segs) {
+    // Split after ./?/! followed by space+capital, OR before any [Word] marker
+    const parts = seg.text
+      .split(/(?<=[.!?])\s+(?=[A-Z"(\[])|(?<=\])\s+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+
+    if (parts.length <= 1) { result.push(seg); continue }
+
+    const totalLen = parts.reduce((s, p) => s + p.length, 0)
+    let cursor = seg.start
+    for (const part of parts) {
+      const dur = Math.max(0.4, (part.length / totalLen) * seg.duration)
+      result.push({ text: part, start: cursor, duration: dur, synthetic: seg.synthetic })
+      cursor += dur
+    }
+  }
+  return result
+}
+
 // For ASR (auto-generated) captions: add missing punctuation and fix capitalisation.
 // Sends segments in numbered batches to gpt-4o-mini; timing is preserved unchanged.
 async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
@@ -428,23 +487,82 @@ async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<Tran
   return result
 }
 
+const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000 // 90 days
+
+// Strict music captions: only accept human-verified or ♪-marked tracks.
+// Returns null if the captions don't meet the bar — caller should fall back to
+// lyrics sources (Spotify, lrclib, Letras, Genius, Cifra Club).
+export async function getMusicCaptions(videoId: string): Promise<TranscriptSegment[] | null> {
+  try {
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+    const cookie = buildCookieString() ?? ''
+
+    const res = await fetch(`${appUrl}/api/youtube/fetch-page?videoId=${videoId}`, {
+      headers: { 'x-yt-cookie': cookie },
+      signal: AbortSignal.timeout(25000),
+    })
+    if (!res.ok) return null
+
+    const data = await res.json() as {
+      segments: TranscriptSegment[]
+      isASR: boolean
+      hasMusicalSymbol: boolean
+    }
+
+    if (!data.segments?.length) return null
+
+    // Accept ONLY human-captioned tracks or tracks with musical symbols
+    const isHighQuality = !data.isASR || data.hasMusicalSymbol
+    if (!isHighQuality) return null
+
+    return data.segments
+  } catch {
+    return null
+  }
+}
+
 export async function getTranscript(url: string): Promise<VideoData> {
   const videoId = extractVideoId(url)
   if (!videoId) throw new Error('Invalid YouTube URL. Could not extract video ID.')
 
-  const title = await getVideoTitle(videoId)
+  const [title, cached] = await Promise.all([
+    getVideoTitle(videoId),
+    // Check Supabase cache — avoids hitting YouTube when quota is exhausted
+    Promise.resolve(
+      getAdminClient()
+        .from('youtube_transcript_cache')
+        .select('transcript, segments')
+        .eq('video_id', videoId)
+        .gt('fetched_at', new Date(Date.now() - CACHE_TTL_MS).toISOString())
+        .maybeSingle(),
+    ).then(r => r.data).catch(() => null),
+  ])
+
+  if (cached) {
+    return {
+      video_id: videoId,
+      title,
+      transcript: cached.transcript,
+      segments: cached.segments as TranscriptSegment[],
+      source: 'youtube_captions',
+    }
+  }
 
   try {
     const raw      = await fetchCaptions(videoId)
     const merged   = mergeIntoSentences(raw)
-    const segments = await repairASRPunctuation(merged)
-    return {
-      video_id: videoId,
-      title,
-      transcript: segments.map((s) => s.text).join(' '),
-      segments,
-      source: 'youtube_captions',
-    }
+    const repaired = await repairASRPunctuation(merged)
+    const segments = splitAtSentenceBoundaries(repaired)
+    const transcript = segments.map((s) => s.text).join('\n')
+
+    // Persist to cache asynchronously — don't block the response
+    void Promise.resolve(
+      getAdminClient()
+        .from('youtube_transcript_cache')
+        .upsert({ video_id: videoId, transcript, segments, fetched_at: new Date().toISOString() }),
+    ).catch((e: unknown) => console.error('[transcript-cache] write failed:', e))
+
+    return { video_id: videoId, title, transcript, segments, source: 'youtube_captions' }
   } catch (captionError) {
     try {
       const fallback = await transcribeAudioFallback(videoId)

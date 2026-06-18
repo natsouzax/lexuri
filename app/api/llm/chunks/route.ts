@@ -25,8 +25,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const body = (await request.json()) as { text: string; level?: string }
-    const { text, level = 'B1' } = body
+    const body = (await request.json()) as { text: string }
+    const { text } = body
 
     if (!text?.trim()) {
       return NextResponse.json({ error: 'Text is required.' }, { status: 400 })
@@ -34,14 +34,13 @@ export async function POST(request: Request) {
 
     const { data: onboarding } = await supabase
       .from('onboarding')
-      .select('native_language, current_level')
+      .select('native_language')
       .eq('user_id', user.id)
       .maybeSingle()
 
     const nativeLang = (onboarding?.native_language as string | null) ?? 'Portuguese'
-    const userLevel = (level !== 'B1' ? level : (onboarding?.current_level as string | null)) ?? 'B1'
 
-    const result = await analyzeChunks(text, userLevel, nativeLang)
+    const result = await analyzeChunks(text, nativeLang)
 
     if (!isPremium) {
       await incrementWeeklyUsage(user.id, 'chunk_analyses')

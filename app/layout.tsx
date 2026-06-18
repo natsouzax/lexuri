@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from 'next'
 import './globals.css'
 import RotateHint from '@/components/RotateHint'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export const viewport = {
   width: 'device-width',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <RotateHint />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   )

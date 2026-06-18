@@ -152,7 +152,8 @@ export default function YoutubeSyncPlayer({
   const captionDelayRef  = useRef(0)
   const updateActiveRef  = useRef<(t: number) => void>(() => {})
 
-  // Pre-compute each segment's start offset in the full transcript (segments joined by ' ')
+  // Pre-compute each segment's start offset in the full transcript (segments joined by '\n').
+  // Adding 1 per segment for the single-char separator, same as join('\n').
   const segmentOffsets = useMemo(() => {
     const offsets: number[] = []
     let pos = 0

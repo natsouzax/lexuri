@@ -39,8 +39,8 @@ COLOR CODES (use exactly as specified, per type):
 Return ONLY valid JSON. No markdown fences. No explanations outside JSON.`
 }
 
-function buildUserPrompt(text: string, level: string, nativeLang: string): string {
-  return `Analyze this English text and detect ALL natural language chunks for a ${level} learner. Be exhaustive — include every phrasal verb, idiom, collocation, grammar pattern, and multi-word expression, even if it seems simple or common. Do NOT under-detect.
+function buildUserPrompt(text: string, nativeLang: string): string {
+  return `Analyze this English text and detect ALL natural language chunks across ALL proficiency levels — from A1 to C1. Be completely exhaustive: include every phrasal verb, idiom, collocation, grammar pattern, and multi-word expression regardless of how simple or common it seems. The more chunks you detect, the better. Leave nothing out.
 
 Return exact character offsets for each chunk so the frontend can highlight them in the original text.
 The "start" and "end" values must match the exact substring in the text below.
@@ -65,7 +65,7 @@ JSON schema to follow exactly:
       "color": "<hex from the color guide above>",
       "clickable": true,
       "flashcard_suggestion": true|false,
-      "learner_level": "<CEFR: A1, A2, B1, B2, C1>",
+      "learner_level": "<CEFR level this chunk is most useful for: A1, A2, B1, B2, C1>",
       "why_it_matters": "<one concise sentence in English explaining what this chunk means or does — NOT 'this is a phrasal verb', but its actual meaning, e.g. 'to stop appreciating something because it feels normal'>",
       "example_sentence": "<one short English sentence applying this chunk in a fresh context, different from the text above>"
     }
@@ -84,14 +84,13 @@ export function correctOffset(chunk: ChunkItem, text: string): ChunkItem | null 
 
 export async function analyzeChunks(
   text: string,
-  level: string,
   nativeLang: string,
 ): Promise<ChunkAnalysis> {
   const response = await getOpenAIClient().chat.completions.create({
     model: 'gpt-4o',
     messages: [
       { role: 'system', content: buildSystemPrompt(nativeLang) },
-      { role: 'user', content: buildUserPrompt(text, level, nativeLang) },
+      { role: 'user', content: buildUserPrompt(text, nativeLang) },
     ],
     temperature: 0.2,
   })

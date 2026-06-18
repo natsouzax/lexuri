@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase-server'
 import AppShell from '@/components/AppShell'
 import PremiumPopup from '@/components/PremiumPopup'
+import SpotifyGlobalCheck from '@/components/SpotifyGlobalCheck'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
@@ -11,6 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <AppShell>
       {children}
       <PremiumPopup />
+      <SpotifyGlobalCheck />
     </AppShell>
   )
 }

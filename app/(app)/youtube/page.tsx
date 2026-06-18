@@ -1,9 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Hero from '@/components/ui/Hero'
-import MetricCard from '@/components/ui/MetricCard'
-import DeckCard from '@/components/ui/DeckCard'
 import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
@@ -11,10 +9,28 @@ import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
 import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, VideoData } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
-import type { SRSCard } from '@/lib/srs'
 
-const LEVELS = ['A2', 'B1', 'B2', 'C1'] as const
-type Level = (typeof LEVELS)[number]
+interface SavedVideo {
+  url: string
+  video_id: string
+  title: string
+  thumbnail: string
+  saved_at: string
+}
+
+const SAVED_KEY = 'lexuri_saved_yt_videos'
+
+function loadSaved(): SavedVideo[] {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_KEY) ?? '[]') as SavedVideo[]
+  } catch {
+    return []
+  }
+}
+
+function persistSaved(list: SavedVideo[]) {
+  localStorage.setItem(SAVED_KEY, JSON.stringify(list))
+}
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -32,48 +48,40 @@ function awardXP(event: string) {
 }
 
 export default function YouTubePage() {
-  const [url, setUrl] = useState('')
+  const [url, setUrl]           = useState('')
   const [videoData, setVideoData] = useState<VideoData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
 
-  const [selectedWords, setSelectedWords] = useState<string[]>([])
-  const [generatedCards, setGeneratedCards] = useState<Flashcard[]>([])
+  const [selectedWords, setSelectedWords]     = useState<string[]>([])
+  const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
   const [generatingCards, setGeneratingCards] = useState(false)
 
-  const [level, setLevel] = useState<Level>('B1')
-  const [chunkAnalysis, setChunkAnalysis] = useState<ChunkAnalysis | null>(null)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [selectedChunk, setSelectedChunk] = useState<ChunkItem | null>(null)
-  const [savedChunks, setSavedChunks] = useState<Set<string>>(new Set())
+  const [chunkAnalysis, setChunkAnalysis]     = useState<ChunkAnalysis | null>(null)
+  const [analyzing, setAnalyzing]             = useState(false)
+  const [selectedChunk, setSelectedChunk]     = useState<ChunkItem | null>(null)
+  const [savedChunks, setSavedChunks]         = useState<Set<string>>(new Set())
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
 
-  const [allCards, setAllCards] = useState<Flashcard[]>([])
-  const [dueCards, setDueCards] = useState<SRSCard[]>([])
-  const [reviewingId, setReviewingId] = useState<string | null>(null)
+  const [savedVideos, setSavedVideos] = useState<SavedVideo[]>([])
+  const [isVideoSaved, setIsVideoSaved] = useState(false)
 
-  const loadCards = useCallback(async () => {
-    try {
-      const cards = await apiFetch<Flashcard[]>('/api/flashcards')
-      setAllCards(cards)
-      const { getDueCards } = await import('@/lib/srs')
-      setDueCards(getDueCards(cards))
-    } catch {
-      /* silent */
-    }
-  }, [])
+  useEffect(() => { setSavedVideos(loadSaved()) }, [])
 
-  useEffect(() => { loadCards() }, [loadCards])
+  useEffect(() => {
+    if (!videoData) { setIsVideoSaved(false); return }
+    setIsVideoSaved(savedVideos.some((v) => v.video_id === videoData.video_id))
+  }, [videoData, savedVideos])
 
-  // Auto-analyze chunks as soon as a video is loaded, and re-run when level changes
+  // Auto-analyze as soon as video loads
   useEffect(() => {
     if (!videoData) return
     handleAnalyzeChunks()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoData, level])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoData])
 
-  async function handleLoadVideo() {
-    if (!url.trim()) return
+  async function handleLoadVideo(loadUrl = url) {
+    if (!loadUrl.trim()) return
     setLoading(true)
     setError('')
     setVideoData(null)
@@ -86,15 +94,38 @@ export default function YouTubePage() {
       const data = await apiFetch<VideoData>('/api/youtube/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: loadUrl }),
       })
       setVideoData(data)
+      setUrl(loadUrl)
       awardXP('video_studied')
     } catch (e) {
       setError(String(e))
     } finally {
       setLoading(false)
     }
+  }
+
+  function handleSaveVideo() {
+    if (!videoData) return
+    const entry: SavedVideo = {
+      url,
+      video_id: videoData.video_id,
+      title: videoData.title,
+      thumbnail: `https://img.youtube.com/vi/${videoData.video_id}/mqdefault.jpg`,
+      saved_at: new Date().toISOString(),
+    }
+    const updated = [entry, ...savedVideos.filter((v) => v.video_id !== videoData.video_id)]
+    persistSaved(updated)
+    setSavedVideos(updated)
+    setIsVideoSaved(true)
+  }
+
+  function handleRemoveSaved(video_id: string) {
+    const updated = savedVideos.filter((v) => v.video_id !== video_id)
+    persistSaved(updated)
+    setSavedVideos(updated)
+    if (videoData?.video_id === video_id) setIsVideoSaved(false)
   }
 
   async function handleGenerateFlashcards() {
@@ -104,19 +135,15 @@ export default function YouTubePage() {
       const timestamps: Record<string, number | null> = {}
       for (const word of selectedWords) {
         const seg = videoData.segments.find((s) =>
-          (s.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) ?? []).some(
-            (w) => w.toLowerCase() === word,
-          ),
+          (s.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) ?? []).some((w) => w.toLowerCase() === word),
         )
         timestamps[word] = seg?.start ?? null
       }
-
       const cards = await apiFetch<Flashcard[]>('/api/llm/flashcards-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ words: selectedWords, source_video: videoData.video_id, timestamps }),
       })
-
       const valid = cards.filter((c) => !('error' in c))
       if (valid.length) {
         await apiFetch('/api/flashcards', {
@@ -125,7 +152,7 @@ export default function YouTubePage() {
           body: JSON.stringify({ cards: valid }),
         })
         setGeneratedCards(valid)
-        await loadCards()
+        setSelectedWords([])
       }
     } catch (e) {
       setError(String(e))
@@ -144,7 +171,7 @@ export default function YouTubePage() {
       const result = await apiFetch<ChunkAnalysis>('/api/llm/chunks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: videoData.transcript, level }),
+        body: JSON.stringify({ text: videoData.transcript }),
       })
       setChunkAnalysis(result)
     } catch (e) {
@@ -166,7 +193,6 @@ export default function YouTubePage() {
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
       awardXP('chunk_saved')
-      await loadCards()
     } catch (e) {
       setError(String(e))
     } finally {
@@ -174,31 +200,15 @@ export default function YouTubePage() {
     }
   }
 
-  async function handleReview(cardId: string, quality: number) {
-    setReviewingId(cardId)
-    try {
-      await apiFetch(`/api/flashcards/${cardId}/review`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quality }),
-      })
-      await loadCards()
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setReviewingId(null)
-    }
-  }
-
-  const highChunks = chunkAnalysis?.chunks.filter((c) => c.importance === 'high') ?? []
+  const highChunks  = chunkAnalysis?.chunks.filter((c) => c.importance === 'high') ?? []
   const otherChunks = chunkAnalysis?.chunks.filter((c) => c.importance !== 'high') ?? []
 
   return (
     <>
       <Hero
-        title="Learn"
-        subtitle="YouTube workspace."
-        body="Paste a video URL, import the transcript, watch in context, save useful chunks, generate cards, and schedule review without leaving the page."
+        title="YouTube Studio"
+        subtitle="Any video. Any clip. Study it."
+        body="Paste a YouTube URL, get the transcript synced to the video, save useful expressions as flashcards, and keep a personal library of videos worth revisiting."
       />
 
       <div className="learn-tabs">
@@ -210,25 +220,8 @@ export default function YouTubePage() {
         ))}
       </div>
 
-      {/* Metrics */}
-      <div className="metrics-row">
-        <MetricCard label="Selected words" value={selectedWords.length} />
-        <MetricCard label="Saved cards" value={allCards.length} />
-        <MetricCard label="Due today" value={dueCards.length} />
-      </div>
-
-      <div className="panel" style={{ marginBottom: 24 }}>
-        <span className="mini-label">First session mission</span>
-        <div className="learning-loop" style={{ marginTop: 8 }}>
-          <span>Paste video</span>
-          <span>AI maps chunks</span>
-          <span>Save 3 chunks</span>
-          <span>Review today</span>
-        </div>
-      </div>
-
-      {/* Load video */}
-      <div className="section-title">Load A Video</div>
+      {/* ── Load video ─────────────────────────────────────────────────────── */}
+      <div className="section-title">Load a Video or Clip</div>
       <div className="input-row">
         <input
           className="input-field"
@@ -237,58 +230,36 @@ export default function YouTubePage() {
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleLoadVideo()}
         />
-        <button className="btn-primary" onClick={handleLoadVideo} disabled={loading}>
-          {loading ? <><span className="spinner" />Loading…</> : 'Load video'}
+        <button className="btn-primary" onClick={() => handleLoadVideo()} disabled={loading}>
+          {loading ? <><span className="spinner" />Loading…</> : 'Load'}
         </button>
       </div>
       {error && <div className="alert-error">{error}</div>}
 
+      {/* ── Lesson workspace ───────────────────────────────────────────────── */}
       {videoData && (
         <>
-          <div className="section-title">Lesson Workspace</div>
-
-          {/* Controls */}
-          <div className="two-col" style={{ marginBottom: 20 }}>
-            <div>
-              <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.2rem', marginBottom: 8 }}>
-                {videoData.title}
-              </div>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
-                Play the video, read the transcript, then let AI surface the expressions worth saving. Focus on chunks you would actually use.
-              </p>
-            </div>
-            <div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>My level:</span>
-                {LEVELS.map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setLevel(l)}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: 20,
-                      border: `1.5px solid ${level === l ? 'var(--clay)' : 'var(--line)'}`,
-                      background: level === l ? 'var(--clay)' : 'transparent',
-                      color: level === l ? '#fff' : 'var(--muted)',
-                      fontWeight: level === l ? 700 : 400,
-                      fontSize: '0.78rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-              {analyzing && (
-                <div style={{ marginTop: 10, fontSize: '0.82rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="spinner" />Finding essential chunks…
-                </div>
-              )}
-            </div>
+          <div className="section-title" style={{ marginTop: 32 }}>
+            <span>{videoData.title}</span>
+            <button
+              onClick={isVideoSaved ? () => handleRemoveSaved(videoData.video_id) : handleSaveVideo}
+              style={{
+                marginLeft: 'auto',
+                border: `1.5px solid ${isVideoSaved ? 'var(--clay)' : 'var(--line)'}`,
+                borderRadius: 999,
+                padding: '5px 16px',
+                background: isVideoSaved ? 'rgba(200,111,74,0.1)' : '#fff',
+                color: isVideoSaved ? 'var(--clay)' : 'var(--muted)',
+                fontWeight: 700,
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isVideoSaved ? '★ Saved' : '☆ Save video'}
+            </button>
           </div>
 
-          {/* Synced player */}
-          <div className="section-title">Synced Video Transcript</div>
           <YoutubeSyncPlayer
             videoId={videoData.video_id}
             segments={videoData.segments}
@@ -299,48 +270,41 @@ export default function YouTubePage() {
             onChunkSelect={setSelectedChunk}
           />
 
-          {/* Word collector actions */}
           {selectedWords.length > 0 && (
             <>
               <div className="section-title">Vocabulary Collector</div>
               <div className="chip-list">
                 {selectedWords.map((word) => (
-                  <button
-                    key={word}
-                    className="chip"
-                    onClick={() => setSelectedWords((prev) => prev.filter((w) => w !== word))}
-                  >
+                  <button key={word} className="chip" onClick={() => setSelectedWords((prev) => prev.filter((w) => w !== word))}>
                     {word} ×
                   </button>
                 ))}
               </div>
-              <button
-                className="btn-primary btn-wide"
-                onClick={handleGenerateFlashcards}
-                disabled={generatingCards}
-              >
-                {generatingCards ? <><span className="spinner" />Generating flashcards…</> : 'Generate Flashcards'}
+              <button className="btn-primary btn-wide" onClick={handleGenerateFlashcards} disabled={generatingCards}>
+                {generatingCards ? <><span className="spinner" />Generating flashcards…</> : 'Generate flashcards'}
               </button>
             </>
           )}
 
-          {/* Generated word cards */}
           {generatedCards.length > 0 && (
             <>
               <div className="section-title">Generated Flashcards</div>
-              {generatedCards.map((card) => (
-                <GeneratedLearningCard key={card.id} card={card} />
-              ))}
+              {generatedCards.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
             </>
           )}
 
-          {/* Chunk analysis */}
+          {analyzing && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 0', color: 'var(--muted)', fontSize: '0.86rem' }}>
+              <span className="spinner" />Mapping chunks…
+            </div>
+          )}
+
           {chunkAnalysis && (
             <>
               <div className="panel" style={{ marginBottom: 16 }}>
                 <span className="mini-label">AI chunk map ready</span>
                 <p className="panel-copy">
-                  Lexuri found {chunkAnalysis.chunks.length} natural expressions. Start with the high-importance chunks, play the audio, and save the ones you want to remember.
+                  {chunkAnalysis.chunks.length} expressions detected. Save the ones you want to remember.
                 </p>
               </div>
               <div className="section-title">Chunk Map</div>
@@ -353,26 +317,20 @@ export default function YouTubePage() {
                 />
               </div>
 
-              {/* Legend */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
                 {[
-                  { type: 'phrasal_verb', label: 'Phrasal Verb', color: '#4CAF50' },
-                  { type: 'idiomatic', label: 'Idiom', color: '#FF6B6B' },
-                  { type: 'collocation', label: 'Collocation', color: '#4A90E2' },
-                  { type: 'lexical_chunk', label: 'Lexical Chunk', color: '#9C27B0' },
-                  { type: 'formulaic', label: 'Formulaic', color: '#FF9800' },
+                  { type: 'phrasal_verb',    label: 'Phrasal Verb',    color: '#4CAF50' },
+                  { type: 'idiomatic',       label: 'Idiom',           color: '#FF6B6B' },
+                  { type: 'collocation',     label: 'Collocation',     color: '#4A90E2' },
+                  { type: 'lexical_chunk',   label: 'Lexical Chunk',   color: '#9C27B0' },
+                  { type: 'formulaic',       label: 'Formulaic',       color: '#FF9800' },
                   { type: 'grammar_pattern', label: 'Grammar Pattern', color: '#00BCD4' },
-                  { type: 'emotional', label: 'Emotional', color: '#E91E63' },
-                  { type: 'conversational', label: 'Conversational', color: '#607D8B' },
+                  { type: 'emotional',       label: 'Emotional',       color: '#E91E63' },
+                  { type: 'conversational',  label: 'Conversational',  color: '#607D8B' },
                 ]
                   .filter(({ type }) => chunkAnalysis.chunks.some((c) => c.type === type))
                   .map(({ label, color }) => (
-                    <span
-                      key={label}
-                      style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: color + '22', color }}
-                    >
-                      {label}
-                    </span>
+                    <span key={label} style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: color + '22', color }}>{label}</span>
                   ))}
               </div>
 
@@ -381,15 +339,7 @@ export default function YouTubePage() {
                   <div className="section-title">Key Expressions</div>
                   <div className="three-col" style={{ marginBottom: 24 }}>
                     {highChunks.map((chunk) => (
-                      <ChunkCard
-                        key={chunk.text + chunk.start}
-                        chunk={chunk}
-                        isSelected={selectedChunk?.text === chunk.text}
-                        onSelect={setSelectedChunk}
-                        onMakeFlashcard={handleMakeFlashcard}
-                        making={makingFlashcard === chunk.text}
-                        saved={savedChunks.has(chunk.text)}
-                      />
+                      <ChunkCard key={chunk.text + chunk.start} chunk={chunk} isSelected={selectedChunk?.text === chunk.text} onSelect={setSelectedChunk} onMakeFlashcard={handleMakeFlashcard} making={makingFlashcard === chunk.text} saved={savedChunks.has(chunk.text)} />
                     ))}
                   </div>
                 </>
@@ -400,15 +350,7 @@ export default function YouTubePage() {
                   <div className="section-title">More Chunks</div>
                   <div className="three-col">
                     {otherChunks.map((chunk) => (
-                      <ChunkCard
-                        key={chunk.text + chunk.start}
-                        chunk={chunk}
-                        isSelected={selectedChunk?.text === chunk.text}
-                        onSelect={setSelectedChunk}
-                        onMakeFlashcard={handleMakeFlashcard}
-                        making={makingFlashcard === chunk.text}
-                        saved={savedChunks.has(chunk.text)}
-                      />
+                      <ChunkCard key={chunk.text + chunk.start} chunk={chunk} isSelected={selectedChunk?.text === chunk.text} onSelect={setSelectedChunk} onMakeFlashcard={handleMakeFlashcard} making={makingFlashcard === chunk.text} saved={savedChunks.has(chunk.text)} />
                     ))}
                   </div>
                 </>
@@ -418,6 +360,51 @@ export default function YouTubePage() {
         </>
       )}
 
+      {/* ── Saved videos ───────────────────────────────────────────────────── */}
+      {savedVideos.length > 0 && (
+        <>
+          <div className="section-title" style={{ marginTop: 40 }}>Saved Videos</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, marginBottom: 32 }}>
+            {savedVideos.map((v) => (
+              <div
+                key={v.video_id}
+                style={{ border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden', background: '#fff', display: 'flex', flexDirection: 'column' }}
+              >
+                <div style={{ position: 'relative', aspectRatio: '16/9', background: '#000', cursor: 'pointer' }} onClick={() => handleLoadVideo(v.url)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={v.thumbnail} alt={v.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 160ms ease' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0.35)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0)' }}
+                  >
+                    <span style={{ fontSize: '2rem', color: '#fff', opacity: 0, transition: 'opacity 160ms ease' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLSpanElement).style.opacity = '1' }}
+                    >▶</span>
+                  </div>
+                </div>
+                <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 800, fontSize: '0.88rem', lineHeight: 1.3 }}>{v.title}</div>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 'auto' }}>
+                    <button
+                      onClick={() => handleLoadVideo(v.url)}
+                      className="btn-primary"
+                      style={{ flex: 1, fontSize: '0.76rem', padding: '6px 10px' }}
+                    >
+                      Study
+                    </button>
+                    <button
+                      onClick={() => handleRemoveSaved(v.video_id)}
+                      style={{ border: '1.5px solid var(--line)', borderRadius: 999, padding: '6px 12px', background: '#fff', color: 'var(--muted)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </>
   )
 }

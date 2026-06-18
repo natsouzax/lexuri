@@ -6,6 +6,8 @@ import Hero from '@/components/ui/Hero'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import SpotifyConnectModal from '@/components/SpotifyConnectModal'
+import UnverifiedModal from '@/components/UnverifiedModal'
+import UnverifiedCard from '@/components/UnverifiedCard'
 import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, Song } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
@@ -46,6 +48,7 @@ interface WorkingSong {
   spotify_track_id?: string
   lyrics_source?: string
   is_synced?: boolean
+  verified?: boolean
 }
 
 function formatDuration(ms: number): string {
@@ -62,6 +65,8 @@ export default function MusicPage() {
   const [tab, setTab] = useState<Tab>('discover')
   const [spotifyConnected, setSpotifyConnected] = useState<boolean | null>(null)
   const [showSpotifyModal, setShowSpotifyModal] = useState(false)
+  const [showUnverifiedModal, setShowUnverifiedModal] = useState(false)
+  const [pendingSave, setPendingSave] = useState(false)
 
   // --- Discover state ---
   const [query, setQuery] = useState('')
@@ -193,7 +198,7 @@ export default function MusicPage() {
     if (isUrl(q)) {
       setFetchingLyrics(true)
       try {
-        const song = await apiFetch<WorkingSong & { not_found?: boolean }>(
+        const song = await apiFetch<WorkingSong & { not_found?: boolean; verified?: boolean }>(
           '/api/music/resolve-url',
           {
             method: 'POST',
@@ -201,11 +206,11 @@ export default function MusicPage() {
             body: JSON.stringify({ url: q }),
           },
         )
-        setWorkingSong(song)
-        // Trigger AI merge in background (uses all sources including Spotify if connected)
+        setWorkingSong({ ...song, verified: song.verified ?? true })
         void handleMergeLyrics(song)
-        // If not synced and Spotify not connected, prompt user
-        if (!song.is_synced && !spotifyConnected) {
+        if (song.verified === false) {
+          setShowUnverifiedModal(true)
+        } else if (!song.is_synced && !spotifyConnected) {
           setShowSpotifyModal(true)
         }
       } catch (e) {
@@ -240,8 +245,7 @@ export default function MusicPage() {
       youtube_url: null,
       spotify_url: null,
     }
-    setWorkingSong(song)
-    // Trigger AI merge to potentially improve with Genius + Spotify
+    setWorkingSong({ ...song, verified: true })
     void handleMergeLyrics(song)
     if (!hit.syncedLyrics && !spotifyConnected) {
       setShowSpotifyModal(true)
@@ -351,6 +355,23 @@ export default function MusicPage() {
         <SpotifyConnectModal
           returnTo="/music"
           onClose={() => setShowSpotifyModal(false)}
+        />
+      )}
+
+      {showUnverifiedModal && (
+        <UnverifiedModal
+          context="music"
+          onAddAnyway={() => {
+            setShowUnverifiedModal(false)
+            if (pendingSave) {
+              setPendingSave(false)
+              void handleSaveToLibrary()
+            }
+          }}
+          onCancel={() => {
+            setShowUnverifiedModal(false)
+            setPendingSave(false)
+          }}
         />
       )}
 
@@ -507,7 +528,14 @@ export default function MusicPage() {
                   <button
                     className="btn-primary"
                     style={{ fontSize: '0.8rem', padding: '7px 16px' }}
-                    onClick={handleSaveToLibrary}
+                    onClick={() => {
+                      if (workingSong?.verified === false) {
+                        setPendingSave(true)
+                        setShowUnverifiedModal(true)
+                      } else {
+                        void handleSaveToLibrary()
+                      }
+                    }}
                     disabled={saving || !!savedSongId}
                   >
                     {savedSongId ? '✓ Saved' : saving ? <><span className="spinner" />Saving…</> : '+ Save to Library'}
@@ -520,6 +548,13 @@ export default function MusicPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Unverified warning */}
+              {workingSong.verified === false && !mergingLyrics && (
+                <div style={{ marginBottom: 14 }}>
+                  <UnverifiedCard />
+                </div>
+              )}
 
               {/* Lyrics quality badge */}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>

@@ -2842,3 +2842,10 @@ h1, h2, h3 {
 }
 .rotate-hint-btn:hover  { background: #b05a37; }
 .rotate-hint-btn:active { transform: translateY(1px); }
+
+.lesson-card {
+  text-decoration: none; color: inherit; display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+.lesson-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.10); transform: translateY(-2px); }

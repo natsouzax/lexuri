@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:migrate": "supabase db push",
-    "db:status": "supabase migration list"
+    "db:status": "supabase migration list",
+    "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
@@ -18,6 +19,7 @@
     "@stripe/stripe-js": "^9.7.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
+    "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.40.0",
     "next": "16.2.6",
     "openai": "^6.39.1",
@@ -40,6 +42,7 @@
     "@vitejs/plugin-react": "^6.0.2",
     "pg": "^8.21.0",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5",
     "vite": "^8.0.14",
     "vitest": "^4.1.7"

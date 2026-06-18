@@ -5,12 +5,10 @@ import Link from 'next/link'
 import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
 import FeedItemCard from '@/components/FeedItemCard'
-import SpotifyConnectModal from '@/components/SpotifyConnectModal'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { contentTabs } from '@/lib/product'
-import type { FeedItem } from '@/lib/feed'
+import { FEED_ITEMS } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
-
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -19,36 +17,22 @@ async function apiFetch<T>(path: string): Promise<T> {
   return data as T
 }
 
-const LEVELS = ['All', 'A2', 'B1', 'B2', 'C1'] as const
+// Use local JSON directly — the DB doesn't carry the `featured` field
+const ALL_ITEMS = FEED_ITEMS.filter((item) => !item.maintenance)
+
+const LEVELS = ['All', 'A1', 'A2', 'B1', 'B2', 'C1'] as const
 type LevelFilter = (typeof LEVELS)[number]
-type TypeFilter = 'All' | 'video' | 'music'
+type TypeFilter = 'featured' | 'All' | 'video' | 'music'
 
 export default function FeedPage() {
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([])
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('All')
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('featured')
   const [cardCount, setCardCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
-  const [showSpotifyModal, setShowSpotifyModal] = useState(false)
 
   useEffect(() => {
     setSavedIds(getSavedItemIds())
-  }, [])
-
-  useEffect(() => {
-    apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => {})
-  }, [])
-
-  // Show Spotify modal once per session if not connected
-  useEffect(() => {
-    if (sessionStorage.getItem('spotify_modal_dismissed')) return
-    fetch('/api/spotify/status')
-      .then((r) => r.json())
-      .then((d: { connected: boolean }) => {
-        if (!d.connected) setShowSpotifyModal(true)
-      })
-      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -69,24 +53,16 @@ export default function FeedPage() {
     }
   }
 
-  const filtered = feedItems.filter(
-    (item) =>
+  const filtered = ALL_ITEMS.filter((item) => {
+    if (typeFilter === 'featured') return item.featured === true
+    return (
       (levelFilter === 'All' || item.level === levelFilter) &&
-      (typeFilter === 'All' || item.type === typeFilter),
-  )
+      (typeFilter === 'All' || item.type === typeFilter)
+    )
+  })
 
   return (
     <>
-      {showSpotifyModal && (
-        <SpotifyConnectModal
-          returnTo="/feed"
-          onClose={() => {
-            setShowSpotifyModal(false)
-            sessionStorage.setItem('spotify_modal_dismissed', '1')
-          }}
-        />
-      )}
-
       <Hero
         title="Learn"
         subtitle="Discover content, then turn it into memory."
@@ -103,55 +79,63 @@ export default function FeedPage() {
       </div>
 
       <div className="metrics-row">
-        <MetricCard label="Curated lessons" value={feedItems.length} />
+        <MetricCard label="Curated lessons" value={ALL_ITEMS.length} />
         <MetricCard label="Saved flashcards" value={cardCount} />
         <MetricCard label="Reviews due" value={dueCount} />
       </div>
 
-      <div className="section-title">Discover Content</div>
+      <div className="section-title">
+        {typeFilter === 'featured' ? 'Featured Lessons' : 'Discover Content'}
+      </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Source:</span>
-          {(['All', 'video', 'music'] as TypeFilter[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTypeFilter(t)}
-              style={{
-                padding: '5px 14px',
-                borderRadius: 999,
-                border: `1.5px solid ${typeFilter === t ? 'var(--ink)' : 'var(--line)'}`,
-                background: typeFilter === t ? 'var(--ink)' : 'transparent',
-                color: typeFilter === t ? '#fff' : 'var(--muted)',
-                fontWeight: typeFilter === t ? 700 : 400,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-              }}
-            >
-              {t === 'video' ? 'Video' : t === 'music' ? 'Music' : 'All'}
-            </button>
-          ))}
+          {(['featured', 'All', 'video', 'music'] as TypeFilter[]).map((t) => {
+            const isFeatured = t === 'featured'
+            const active = typeFilter === t
+            return (
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: 999,
+                  border: `1.5px solid ${active ? (isFeatured ? 'rgba(90,20,180,0.7)' : 'var(--ink)') : 'var(--line)'}`,
+                  background: active ? (isFeatured ? 'rgba(90,20,180,0.88)' : 'var(--ink)') : 'transparent',
+                  color: active ? '#fff' : 'var(--muted)',
+                  fontWeight: active ? 700 : 400,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {t === 'featured' ? '★ Featured' : t === 'video' ? 'Video' : t === 'music' ? 'Music' : 'All'}
+              </button>
+            )
+          })}
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Difficulty:</span>
-          {LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevelFilter(l)}
-              style={{
-                padding: '5px 14px',
-                borderRadius: 999,
-                border: `1.5px solid ${levelFilter === l ? 'var(--clay)' : 'var(--line)'}`,
-                background: levelFilter === l ? 'var(--clay)' : 'transparent',
-                color: levelFilter === l ? '#fff' : 'var(--muted)',
-                fontWeight: levelFilter === l ? 700 : 400,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-              }}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
+        {typeFilter !== 'featured' && (
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Difficulty:</span>
+            {LEVELS.map((l) => (
+              <button
+                key={l}
+                onClick={() => setLevelFilter(l)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: 999,
+                  border: `1.5px solid ${levelFilter === l ? 'var(--clay)' : 'var(--line)'}`,
+                  background: levelFilter === l ? 'var(--clay)' : 'transparent',
+                  color: levelFilter === l ? '#fff' : 'var(--muted)',
+                  fontWeight: levelFilter === l ? 700 : 400,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div
@@ -187,7 +171,7 @@ export default function FeedPage() {
               marginBottom: 32,
             }}
           >
-            {feedItems.filter((item) => savedIds.includes(item.id)).map((item) => (
+            {ALL_ITEMS.filter((item) => savedIds.includes(item.id)).map((item) => (
               <FeedItemCard
                 key={item.id}
                 item={item}

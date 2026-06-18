@@ -12,6 +12,7 @@ export interface FeedItem {
   tags: string[]
   preview: string
   maintenance?: boolean
+  featured?: boolean
 }
 
 export const FEED_ITEMS: FeedItem[] = rawItems as FeedItem[]
