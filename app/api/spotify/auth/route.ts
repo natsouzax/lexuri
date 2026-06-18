@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase-server'
 
 function buildRedirectUri(request: Request): string {
   if (process.env.SPOTIFY_REDIRECT_URI) return process.env.SPOTIFY_REDIRECT_URI
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (appUrl) return `${appUrl.replace(/\/$/, '')}/api/spotify/callback`
   const url = new URL(request.url)
   return `${url.protocol}//${url.host}/api/spotify/callback`
 }
