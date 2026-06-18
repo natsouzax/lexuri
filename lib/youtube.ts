@@ -218,12 +218,13 @@ async function fetchCaptionsViaYoutubei(videoId: string): Promise<TranscriptSegm
   const rawSegments = transcriptData?.transcript?.content?.body?.initial_segments
   if (!rawSegments?.length) throw new Error('No transcript segments found via InnerTube.')
 
-  return rawSegments
-    .filter((s: { snippet?: { text?: string }; start_ms?: number; end_ms?: number }) => s.snippet?.text)
-    .map((s: { snippet: { text: string }; start_ms: number; end_ms: number }) => ({
-      text: s.snippet.text.replace(/\n/g, ' ').trim(),
-      start: s.start_ms / 1000,
-      duration: Math.max(0.1, (s.end_ms - s.start_ms) / 1000),
+  type RawSeg = { snippet?: { text?: string }; start_ms?: string | number; end_ms?: string | number }
+  return (rawSegments as unknown as RawSeg[])
+    .filter((s) => s.snippet?.text)
+    .map((s) => ({
+      text: s.snippet!.text!.replace(/\n/g, ' ').trim(),
+      start: Number(s.start_ms) / 1000,
+      duration: Math.max(0.1, (Number(s.end_ms) - Number(s.start_ms)) / 1000),
     }))
 }
 
