@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { EASE_OUT, EASE_SPRING } from '@/lib/easing'
 import CouponSection from '@/components/marketing/CouponSection'
@@ -35,16 +35,15 @@ function Reveal({
 }
 
 const FREE_FEATURES = [
-  '5 YouTube videos per week',
-  'Basic flashcard review',
-  'Manual vocabulary saving',
-  'Feed & community content',
+  '5 curated feed lessons',
+  '5 YouTube imports per week',
+  '5 music songs per week',
+  'Spaced repetition review',
 ]
 
 const PREMIUM_FEATURES = [
-  'Unlimited YouTube & music content',
-  'Advanced AI chunk detection',
-  'Automated SRS scheduling',
+  'Unlimited YouTube & music imports',
+  'Unlimited AI chunk detection',
   'Detailed progress reports & analytics',
   'Priority support',
   'Early access to new features',
@@ -54,9 +53,13 @@ interface Props {
   priceAmount: string
   pricePeriod: string
   priceId: string
+  annualPriceAmount: string
+  annualSavings: string
+  annualPriceId: string
 }
 
-export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: Props) {
+export default function PlansPageContent({ priceAmount, pricePeriod, priceId, annualPriceAmount, annualSavings, annualPriceId }: Props) {
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
   const heroRef = useRef<HTMLDivElement>(null)
   const heroInView = useInView(heroRef, { once: true })
   const cardsRef = useRef<HTMLDivElement>(null)
@@ -104,7 +107,7 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: 
             transition={{ duration: 0.5, delay: 0.36, ease: EASE_OUT }}
           >
             <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Link href="#coupon" className="btn-mkt-primary">Get 1 month free →</Link>
+              <Link href="#coupon" className="btn-mkt-primary">Get 2 weeks free →</Link>
             </motion.div>
             <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link href="/dashboard" className="btn-mkt-ghost">Explore the app</Link>
@@ -116,9 +119,55 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: 
       {/* Free vs Premium */}
       <section className="mkt-section mkt-section-cream">
         <div className="mkt-container" style={{ maxWidth: 860, margin: '0 auto' }}>
-          <Reveal style={{ textAlign: 'center', marginBottom: 48 }}>
+          <Reveal style={{ textAlign: 'center', marginBottom: 40 }}>
             <span className="mkt-eyebrow">What you get</span>
             <h2 className="mkt-h2">Free vs Premium</h2>
+          </Reveal>
+
+          {/* Billing toggle */}
+          <Reveal style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
+            <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.07)', borderRadius: 999, padding: 4, gap: 2 }}>
+              <button
+                onClick={() => setBilling('monthly')}
+                style={{
+                  padding: '9px 22px',
+                  borderRadius: 999,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  background: billing === 'monthly' ? '#fff' : 'transparent',
+                  color: billing === 'monthly' ? 'var(--ink)' : 'var(--muted)',
+                  boxShadow: billing === 'monthly' ? '0 1px 6px rgba(0,0,0,0.10)' : 'none',
+                  transition: 'all 200ms',
+                }}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setBilling('annual')}
+                style={{
+                  padding: '9px 22px',
+                  borderRadius: 999,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: billing === 'annual' ? '#fff' : 'transparent',
+                  color: billing === 'annual' ? 'var(--ink)' : 'var(--muted)',
+                  boxShadow: billing === 'annual' ? '0 1px 6px rgba(0,0,0,0.10)' : 'none',
+                  transition: 'all 200ms',
+                }}
+              >
+                Anual
+                <span style={{ background: 'var(--clay)', color: '#fff', fontSize: '0.65rem', fontWeight: 900, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.04em' }}>
+                  ECONOMIZE {annualSavings}
+                </span>
+              </button>
+            </div>
           </Reveal>
 
           <div className="mkt-grid-2col" style={{ gap: 20, alignItems: 'start' }} ref={cardsRef}>
@@ -166,9 +215,18 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: 
               </span>
               <div style={{ fontSize: '0.72rem', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--clay)', marginBottom: 12 }}>Premium</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
-                <span style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '2rem', color: 'var(--clay)' }}>{priceAmount}</span>
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{pricePeriod}</span>
+                <span style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '2rem', color: 'var(--clay)', transition: 'opacity 150ms' }}>
+                  {billing === 'monthly' ? priceAmount : annualPriceAmount}
+                </span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                  {billing === 'monthly' ? pricePeriod : '/ year'}
+                </span>
               </div>
+              {billing === 'annual' && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--clay)', fontWeight: 700, marginBottom: 4 }}>
+                  Pré-pago anual · economize {annualSavings}
+                </p>
+              )}
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 24, lineHeight: 1.6 }}>Everything in Free, plus:</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {PREMIUM_FEATURES.map((f, i) => (
@@ -188,7 +246,15 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: 
                 whileTap={{ scale: 0.98 }}
                 style={{ marginTop: 24 }}
               >
-                <CheckoutButton priceId={priceId} label={`Assinar por ${priceAmount}${pricePeriod} →`} />
+                {billing === 'monthly' ? (
+                  <CheckoutButton priceId={priceId} label={`Subscribe for ${priceAmount}${pricePeriod} →`} />
+                ) : (
+                  <CheckoutButton
+                    priceId={annualPriceId}
+                    label={`Subscribe for ${annualPriceAmount} / year →`}
+                    style={!annualPriceId ? { opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
+                  />
+                )}
               </motion.div>
             </motion.div>
           </div>
@@ -206,9 +272,9 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId }: 
             transition={{ duration: 0.55, ease: EASE_OUT }}
           >
             <span className="mkt-eyebrow">Validation period</span>
-            <h2 className="mkt-h2">1 month of Premium, free.</h2>
+            <h2 className="mkt-h2">2 weeks of Premium, free.</h2>
             <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 480, margin: '12px auto 0' }}>
-              You&apos;re among the first users of Lexuri. Unlock full Premium access for 1 month — no credit card required.
+              You&apos;re among the first users of Lexuri. Unlock full Premium access for 2 weeks — no credit card required.
             </p>
           </motion.div>
           <CouponSection />

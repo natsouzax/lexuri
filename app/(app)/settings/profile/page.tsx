@@ -142,6 +142,30 @@ export default function ProfileSettingsPage() {
           Take placement test →
         </Link>
       </div>
+
+      <div className="section-title" style={{ marginTop: 32 }}>Plano & Acesso</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 480 }}>
+        <Link href="/settings/billing" style={{ textDecoration: 'none' }}>
+          <div className="settings-nav-card">
+            <span className="settings-nav-icon">⭐</span>
+            <div>
+              <div className="settings-nav-title">Plano & Faturamento</div>
+              <div className="settings-nav-desc">Ver seu plano atual e resgatar cupons</div>
+            </div>
+            <span className="settings-nav-arrow">→</span>
+          </div>
+        </Link>
+        <Link href="/plans" style={{ textDecoration: 'none' }}>
+          <div className="settings-nav-card">
+            <span className="settings-nav-icon">🚀</span>
+            <div>
+              <div className="settings-nav-title">Ver Planos</div>
+              <div className="settings-nav-desc">Conheça os benefícios do Premium</div>
+            </div>
+            <span className="settings-nav-arrow">→</span>
+          </div>
+        </Link>
+      </div>
     </>
   )
 }

@@ -5,10 +5,11 @@ export default async function SettingsPage() {
   const user = await getUser()
 
   const SECTIONS = [
-    { href: '/settings/profile',  icon: '👤', title: 'Profile',         desc: 'Update your name and avatar' },
-    { href: '/settings/password', icon: '🔒', title: 'Password',        desc: 'Change your account password' },
-    { href: '/settings/sessions', icon: '🖥',  title: 'Sessions',        desc: 'Manage active sessions' },
-    { href: '/settings/delete',   icon: '⚠️',  title: 'Delete account',  desc: 'Permanently remove your data' },
+    { href: '/settings/profile',  icon: '👤', title: 'Profile',              desc: 'Update your name and avatar' },
+    { href: '/settings/billing',  icon: '⭐', title: 'Plano & Faturamento',  desc: 'Ver plano atual e resgatar cupons' },
+    { href: '/settings/password', icon: '🔒', title: 'Password',             desc: 'Change your account password' },
+    { href: '/settings/sessions', icon: '🖥',  title: 'Sessions',             desc: 'Manage active sessions' },
+    { href: '/settings/delete',   icon: '⚠️',  title: 'Delete account',       desc: 'Permanently remove your data' },
   ]
 
   return (

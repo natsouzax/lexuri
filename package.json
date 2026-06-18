@@ -8,7 +8,9 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:migrate": "supabase db push",
+    "db:status": "supabase migration list"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
@@ -32,9 +34,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.41",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
+    "pg": "^8.21.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^8.0.14",

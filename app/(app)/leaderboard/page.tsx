@@ -8,6 +8,7 @@ type Window = 'weekly' | 'monthly' | 'alltime'
 interface Entry {
   rank: number
   user_id: string
+  display_name: string | null
   points: number
   streak?: number
   total_reviews?: number
@@ -24,8 +25,8 @@ interface LeaderboardData {
 const PODIUM_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32']
 const PODIUM_SIZES  = [1, 0, 2] // center=1st, left=2nd, right=3rd display order
 
-function UserAvatar({ userId, isMe, size = 36 }: { userId: string; isMe: boolean; size?: number }) {
-  const initial = isMe ? 'Y' : userId.slice(0, 1).toUpperCase()
+function UserAvatar({ displayName, isMe, size = 36 }: { displayName: string | null; isMe: boolean; size?: number }) {
+  const initial = (displayName?.trim()[0] ?? '?').toUpperCase()
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
@@ -134,9 +135,9 @@ export default function LeaderboardPage() {
                   <div style={{ fontSize: isFirst ? '2rem' : '1.4rem', fontWeight: 900, color, marginBottom: 8, lineHeight: 1 }}>
                     {entry.rank}
                   </div>
-                  <UserAvatar userId={entry.user_id} isMe={entry.is_me} size={isFirst ? 44 : 36} />
-                  <div style={{ marginTop: 8, fontWeight: 700, fontSize: '0.78rem', color: 'var(--ink)' }}>
-                    {entry.is_me ? 'You' : entry.user_id.slice(0, 8) + '…'}
+                  <UserAvatar displayName={entry.display_name} isMe={entry.is_me} size={isFirst ? 44 : 36} />
+                  <div style={{ marginTop: 8, fontWeight: 700, fontSize: '0.78rem', color: 'var(--ink)', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {entry.is_me ? (entry.display_name?.split(' ')[0] ?? 'You') : (entry.display_name?.split(' ')[0] ?? '—')}
                   </div>
                   <div style={{ fontSize: isFirst ? '1rem' : '0.88rem', fontWeight: 900, color, marginTop: 4 }}>
                     {entry.points.toLocaleString()}
@@ -178,10 +179,10 @@ export default function LeaderboardPage() {
                       <span style={{ width: 28, fontWeight: 900, fontSize: '0.85rem', color: 'var(--muted)', textAlign: 'right', flexShrink: 0 }}>
                         #{entry.rank}
                       </span>
-                      <UserAvatar userId={entry.user_id} isMe={entry.is_me} />
+                      <UserAvatar displayName={entry.display_name} isMe={entry.is_me} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: entry.is_me ? 700 : 400, fontSize: '0.88rem', color: entry.is_me ? 'var(--clay)' : 'var(--ink)' }}>
-                          {entry.is_me ? 'You' : entry.user_id.slice(0, 12) + '…'}
+                        <div style={{ fontWeight: entry.is_me ? 700 : 400, fontSize: '0.88rem', color: entry.is_me ? 'var(--clay)' : 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {entry.display_name?.trim() || '—'}
                         </div>
                         <div style={{ fontSize: '0.65rem', fontWeight: 700, color: rank.color }}>
                           {rank.icon} {rank.label}

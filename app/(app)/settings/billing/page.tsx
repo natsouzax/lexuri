@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import BillingClient from './BillingClient'
 import { isBrazil } from '@/lib/geo'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Billing & Plans' }
 
 export default async function BillingPage({
@@ -22,7 +23,7 @@ export default async function BillingPage({
       .maybeSingle(),
     supabase
       .from('profiles')
-      .select('premium_until')
+      .select('premium_until, plan_key')
       .eq('id', user.id)
       .maybeSingle(),
   ])
@@ -38,6 +39,7 @@ export default async function BillingPage({
     <BillingClient
       subscription={subscription ?? null}
       premiumUntil={profile?.premium_until ?? null}
+      planKey={(profile?.plan_key as 'free' | 'pro' | 'lifetime') ?? 'free'}
       success={params.success === 'true'}
       canceled={params.canceled === 'true'}
       prefillCoupon={params.coupon ?? ''}

@@ -88,7 +88,7 @@ export default function PremiumPopup() {
             marginBottom: 8,
           }}
         >
-          Go Premium — 1 month free
+          Go Premium — 2 weeks free
         </h3>
         <p style={{ fontSize: '0.86rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: 18 }}>
           Unlock unlimited content, advanced AI chunk detection, and automated SRS scheduling.

@@ -84,7 +84,12 @@ export default function RegisterPage() {
     }
 
     // Email confirmation disabled → user is immediately signed in
-    if (signUpData.session) {
+    if (signUpData.session && signUpData.user) {
+      // Ensure profile row exists (safety net in case trigger didn't fire)
+      await supabase.from('profiles').upsert(
+        { id: signUpData.user.id, full_name: fullName.trim(), email_verified: true },
+        { onConflict: 'id', ignoreDuplicates: true },
+      )
       router.push('/onboarding')
       router.refresh()
       return

@@ -14,6 +14,7 @@ export default function UserDropdown({ user }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [planLabel, setPlanLabel] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   const name = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? 'User'
@@ -27,12 +28,20 @@ export default function UserDropdown({ user }: Props) {
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/usage')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d: { isPremium?: boolean; planKey?: string } | null) => {
+        if (!d?.isPremium) return
+        setPlanLabel(d.planKey === 'lifetime' ? 'Lifetime' : 'Premium')
+      })
+      .catch(() => {})
   }, [])
 
   async function handleSignOut() {
@@ -63,7 +72,24 @@ export default function UserDropdown({ user }: Props) {
       {open && (
         <div className="user-dropdown-menu" role="menu">
           <div className="user-dropdown-header">
-            <span className="user-dropdown-name">{name}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="user-dropdown-name">{name}</span>
+              {planLabel && (
+                <span style={{
+                  fontSize: '0.62rem',
+                  fontWeight: 900,
+                  letterSpacing: '0.07em',
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  background: planLabel === 'Lifetime' ? 'rgba(139,92,246,0.15)' : 'rgba(200,111,74,0.15)',
+                  color: planLabel === 'Lifetime' ? '#7c3aed' : 'var(--clay)',
+                  textTransform: 'uppercase',
+                  lineHeight: 1,
+                }}>
+                  {planLabel}
+                </span>
+              )}
+            </div>
             <span className="user-dropdown-email">{user.email}</span>
           </div>
 

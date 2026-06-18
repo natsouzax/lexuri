@@ -5,13 +5,18 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { EASE_OUT } from '@/lib/easing'
 
-const FREE_FEATURES = ['Demo lesson', '5 imports per week', '30 saved chunks', 'Basic review']
+const FREE_FEATURES = [
+  'Demo lesson',
+  '5 curated feed lessons',
+  '5 YouTube imports/week',
+  '5 music songs/week',
+  'Spaced repetition review',
+]
 
 const PREMIUM_FEATURES = [
   'Unlimited YouTube & music imports',
-  'Advanced AI chunk detection',
-  'Automated SRS scheduling',
-  'Progress reports & analytics',
+  'Unlimited AI chunk detection',
+  'Detailed progress reports',
   'Priority support',
   'Early access to new features',
 ]
@@ -81,9 +86,9 @@ export default function PricingSection() {
               position: 'absolute', top: -13, left: 24,
               background: 'var(--clay)', color: '#fff',
               fontSize: '0.7rem', fontWeight: 900,
-              padding: '4px 14px', borderRadius: 999, letterSpacing: '0.08em',
+              padding: '6px 14px', borderRadius: 999, letterSpacing: '0.08em',
             }}>
-              1 MONTH FREE
+              2 WEEKS FREE
             </span>
             <span className="mkt-eyebrow" style={{ color: 'var(--clay-bright)' }}>Premium</span>
             <h3>$5<span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--muted)' }}>/mo</span></h3>
@@ -97,26 +102,43 @@ export default function PricingSection() {
             </div>
 
             <div style={{
-              margin: '16px 0',
-              padding: '12px 16px',
-              borderRadius: 12,
-              background: 'rgba(200,111,74,0.08)',
+              margin: '20px 0',
+              padding: '14px 16px',
+              borderRadius: 14,
+              background: 'rgba(200,111,74,0.07)',
               border: '1.5px dashed var(--clay)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 10,
+              gap: 12,
             }}>
-              <div>
-                <div style={{ fontSize: '0.68rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--clay)', marginBottom: 2 }}>
-                  Validation coupon
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: 'var(--clay)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 12V22H4V12" /><path d="M22 7H2v5h20V7z" /><path d="M12 22V7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                  </svg>
                 </div>
-                <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.06em', color: 'var(--ink)' }}>
-                  LEARN
+                <div>
+                  <center>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--clay)', marginBottom: 1 }}>
+                      Coupon
+                    </div>
+                  </center>
+                  <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1.1rem', letterSpacing: '0.08em', color: 'var(--ink)' }}>
+                    LEARN
+                  </div>
                 </div>
               </div>
-              <div style={{ fontSize: '0.76rem', color: 'var(--muted)', textAlign: 'right', lineHeight: 1.4 }}>
-                1 month<br />free
+              <div style={{
+                background: 'var(--clay)', color: '#fff',
+                borderRadius: 10, padding: '8px 40px',
+                fontSize: '0.72rem', fontWeight: 900,
+                letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4,
+              }}>
+                2 WEEKS FREE
               </div>
             </div>
 

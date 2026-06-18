@@ -15,6 +15,14 @@ interface SidebarStats {
   xpProgress: XPProgressInfo
 }
 
+interface UsageInfo {
+  isPremium: boolean
+  ytImports: number
+  musicImports: number
+  feedItems: number
+  limits: { weeklyYoutubeImports: number; weeklyMusicImports: number; feedItems: number }
+}
+
 const NAV_GROUPS: {
   label: string | null
   items: { href: string; label: string; Icon: () => React.ReactElement }[]
@@ -37,15 +45,65 @@ const NAV_GROUPS: {
   {
     label: null,
     items: [
-      { href: '/plans', label: 'Upgrade to Premium', Icon: StarIcon },
+      { href: '/settings/billing', label: 'Upgrade to Premium', Icon: StarIcon },
     ],
   },
 ]
+
+function UsageBar({ used, max }: { used: number; max: number }) {
+  const pct = Math.min(100, Math.round((used / max) * 100))
+  const color = pct >= 100 ? '#ef4444' : pct >= 60 ? '#f59e0b' : '#4caf50'
+  return (
+    <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,250,240,0.08)', overflow: 'hidden' }}>
+      <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 99, transition: 'width 400ms ease' }} />
+    </div>
+  )
+}
+
+function UsageWidget({ usage }: { usage: UsageInfo }) {
+  const { ytImports, musicImports, feedItems, limits } = usage
+  const ytLeft = Math.max(0, limits.weeklyYoutubeImports - ytImports)
+  const muLeft = Math.max(0, limits.weeklyMusicImports - musicImports)
+  const fdLeft = Math.max(0, limits.feedItems - feedItems)
+
+  const rows = [
+    { label: 'Feed lessons', used: feedItems, max: limits.feedItems, left: fdLeft },
+    { label: 'YouTube', used: ytImports, max: limits.weeklyYoutubeImports, left: ytLeft },
+    { label: 'Music', used: musicImports, max: limits.weeklyMusicImports, left: muLeft },
+  ]
+
+  return (
+    <div style={{ margin: '10px 0 4px', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,250,240,0.04)', border: '1px solid rgba(255,250,240,0.07)' }}>
+      <div style={{ fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark-muted)', marginBottom: 10 }}>
+        Free plan · this week
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {rows.map(({ label, used, max, left }) => (
+          <div key={label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: '0.68rem', color: 'rgba(255,250,240,0.5)' }}>{label}</span>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: left === 0 ? '#ef4444' : 'rgba(255,250,240,0.6)' }}>
+                {left === 0 ? 'limit reached' : `${left}/${max} left`}
+              </span>
+            </div>
+            <UsageBar used={used} max={max} />
+          </div>
+        ))}
+      </div>
+
+      <a href="/settings/billing" style={{ display: 'block', marginTop: 10, textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--clay-bright)', textDecoration: 'none', letterSpacing: '0.03em' }}>
+        Go unlimited →
+      </a>
+    </div>
+  )
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
   const [user, setUser] = useState<User | null>(null)
   const [stats, setStats] = useState<SidebarStats | null>(null)
+  const [usage, setUsage] = useState<UsageInfo | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -60,6 +118,11 @@ export default function Sidebar() {
       .then((d) => {
         if (d?.rank) setStats({ points: d.points, rank: d.rank, xpProgress: d.xpProgress })
       })
+      .catch(() => {})
+
+    fetch('/api/usage')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d && 'isPremium' in d) setUsage(d) })
       .catch(() => {})
 
     return () => subscription.unsubscribe()
@@ -118,6 +181,10 @@ export default function Sidebar() {
             <div className="skeleton" style={{ height: 12, width: '70%', marginBottom: 8 }} />
             <div className="skeleton" style={{ height: 4, borderRadius: 99 }} />
           </div>
+        )}
+
+        {usage && !usage.isPremium && (
+          <UsageWidget usage={usage} />
         )}
       </div>
 

@@ -28,7 +28,7 @@ export default function CouponSection() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ border: '2px solid var(--clay)', borderRadius: 24, padding: '36px 32px', background: 'rgba(200,111,74,0.04)', position: 'relative', textAlign: 'center' }}>
         <span style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'var(--clay)', color: '#fff', fontSize: '0.7rem', fontWeight: 900, padding: '4px 16px', borderRadius: 999, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-          1 MONTH FREE
+          2 WEEKS FREE
         </span>
 
         <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
@@ -54,7 +54,7 @@ export default function CouponSection() {
           ))}
         </ul>
 
-        <Link href="/settings/billing" className="btn-primary" style={{ display: 'block', width: '100%', textAlign: 'center', padding: '14px', borderRadius: 14, fontSize: '0.95rem', textDecoration: 'none', boxSizing: 'border-box' }}>
+        <Link href={`/settings/billing?coupon=${COUPON}`} className="btn-primary" style={{ display: 'block', width: '100%', textAlign: 'center', padding: '14px', borderRadius: 14, fontSize: '0.95rem', textDecoration: 'none', boxSizing: 'border-box' }}>
           Activate Premium now →
         </Link>
         <p style={{ fontSize: '0.76rem', color: 'var(--muted)', marginTop: 12, lineHeight: 1.55 }}>
@@ -68,7 +68,7 @@ export default function CouponSection() {
           ['1', 'Copy the code above'],
           ['2', 'Click "Activate Premium now"'],
           ['3', 'Paste the code in the coupon field on the billing page'],
-          ['4', 'Enjoy 1 month of full Premium access'],
+          ['4', 'Enjoy 2 weeks of full Premium access'],
         ].map(([step, text]) => (
           <div key={step} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
             <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--clay)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 900, flexShrink: 0 }}>

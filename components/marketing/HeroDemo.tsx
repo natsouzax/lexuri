@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { tokenizeText } from '@/lib/word-translations'
 
 const NATIVE_LANG_KEY = 'lexuri-native-lang'
@@ -128,12 +129,14 @@ function TextSegment({
 }
 
 export default function HeroDemo() {
-  const [lang, setLang] = useState<string | null>(null)
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
-  const [playing, setPlaying] = useState(false)
+  const [lang,     setLang]     = useState<string | null>(null)
+  const [tooltip,  setTooltip]  = useState<TooltipState | null>(null)
+  const [playing,  setPlaying]  = useState(false)
+  const [mounted,  setMounted]  = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
+    setMounted(true)
     setLang(localStorage.getItem(NATIVE_LANG_KEY))
     function onLangChange() { setLang(localStorage.getItem(NATIVE_LANG_KEY)) }
     window.addEventListener('lexuri-lang-changed', onLangChange)
@@ -247,7 +250,7 @@ export default function HeroDemo() {
         </div>
       </div>
 
-      {tooltip && (
+      {mounted && tooltip && createPortal(
         <div
           className={`chunk-tooltip-fixed${tooltip.kind === 'word' ? ' word-tooltip' : ''}`}
           style={{ left: tooltip.x, top: tooltip.y - 10 }}
@@ -282,7 +285,8 @@ export default function HeroDemo() {
               <strong className="chunk-tooltip-translation">{tooltip.translation}</strong>
             </>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

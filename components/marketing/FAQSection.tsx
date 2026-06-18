@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: 'What happens if I cancel Premium?',
-    a: 'You keep all your saved chunks and flashcard history. Your account reverts to the free plan limits (5 imports/week, 30 saved chunks). No data is deleted.',
+    a: 'You keep all your saved chunks and flashcard history. Your account reverts to the free plan limits (5 feed lessons/week, 5 YouTube imports/week, 5 music songs/week). No data is deleted.',
   },
   {
     q: 'Is there a mobile app?',

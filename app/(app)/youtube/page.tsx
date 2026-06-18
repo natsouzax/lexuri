@@ -65,12 +65,12 @@ export default function YouTubePage() {
 
   useEffect(() => { loadCards() }, [loadCards])
 
-  // Auto-analyze chunks as soon as a video is loaded
+  // Auto-analyze chunks as soon as a video is loaded, and re-run when level changes
   useEffect(() => {
     if (!videoData) return
     handleAnalyzeChunks()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoData])
+  }, [videoData, level])
 
   async function handleLoadVideo() {
     if (!url.trim()) return
@@ -221,7 +221,7 @@ export default function YouTubePage() {
         <span className="mini-label">First session mission</span>
         <div className="learning-loop" style={{ marginTop: 8 }}>
           <span>Paste video</span>
-          <span>Reveal chunk map</span>
+          <span>AI maps chunks</span>
           <span>Save 3 chunks</span>
           <span>Review today</span>
         </div>
@@ -258,7 +258,7 @@ export default function YouTubePage() {
               </p>
             </div>
             <div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>My level:</span>
                 {LEVELS.map((l) => (
                   <button
@@ -279,9 +279,11 @@ export default function YouTubePage() {
                   </button>
                 ))}
               </div>
-              <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
-                {analyzing ? <><span className="spinner" />Finding essential chunks...</> : 'Reveal AI chunk map'}
-              </button>
+              {analyzing && (
+                <div style={{ marginTop: 10, fontSize: '0.82rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="spinner" />Finding essential chunks…
+                </div>
+              )}
             </div>
           </div>
 

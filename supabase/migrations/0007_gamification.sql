@@ -10,8 +10,15 @@ CREATE TABLE IF NOT EXISTS user_stats (
 );
 
 ALTER TABLE user_stats ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users read own stats"      ON user_stats FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users update own stats"    ON user_stats FOR UPDATE USING (auth.uid() = user_id);
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_stats' AND policyname = 'Users read own stats') THEN
+    EXECUTE 'CREATE POLICY "Users read own stats" ON user_stats FOR SELECT USING (auth.uid() = user_id)';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_stats' AND policyname = 'Users update own stats') THEN
+    EXECUTE 'CREATE POLICY "Users update own stats" ON user_stats FOR UPDATE USING (auth.uid() = user_id)';
+  END IF;
+END $$;
 
 -- Immutable ledger of point-earning events (idempotent via event_id)
 CREATE TABLE IF NOT EXISTS points_history (
@@ -28,10 +35,14 @@ CREATE INDEX IF NOT EXISTS points_history_user_id_idx  ON points_history(user_id
 CREATE INDEX IF NOT EXISTS points_history_event_ts_idx ON points_history(event_ts DESC);
 
 ALTER TABLE points_history ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users read own points history"
-  ON points_history FOR SELECT USING (auth.uid() = user_id);
 
--- Badge definitions (seed below)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'points_history' AND policyname = 'Users read own points history') THEN
+    EXECUTE 'CREATE POLICY "Users read own points history" ON points_history FOR SELECT USING (auth.uid() = user_id)';
+  END IF;
+END $$;
+
+-- Badge definitions
 CREATE TABLE IF NOT EXISTS badges (
   id          uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
   key         text        NOT NULL UNIQUE,
@@ -42,10 +53,14 @@ CREATE TABLE IF NOT EXISTS badges (
 );
 
 ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Anyone reads badges"
-  ON badges FOR SELECT USING (true);
 
--- Earned badges per user (at most one row per user+badge)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'badges' AND policyname = 'Anyone reads badges') THEN
+    EXECUTE 'CREATE POLICY "Anyone reads badges" ON badges FOR SELECT USING (true)';
+  END IF;
+END $$;
+
+-- Earned badges per user
 CREATE TABLE IF NOT EXISTS user_badges (
   id        uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
   badge_id  uuid        NOT NULL REFERENCES badges(id) ON DELETE CASCADE,
@@ -57,20 +72,24 @@ CREATE TABLE IF NOT EXISTS user_badges (
 CREATE INDEX IF NOT EXISTS user_badges_user_id_idx ON user_badges(user_id);
 
 ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users read own badges"
-  ON user_badges FOR SELECT USING (auth.uid() = user_id);
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_badges' AND policyname = 'Users read own badges') THEN
+    EXECUTE 'CREATE POLICY "Users read own badges" ON user_badges FOR SELECT USING (auth.uid() = user_id)';
+  END IF;
+END $$;
 
 -- Seed badges
 INSERT INTO badges (key, name, description, criteria) VALUES
-  ('novice',        'Novice',             'Complete 10 reviews',                         '{"total_reviews": 10}'),
-  ('consistent',    'Consistent',         'Maintain a 7-day streak',                     '{"streak": 7}'),
-  ('marathoner',    'Marathoner',         'Complete 500 total reviews',                  '{"total_reviews": 500}'),
-  ('speedster',     'Speedster',          '50 reviews with average response time < 10s', '{"fast_reviews": 50}'),
-  ('streak_master', 'Streak Master',      'Maintain a 30-day streak',                    '{"streak": 30}'),
-  ('centurion',     'Centurion',          'Earn 1000 total points',                      '{"points": 1000}')
+  ('novice',        'Novice',        'Complete 10 reviews',                         '{"total_reviews": 10}'),
+  ('consistent',    'Consistent',    'Maintain a 7-day streak',                     '{"streak": 7}'),
+  ('marathoner',    'Marathoner',    'Complete 500 total reviews',                  '{"total_reviews": 500}'),
+  ('speedster',     'Speedster',     '50 reviews with average response time < 10s', '{"fast_reviews": 50}'),
+  ('streak_master', 'Streak Master', 'Maintain a 30-day streak',                    '{"streak": 30}'),
+  ('centurion',     'Centurion',     'Earn 1000 total points',                      '{"points": 1000}')
 ON CONFLICT (key) DO NOTHING;
 
--- Update user_stats.last_active trigger
+-- Placeholder trigger function (logic handled server-side)
 CREATE OR REPLACE FUNCTION upsert_user_stats_on_review()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN RETURN NEW; END;

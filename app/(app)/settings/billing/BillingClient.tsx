@@ -13,6 +13,7 @@ interface Subscription {
 interface Props {
   subscription: Subscription | null
   premiumUntil: string | null
+  planKey: 'free' | 'pro' | 'lifetime'
   success: boolean
   canceled: boolean
   prefillCoupon: string
@@ -20,18 +21,22 @@ interface Props {
   priceLabel: string
 }
 
-export default function BillingClient({ subscription, premiumUntil, success, canceled, prefillCoupon, proPriceId, priceLabel }: Props) {
+export default function BillingClient({ subscription, premiumUntil, planKey, success, canceled, prefillCoupon, proPriceId, priceLabel }: Props) {
   const [portalLoading, setPortalLoading] = useState(false)
   const [couponCode, setCouponCode] = useState(prefillCoupon.toUpperCase())
   const [couponLoading, setCouponLoading] = useState(false)
   const [couponError, setCouponError] = useState('')
   const [couponSuccess, setCouponSuccess] = useState('')
   const [newPremiumUntil, setNewPremiumUntil] = useState<string | null>(null)
+  const [activePlanKey, setActivePlanKey] = useState<'free' | 'pro' | 'lifetime'>(planKey)
 
   const isStripeActive = subscription?.status === 'active' || subscription?.status === 'trialing'
+  const isLifetime = activePlanKey === 'lifetime'
   const effectivePremiumUntil = newPremiumUntil ?? premiumUntil
-  const isCouponActive = effectivePremiumUntil && new Date(effectivePremiumUntil) > new Date()
-  const isPremium = isStripeActive || isCouponActive
+  const isCouponActive = !isLifetime && effectivePremiumUntil && new Date(effectivePremiumUntil) > new Date()
+  const isPremium = isStripeActive || isLifetime || !!isCouponActive
+
+  const planLabel = isLifetime ? 'Lifetime' : isPremium ? 'Pro' : 'Free'
 
   async function openPortal() {
     setPortalLoading(true)
@@ -52,12 +57,13 @@ export default function BillingClient({ subscription, premiumUntil, success, can
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode.trim() }),
       })
-      const data = await res.json() as { success?: boolean; label?: string; premium_until?: string; error?: string }
+      const data = await res.json() as { success?: boolean; label?: string; premium_until?: string; plan_key?: string; error?: string }
       if (!res.ok || !data.success) {
         setCouponError(data.error ?? 'Failed to redeem coupon.')
       } else {
         setCouponSuccess(`${data.label} activated! Enjoy your Premium access.`)
         setNewPremiumUntil(data.premium_until ?? null)
+        setActivePlanKey((data.plan_key as 'free' | 'pro' | 'lifetime') ?? 'pro')
         setCouponCode('')
       }
     } catch {
@@ -103,21 +109,26 @@ export default function BillingClient({ subscription, premiumUntil, success, can
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
           <div>
             <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1.2rem', marginBottom: 4 }}>
-              {isPremium ? 'Premium Plan' : 'Free Plan'}
+              {planLabel} Plan
             </div>
             {isStripeActive && subscription?.current_period_end && (
               <div style={{ fontSize: '0.83rem', color: 'var(--muted)' }}>
                 Renews on <strong>{new Date(subscription.current_period_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>
               </div>
             )}
-            {isCouponActive && !isStripeActive && (
+            {isLifetime && (
+              <div style={{ fontSize: '0.83rem', color: 'var(--muted)' }}>
+                Acesso vitalício — sem expiração
+              </div>
+            )}
+            {isCouponActive && !isStripeActive && !isLifetime && (
               <div style={{ fontSize: '0.83rem', color: 'var(--muted)' }}>
                 Free access until <strong>{new Date(effectivePremiumUntil!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>
               </div>
             )}
             {!isPremium && (
               <div style={{ fontSize: '0.83rem', color: 'var(--muted)', marginTop: 2 }}>
-                5 YouTube imports/week · 30 flashcards · Basic review
+                5 feed lessons/week · 5 YouTube/week · 5 music/week
               </div>
             )}
           </div>
@@ -145,7 +156,7 @@ export default function BillingClient({ subscription, premiumUntil, success, can
       </div>
 
       {/* ── Coupon redemption ── */}
-      {!isStripeActive && (
+      {!isPremium && (
         <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '24px 28px', background: '#fff', marginBottom: 20 }}>
           <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1rem', marginBottom: 6 }}>
             Redeem a coupon
@@ -190,19 +201,9 @@ export default function BillingClient({ subscription, premiumUntil, success, can
             Unlimited content, advanced AI, and detailed progress tracking — all for {priceLabel}.
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {proPriceId ? (
-              <button
-                onClick={async () => {
-                  const r = await fetch('/api/payments/create-checkout-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price_id: proPriceId }) })
-                  const d = await r.json() as { url?: string }
-                  if (d.url) window.location.href = d.url
-                }}
-                className="btn-primary"
-              >
-                Upgrade to Premium — {priceLabel}
-              </button>
-            ) : null}
-            <Link href="/plans" className="btn-secondary">See what&apos;s included</Link>
+            <Link href="/plans" className="btn-primary" style={{ textDecoration: 'none' }}>
+              Upgrade to Premium — {priceLabel}
+            </Link>
           </div>
         </div>
       )}

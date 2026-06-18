@@ -11,15 +11,22 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   updated_at             timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_user_id_idx             ON subscriptions(user_id);
-CREATE INDEX        IF NOT EXISTS subscriptions_stripe_customer_id_idx  ON subscriptions(stripe_customer_id);
-CREATE INDEX        IF NOT EXISTS subscriptions_stripe_sub_id_idx       ON subscriptions(stripe_subscription_id);
+CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_user_id_idx            ON subscriptions(user_id);
+CREATE INDEX        IF NOT EXISTS subscriptions_stripe_customer_id_idx ON subscriptions(stripe_customer_id);
+CREATE INDEX        IF NOT EXISTS subscriptions_stripe_sub_id_idx      ON subscriptions(stripe_subscription_id);
 
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users read own subscription"
-  ON subscriptions FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'subscriptions' AND policyname = 'Users read own subscription'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Users read own subscription"
+      ON subscriptions FOR SELECT
+      USING (auth.uid() = user_id)';
+  END IF;
+END $$;
 
 -- Auto-update updated_at
 CREATE OR REPLACE FUNCTION update_subscriptions_updated_at()
@@ -27,6 +34,7 @@ RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN NEW.updated_at = now(); RETURN NEW; END;
 $$;
 
-CREATE TRIGGER trg_subscriptions_updated_at
+-- CREATE OR REPLACE TRIGGER requer Postgres 14+ (Supabase usa 15+)
+CREATE OR REPLACE TRIGGER trg_subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_subscriptions_updated_at();

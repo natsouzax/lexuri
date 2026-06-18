@@ -1,4 +1,4 @@
-create table if not exists songs (
+CREATE TABLE IF NOT EXISTS songs (
   id           uuid primary key default gen_random_uuid(),
   user_id      uuid not null references auth.users(id) on delete cascade,
   title        text not null,
@@ -11,12 +11,19 @@ create table if not exists songs (
   created_at   timestamptz not null default now()
 );
 
-create index if not exists songs_user_id_idx on songs (user_id);
-create index if not exists songs_user_created_idx on songs (user_id, created_at desc);
+CREATE INDEX IF NOT EXISTS songs_user_id_idx      ON songs (user_id);
+CREATE INDEX IF NOT EXISTS songs_user_created_idx ON songs (user_id, created_at DESC);
 
-alter table songs enable row level security;
+ALTER TABLE songs ENABLE ROW LEVEL SECURITY;
 
-create policy "users manage own songs"
-  on songs for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'songs' AND policyname = 'users manage own songs'
+  ) THEN
+    EXECUTE 'CREATE POLICY "users manage own songs"
+      ON songs FOR ALL
+      USING (auth.uid() = user_id)
+      WITH CHECK (auth.uid() = user_id)';
+  END IF;
+END $$;

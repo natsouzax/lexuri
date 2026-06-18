@@ -29,6 +29,17 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
+      // Ensure profile row exists (trigger may not fire on OAuth or in dev envs)
+      await supabase.from('profiles').upsert(
+        {
+          id: data.user.id,
+          full_name: data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? '',
+          avatar_url: data.user.user_metadata?.avatar_url ?? null,
+          email_verified: !!data.user.email_confirmed_at,
+        },
+        { onConflict: 'id', ignoreDuplicates: true },
+      )
+
       // Check if onboarding is complete
       const { data: onboarding } = await supabase
         .from('onboarding')

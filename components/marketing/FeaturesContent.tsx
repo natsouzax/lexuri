@@ -294,14 +294,14 @@ export default function FeaturesContent() {
           <Reveal>
             <h2 className="mkt-h2" style={{ color: 'var(--paper)', marginBottom: 16 }}>Ready to try it?</h2>
             <p className="mkt-lead mkt-lead-dark" style={{ margin: '0 auto 32px' }}>
-              Free to start. Use coupon <strong style={{ color: 'var(--clay-bright)' }}>LEARN</strong> for 1 month of Premium free.
+              Free to start. Use coupon <strong style={{ color: 'var(--clay-bright)' }}>LEARN</strong> for 2 weeks of Premium free.
             </p>
             <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
               <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link href="/demo" className="btn-mkt-primary">Try the demo lesson →</Link>
               </motion.div>
               <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/plans#coupon" className="btn-mkt-ghost">Get 1 month free</Link>
+                <Link href="/plans#coupon" className="btn-mkt-ghost">Get 2 weeks free</Link>
               </motion.div>
             </div>
           </Reveal>

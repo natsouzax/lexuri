@@ -62,7 +62,7 @@ export default function FeedDetailPage() {
       const data = await apiFetch<VideoData>('/api/youtube/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: getYouTubeUrl(item.youtube_id) }),
+        body: JSON.stringify({ url: getYouTubeUrl(item.youtube_id), feedItem: true }),
       })
       setVideoData(data)
     } catch (e) {
@@ -78,7 +78,7 @@ export default function FeedDetailPage() {
     if (!videoData) return
     handleAnalyzeChunks()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoData])
+  }, [videoData, level])
 
   function handleToggleSave() {
     if (saved) { unsaveItem(id); setSaved(false) }
@@ -189,7 +189,7 @@ export default function FeedDetailPage() {
           }}
         >
           <span style={{ fontSize: '0.88rem', color: 'var(--moss)', fontWeight: 600 }}>
-            Welcome. Start by revealing the AI chunk map, then save three useful expressions.
+            Welcome. AI is mapping the chunks for you — save three useful expressions to get started.
           </span>
           <button
             onClick={() => {
@@ -281,7 +281,7 @@ export default function FeedDetailPage() {
               </p>
             </div>
             <div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>My level:</span>
                 {LEVELS.map((l) => (
                   <button
@@ -302,9 +302,11 @@ export default function FeedDetailPage() {
                   </button>
                 ))}
               </div>
-              <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
-                {analyzing ? <><span className="spinner" />Finding essential chunks...</> : 'Reveal AI chunk map'}
-              </button>
+              {analyzing && (
+                <div style={{ marginTop: 10, fontSize: '0.82rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="spinner" />Finding essential chunks…
+                </div>
+              )}
             </div>
           </div>
 

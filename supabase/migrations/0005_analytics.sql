@@ -14,6 +14,13 @@ CREATE INDEX IF NOT EXISTS analytics_events_ts_idx         ON analytics_events(t
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
 -- Only server (service role) writes; users can read their own events
-CREATE POLICY "Users read own analytics events"
-  ON analytics_events FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'analytics_events' AND policyname = 'Users read own analytics events'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Users read own analytics events"
+      ON analytics_events FOR SELECT
+      USING (auth.uid() = user_id)';
+  END IF;
+END $$;

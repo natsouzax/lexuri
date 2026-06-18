@@ -34,9 +34,17 @@ export async function GET(req: NextRequest) {
       is_me:         r.user_id === user.id,
     }))
 
+    // Fetch display names
+    const { data: profiles } = await admin
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', ranked.map(r => r.user_id))
+    const nameMap = new Map((profiles ?? []).map((p: { id: string; full_name: string }) => [p.id, p.full_name]))
+    const entries = ranked.map(r => ({ ...r, display_name: nameMap.get(r.user_id) ?? null }))
+
     // Find current user position if not on this page
     let myRank: number | null = null
-    const myEntry = ranked.find(r => r.is_me)
+    const myEntry = entries.find(r => r.is_me)
     if (!myEntry) {
       const { count } = await admin
         .from('user_stats')
@@ -45,7 +53,7 @@ export async function GET(req: NextRequest) {
       myRank = (count ?? 0) + 1
     }
 
-    return NextResponse.json({ window, page, entries: ranked, my_rank: myEntry?.rank ?? myRank })
+    return NextResponse.json({ window, page, entries, my_rank: myEntry?.rank ?? myRank })
   }
 
   // Windowed: sum points_history for the given period
@@ -80,8 +88,16 @@ export async function GET(req: NextRequest) {
       is_me:   uid === user.id,
     }))
 
-  const meIdx = [...agg.entries()].sort((a, b) => b[1] - a[1]).findIndex(([uid]) => uid === user.id)
-  const myRank = sorted.find(r => r.is_me)?.rank ?? (meIdx >= 0 ? meIdx + 1 : null)
+  // Fetch display names
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', sorted.map(r => r.user_id))
+  const nameMap = new Map((profiles ?? []).map((p: { id: string; full_name: string }) => [p.id, p.full_name]))
+  const entries = sorted.map(r => ({ ...r, display_name: nameMap.get(r.user_id) ?? null }))
 
-  return NextResponse.json({ window, page, entries: sorted, my_rank: myRank })
+  const meIdx = [...agg.entries()].sort((a, b) => b[1] - a[1]).findIndex(([uid]) => uid === user.id)
+  const myRank = entries.find(r => r.is_me)?.rank ?? (meIdx >= 0 ? meIdx + 1 : null)
+
+  return NextResponse.json({ window, page, entries, my_rank: myRank })
 }
