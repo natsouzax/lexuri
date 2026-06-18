@@ -5,6 +5,18 @@ import { YoutubeTranscript } from 'youtube-transcript'
 import { getOpenAIClient } from './openai'
 import type { TranscriptSegment, VideoData } from './types'
 
+// Convert YOUTUBE_COOKIES JSON array → "name=value; name2=value2" string for youtubei.js
+function buildCookieString(): string | undefined {
+  const raw = process.env.YOUTUBE_COOKIES
+  if (!raw) return undefined
+  try {
+    const cookies = JSON.parse(raw) as Array<{ name: string; value: string }>
+    return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
+  } catch {
+    return undefined
+  }
+}
+
 const MAX_AUDIO_BYTES = 24 * 1024 * 1024
 const TRANSCRIPTION_MODEL = process.env.OPENAI_TRANSCRIPTION_MODEL ?? 'gpt-4o-mini-transcribe'
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
@@ -190,6 +202,31 @@ async function fetchCaptionsViaDataAPI(videoId: string): Promise<TranscriptSegme
   return parseSrt(srtText)
 }
 
+// Fetch captions via youtubei.js (full InnerTube client, uses session cookies)
+async function fetchCaptionsViaYoutubei(videoId: string): Promise<TranscriptSegment[]> {
+  const { Innertube } = await import('youtubei.js')
+  const cookieString = buildCookieString()
+
+  const yt = await Innertube.create({
+    cookie: cookieString,
+    retrieve_player: false,
+  })
+
+  const info = await yt.getInfo(videoId)
+  const transcriptData = await info.getTranscript()
+
+  const rawSegments = transcriptData?.transcript?.content?.body?.initial_segments
+  if (!rawSegments?.length) throw new Error('No transcript segments found via InnerTube.')
+
+  return rawSegments
+    .filter((s: { snippet?: { text?: string }; start_ms?: number; end_ms?: number }) => s.snippet?.text)
+    .map((s: { snippet: { text: string }; start_ms: number; end_ms: number }) => ({
+      text: s.snippet.text.replace(/\n/g, ' ').trim(),
+      start: s.start_ms / 1000,
+      duration: Math.max(0.1, (s.end_ms - s.start_ms) / 1000),
+    }))
+}
+
 // Fetch captions via youtube-transcript package (InnerTube API)
 // NOTE: This is blocked by YouTube on Vercel/datacenter IPs — kept as last resort
 async function fetchCaptionsPublic(videoId: string): Promise<TranscriptSegment[]> {
@@ -237,7 +274,16 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push('data-api: YOUTUBE_API_KEY not set')
   }
 
-  // Attempt 3: youtube-transcript package (blocked on Vercel IPs, kept as last resort)
+  // Attempt 3: youtubei.js — full InnerTube client with session cookies
+  try {
+    const segments = await fetchCaptionsViaYoutubei(videoId)
+    if (segments.length > 0) return segments
+    errors.push('youtubei: empty result')
+  } catch (e) {
+    errors.push(`youtubei: ${errorMessage(e)}`)
+  }
+
+  // Attempt 4: youtube-transcript package (blocked on Vercel IPs, kept as last resort)
   try {
     const segments = await fetchCaptionsPublic(videoId)
     if (segments.length > 0) return segments
