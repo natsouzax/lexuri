@@ -86,6 +86,20 @@ function extractFirstSearchHref(html: string): string | null {
 }
 
 export async function scrapeLetras(artist: string, title: string): Promise<string | null> {
+  // Primary: direct slug URL — song pages render without JS, only search is SPA
+  try {
+    const songRes = await fetch(
+      `https://www.letras.mus.br/${slugify(artist)}/${slugify(title)}/`,
+      { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(10000) },
+    )
+    if (songRes.ok) {
+      const html = await songRes.text()
+      const lyrics = parseLetrasHTML(html)
+      if (lyrics) return lyrics
+    }
+  } catch { /* fall through */ }
+
+  // Fallback: search-based (works when the slug doesn't match exactly)
   try {
     const q = encodeURIComponent(`${artist} ${title}`)
     const searchRes = await fetch(`https://www.letras.mus.br/busca/?q=${q}`, {
@@ -93,20 +107,15 @@ export async function scrapeLetras(artist: string, title: string): Promise<strin
       signal: AbortSignal.timeout(10000),
     })
     if (!searchRes.ok) return null
-
     const searchHtml = await searchRes.text()
     const href = extractFirstSearchHref(searchHtml)
     if (!href) return null
-
-    const songRes = await fetch(`https://www.letras.mus.br${href}`, {
+    const songRes2 = await fetch(`https://www.letras.mus.br${href}`, {
       headers: BROWSER_HEADERS,
       signal: AbortSignal.timeout(10000),
     })
-    if (!songRes.ok) return null
-
-    const songHtml = await songRes.text()
-    const lyrics = parseLetrasHTML(songHtml)
-    return lyrics || null
+    if (!songRes2.ok) return null
+    return parseLetrasHTML(await songRes2.text()) || null
   } catch {
     return null
   }

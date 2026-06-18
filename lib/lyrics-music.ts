@@ -76,6 +76,37 @@ export async function getMusicLyrics(
     }
   } catch { /* fall through */ }
 
+  // ── 1b. lrclib.net search fallback (exact name mismatch — e.g. feat. variants) ─
+  try {
+    const searchRes = await fetch(
+      `https://lrclib.net/api/search?q=${encodeURIComponent(`${artist} ${title}`)}`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+    if (searchRes.ok) {
+      const hits = (await searchRes.json()) as Array<{
+        trackName?: string; artistName?: string
+        syncedLyrics?: string | null; plainLyrics?: string | null
+      }>
+      const best = hits.find(h => h.syncedLyrics) ?? hits[0]
+      if (best) {
+        const plain = best.plainLyrics ?? extractPlainFromLrc(best.syncedLyrics ?? '')
+        if (plain?.trim()) {
+          const { quality } = assessLyricsQuality(plain, best.syncedLyrics)
+          if (quality !== 'unverified') {
+            return {
+              title: best.trackName ?? title,
+              artist: best.artistName ?? artist,
+              plain_lyrics: plain,
+              lrc_content: best.syncedLyrics ?? null,
+              verified: true,
+              source: 'lrclib_search',
+            }
+          }
+        }
+      }
+    }
+  } catch { /* fall through */ }
+
   // ── 2. YouTube strict (only ♪ or human-captioned tracks) ─────────────────────
   if (opts.youtubeVideoId) {
     const segments = await getMusicCaptions(opts.youtubeVideoId)

@@ -3,18 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:migrate": "supabase db push",
     "db:status": "supabase migration list",
-    "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts"
+    "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
+    "@opennextjs/cloudflare": "^1.19.11",
     "@react-email/components": "^1.0.12",
     "@stripe/stripe-js": "^9.7.0",
     "@supabase/ssr": "^0.10.3",
@@ -45,6 +50,7 @@
     "tsx": "^4.22.4",
     "typescript": "^5",
     "vite": "^8.0.14",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "wrangler": "^4.102.0"
   }
 }

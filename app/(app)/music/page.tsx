@@ -162,6 +162,7 @@ export default function MusicPage() {
         is_synced: boolean
         title: string
         artist: string
+        youtube_url?: string | null
       }>('/api/music/merge-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,6 +170,7 @@ export default function MusicPage() {
           artist: song.artist,
           title: song.title,
           spotify_track_id: song.spotify_track_id,
+          existing_youtube_url: song.youtube_url,
         }),
       })
       setWorkingSong((prev) =>
@@ -179,6 +181,7 @@ export default function MusicPage() {
               lrc_content: merged.lrc_content ?? prev.lrc_content,
               lyrics_source: merged.source,
               is_synced: merged.is_synced,
+              youtube_url: merged.youtube_url ?? prev.youtube_url,
             }
           : prev,
       )
@@ -266,10 +269,7 @@ export default function MusicPage() {
     }
     setWorkingSong(song)
     setFeedTracks([])
-    setMergingLyrics(true)
-    handleMergeLyrics(song)
-      .catch(() => {})
-      .finally(() => setMergingLyrics(false))
+    void handleMergeLyrics(song)
   }
 
   async function handleAnalyzeChunks() {

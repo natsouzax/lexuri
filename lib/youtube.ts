@@ -5,8 +5,16 @@ import type { TranscriptSegment, VideoData } from './types'
 
 // Convert YOUTUBE_COOKIES JSON array → "name=value; name2=value2" string for youtubei.js
 function buildCookieString(): string | undefined {
-  const raw = process.env.YOUTUBE_COOKIES
+  let raw = process.env.YOUTUBE_COOKIES?.trim()
   if (!raw) return undefined
+
+  if (raw.startsWith('YOUTUBE_COOKIES=')) raw = raw.slice('YOUTUBE_COOKIES='.length).trim()
+  if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+    raw = raw.slice(1, -1).trim()
+  }
+
+  if (!raw.startsWith('[')) return raw
+
   try {
     const cookies = JSON.parse(raw) as Array<{ name: string; value: string }>
     return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
@@ -19,6 +27,7 @@ const MAX_AUDIO_BYTES = 24 * 1024 * 1024
 const TRANSCRIPTION_MODEL = process.env.OPENAI_TRANSCRIPTION_MODEL ?? 'gpt-4o-mini-transcribe'
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const SUPADATA_API_KEY = process.env.SUPADATA_API_KEY
+const YOUTUBE_TRANSCRIPT_PROXY_URL = process.env.YOUTUBE_TRANSCRIPT_PROXY_URL
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error)
@@ -226,6 +235,35 @@ async function fetchCaptionsViaYoutubei(videoId: string): Promise<TranscriptSegm
     }))
 }
 
+async function fetchCaptionsViaProxy(videoId: string): Promise<TranscriptSegment[]> {
+  if (!YOUTUBE_TRANSCRIPT_PROXY_URL) throw new Error('YOUTUBE_TRANSCRIPT_PROXY_URL is not set.')
+
+  const proxyUrl = new URL(YOUTUBE_TRANSCRIPT_PROXY_URL)
+  proxyUrl.searchParams.set('videoId', videoId)
+
+  const cookie = buildCookieString() ?? ''
+  const headers: Record<string, string> = {}
+  if (cookie) headers['x-yt-cookie'] = cookie
+
+  const res = await fetch(proxyUrl, {
+    headers,
+    signal: AbortSignal.timeout(25000),
+  })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` })) as { error?: string }
+    throw new Error(`Transcript proxy: ${body.error ?? res.status}`)
+  }
+
+  const data = await res.json() as {
+    segments: TranscriptSegment[]
+    error?: string
+  }
+
+  if (data.error || !data.segments?.length) throw new Error(data.error ?? 'No segments returned by transcript proxy')
+  return data.segments
+}
+
 // Fetch captions via the Edge function (runs on Cloudflare IPs, bypassing
 // YouTube's datacenter IP block that affects Vercel Lambda / AWS).
 async function fetchCaptionsViaPage(videoId: string): Promise<TranscriptSegment[]> {
@@ -300,6 +338,18 @@ async function fetchCaptions(videoId: string): Promise<TranscriptSegment[]> {
     errors.push('data-api: YOUTUBE_API_KEY not set')
   }
 
+  if (YOUTUBE_TRANSCRIPT_PROXY_URL) {
+    try {
+      const segments = await fetchCaptionsViaProxy(videoId)
+      if (segments.length > 0) return segments
+      errors.push('proxy: empty result')
+    } catch (e) {
+      errors.push(`proxy: ${errorMessage(e)}`)
+    }
+  } else {
+    errors.push('proxy: YOUTUBE_TRANSCRIPT_PROXY_URL not set')
+  }
+
   // Attempt 3: Direct page fetch with browser headers + session cookies (json3 format)
   try {
     const segments = await fetchCaptionsViaPage(videoId)
@@ -351,16 +401,53 @@ async function transcribeAudioFallback(videoId: string): Promise<{
   )
 }
 
+const ARTIFACT_RE = /^\s*(\[(Music|Applause|Laughter|Cheering|Noise|Inaudible)\]|(uh+|um+|ah+|mm+|hmm+)\.?)\s*$/i
+
+// Sanitize raw caption segments before any merging or AI processing:
+// 1. Sort by start time — multi-track fetchers (youtubei.js, Supadata) may interleave two tracks.
+// 2. Strip standalone artifacts ([Music], gasps) before they can influence the merge.
+// 3. Resolve overlapping segments (>0.5s overlap = two tracks at same window) by keeping
+//    whichever segment has more words — more text = more informative caption.
+function sanitizeSegments(raw: TranscriptSegment[]): TranscriptSegment[] {
+  if (!raw.length) return raw
+
+  const sorted = [...raw].sort((a, b) => a.start - b.start)
+  const result: TranscriptSegment[] = []
+
+  for (const seg of sorted) {
+    if (ARTIFACT_RE.test(seg.text)) continue
+
+    const prev = result[result.length - 1]
+    if (!prev) { result.push(seg); continue }
+
+    const overlap = (prev.start + prev.duration) - seg.start
+
+    if (overlap <= 0.5) {
+      result.push(seg)
+      continue
+    }
+
+    // Significant overlap: keep whichever has more words
+    const prevWords = prev.text.trim().split(/\s+/).length
+    const currWords = seg.text.trim().split(/\s+/).length
+    if (currWords > prevWords) result[result.length - 1] = seg
+  }
+
+  return result
+}
+
 // Merge raw caption segments into display-ready subtitle blocks.
 //
 // Two modes, detected automatically:
 //
 //  WELL-FORMATTED (human captions, e.g. TED talks): >35% of segments already end
 //  with sentence-ending punctuation. Trust the original structure — pass each segment
-//  through as its own block. Only merge tiny stray fragments (<3 words, tiny gap).
+//  through as its own block. Only merge tiny stray fragments (<3 words, <80ms gap).
 //
-//  ASR (auto-generated, no punctuation): use time-based heuristics —
-//  pause >300ms, word-count cap, or max 5s duration.
+//  ASR (auto-generated, no punctuation): accumulate until a genuine sentence boundary
+//  is found. Do NOT cut on short pauses — repairASRPunctuation + splitAtSentenceBoundaries
+//  handle the real splitting after punctuation is added by GPT. Cutting mid-sentence here
+//  causes GPT to add wrong punctuation at the fragment boundary.
 function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
   if (!raw.length) return raw
 
@@ -400,12 +487,13 @@ function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
       const sentenceEnd     = /[.!?]$/.test(tail)
       if (!isStrayFragment || sentenceEnd || accumulated >= 6.0) flush()
     } else {
-      // ASR mode: no punctuation — rely on pauses, word count, and duration.
-      const sentenceEnd  = /[.!?]$/.test(tail)
-      const longPause    = gap > 0.30
-      const wordCapReached = wordCount >= 12 && /[,;]$/.test(tail)
-      const tooLong      = accumulated >= 5.0
-      if (sentenceEnd || longPause || wordCapReached || tooLong) flush()
+      // ASR mode: only cut on real sentence boundaries — NOT on short pauses.
+      // Short pauses (≤2s) are normal within a sentence and must not trigger a cut.
+      const sentenceEnd    = /[.!?]$/.test(tail)
+      const naturalBreak   = wordCount >= 12 && /[,;]$/.test(tail) // clear clause end
+      const genuineSilence = gap > 2.0        // 2s+ silence = definite new sentence
+      const hardLimit      = accumulated >= 20.0  // emergency cap, never infinite
+      if (sentenceEnd || naturalBreak || genuineSilence || hardLimit) flush()
     }
   }
 
@@ -416,7 +504,7 @@ function mergeIntoSentences(raw: TranscriptSegment[]): TranscriptSegment[] {
 // After merge + punctuation repair: split any segment that still contains multiple
 // sentences into one segment per sentence. Also splits [Music] / [Verse] / [Chorus]
 // style markers off into their own segments (isNonSpeech filters them from display).
-function splitAtSentenceBoundaries(segs: TranscriptSegment[]): TranscriptSegment[] {
+export function splitAtSentenceBoundaries(segs: TranscriptSegment[]): TranscriptSegment[] {
   const result: TranscriptSegment[] = []
   for (const seg of segs) {
     // Split after ./?/! followed by space+capital, OR before any [Word] marker
@@ -440,7 +528,7 @@ function splitAtSentenceBoundaries(segs: TranscriptSegment[]): TranscriptSegment
 
 // For ASR (auto-generated) captions: add missing punctuation and fix capitalisation.
 // Sends segments in numbered batches to gpt-4o-mini; timing is preserved unchanged.
-async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
+export async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
   if (!segments.length) return segments
 
   // Only run on ASR transcripts (≤35 % of segments already end with sentence punctuation)
@@ -487,7 +575,160 @@ async function repairASRPunctuation(segments: TranscriptSegment[]): Promise<Tran
   return result
 }
 
+const SEGMENT_REVIEW_PROMPT =
+  'You are a subtitle editor. The text below is auto-generated captions: no punctuation, awkward line breaks, possible artifacts.\n\n' +
+  'Do these tasks in one pass:\n' +
+  '1. Add proper punctuation (. ! ? , ;) and capitalise the first word of each sentence.\n' +
+  '2. Re-break lines so each ends at a natural boundary — complete sentence, clause, or comma pause. Never break mid-phrase.\n' +
+  '3. Merge fragments that were split mid-phrase (e.g. "It was a car" + "accident" → "It was a car accident.").\n' +
+  '4. Remove non-speech artifacts: lines that contain ONLY sounds like [Music], [Applause], gasps (uh, um, ah, mm, hmm), or inaudible markers.\n\n' +
+  'Output ONLY the final lines, one per line, no numbering, no explanation.\n' +
+  'Do NOT change, add, or remove meaningful words — only fix formatting and remove artifacts.'
+
+// Single-pass AI cleanup: adds punctuation, fixes broken line boundaries, removes gasps.
+// Replaces repairASRPunctuation — one GPT call instead of two, better results.
+// Timing is re-distributed proportionally by character length within each batch window.
+export async function reviewAndCleanSegments(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
+  if (!segments.length) return segments
+
+  // Well-formatted (human captions): skip AI, only strip obvious artifacts
+  const withEnd = segments.filter(s => /[.!?]$/.test(s.text.trim())).length
+  if (withEnd / segments.length > 0.35) {
+    return segments.filter(s => !/^\s*(\[.*?\]|(uh+|um+|ah+|mm+|hmm+)\.?)\s*$/i.test(s.text))
+  }
+
+  const BATCH = 80
+  const result: TranscriptSegment[] = []
+
+  for (let i = 0; i < segments.length; i += BATCH) {
+    const batch = segments.slice(i, i + BATCH)
+    const batchStart = batch[0].start
+    const batchDuration = batch.reduce((s, seg) => s + seg.duration, 0)
+    const inputText = batch.map(s => s.text.trim()).join('\n')
+
+    try {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: 'gpt-4o-mini',
+        temperature: 0,
+        max_tokens: 2000,
+        messages: [
+          { role: 'system', content: SEGMENT_REVIEW_PROMPT },
+          { role: 'user', content: inputText },
+        ],
+      })
+
+      const lines = (response.choices[0].message.content ?? '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+
+      if (!lines.length) { result.push(...batch); continue }
+
+      // Re-distribute timing proportionally by character length within the batch window
+      const totalChars = Math.max(1, lines.reduce((s, l) => s + l.length, 0))
+      let cursor = batchStart
+      for (const line of lines) {
+        const duration = Math.max(0.4, (line.length / totalChars) * batchDuration)
+        result.push({ text: line, start: cursor, duration })
+        cursor += duration
+      }
+    } catch {
+      result.push(...batch)
+    }
+  }
+
+  return result
+}
+
 const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000 // 90 days
+
+export async function updateTranscriptCache(videoId: string, segments: TranscriptSegment[]): Promise<void> {
+  const transcript = segments.map((s) => s.text).join('\n')
+  await getAdminClient()
+    .from('youtube_transcript_cache')
+    .upsert({ video_id: videoId, transcript, segments, fetched_at: new Date().toISOString() })
+}
+
+// Fast path: returns transcript immediately without GPT repair.
+// Use with after() in the route to repair captions in background.
+export async function getTranscriptFast(url: string): Promise<{
+  data: VideoData
+  videoId: string
+  mergedSegments: TranscriptSegment[]
+  needsRepair: boolean
+}> {
+  const videoId = extractVideoId(url)
+  if (!videoId) throw new Error('Invalid YouTube URL. Could not extract video ID.')
+
+  const [title, cached] = await Promise.all([
+    getVideoTitle(videoId),
+    Promise.resolve(
+      getAdminClient()
+        .from('youtube_transcript_cache')
+        .select('transcript, segments')
+        .eq('video_id', videoId)
+        .gt('fetched_at', new Date(Date.now() - CACHE_TTL_MS).toISOString())
+        .maybeSingle(),
+    ).then((r) => r.data).catch(() => null),
+  ])
+
+  if (cached) {
+    return {
+      data: {
+        video_id: videoId,
+        title,
+        transcript: cached.transcript,
+        segments: cached.segments as TranscriptSegment[],
+        source: 'youtube_captions',
+      },
+      videoId,
+      mergedSegments: [],
+      needsRepair: false,
+    }
+  }
+
+  let raw: TranscriptSegment[]
+  try {
+    raw = await fetchCaptions(videoId)
+  } catch (captionError) {
+    try {
+      const fallback = await transcribeAudioFallback(videoId)
+      return {
+        data: { video_id: videoId, title, transcript: fallback.transcript, segments: fallback.segments, source: 'whisper' },
+        videoId,
+        mergedSegments: [],
+        needsRepair: false,
+      }
+    } catch (audioError) {
+      throw new Error(
+        [
+          'Could not process this YouTube video.',
+          `Caption extraction failed: ${errorMessage(captionError)}`,
+          `Audio transcription fallback failed: ${errorMessage(audioError)}`,
+        ].join(' '),
+      )
+    }
+  }
+
+  const sanitized = sanitizeSegments(raw)
+  const merged = mergeIntoSentences(sanitized)
+  const segments = splitAtSentenceBoundaries(merged)
+  const transcript = segments.map((s) => s.text).join('\n')
+
+  const withEnd = merged.filter((s) => /[.!?]$/.test(s.text.trim())).length
+  const needsRepair = merged.length > 0 && withEnd / merged.length <= 0.35
+
+  void updateTranscriptCache(videoId, segments).catch((e: unknown) =>
+    console.error('[transcript-cache] fast write failed:', e),
+  )
+
+  return {
+    data: { video_id: videoId, title, transcript, segments, source: 'youtube_captions' },
+    videoId,
+    mergedSegments: merged,
+    needsRepair,
+  }
+}
 
 // Strict music captions: only accept human-verified or ♪-marked tracks.
 // Returns null if the captions don't meet the bar — caller should fall back to
@@ -515,10 +756,52 @@ export async function getMusicCaptions(videoId: string): Promise<TranscriptSegme
     const isHighQuality = !data.isASR || data.hasMusicalSymbol
     if (!isHighQuality) return null
 
-    return data.segments
+    return sanitizeSegments(data.segments)
   } catch {
     return null
   }
+}
+
+const INVIDIOUS_INSTANCES = [
+  'https://inv.tux.pizza',
+  'https://invidious.nerdvpn.de',
+]
+
+// Search YouTube for a video by artist + title.
+// Primary: YouTube Data API v3 (requires YOUTUBE_API_KEY).
+// Fallback: public Invidious instances (no key needed).
+export async function searchYouTubeVideo(artist: string, title: string): Promise<string | null> {
+  if (YOUTUBE_API_KEY) {
+    try {
+      const q = encodeURIComponent(`${artist} ${title} official video`)
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&maxResults=3&key=${YOUTUBE_API_KEY}`,
+        { signal: AbortSignal.timeout(8000) },
+      )
+      if (res.ok) {
+        const data = (await res.json()) as { items?: Array<{ id: { videoId: string } }> }
+        const videoId = data.items?.[0]?.id?.videoId
+        if (videoId) return `https://www.youtube.com/watch?v=${videoId}`
+      }
+    } catch { /* fall through to Invidious */ }
+  }
+
+  for (const instance of INVIDIOUS_INSTANCES) {
+    try {
+      const q = encodeURIComponent(`${artist} ${title}`)
+      const res = await fetch(
+        `${instance}/api/v1/search?q=${q}&type=video&fields=videoId`,
+        { signal: AbortSignal.timeout(5000) },
+      )
+      if (res.ok) {
+        const data = (await res.json()) as Array<{ videoId?: string }>
+        const videoId = Array.isArray(data) ? data[0]?.videoId : undefined
+        if (videoId) return `https://www.youtube.com/watch?v=${videoId}`
+      }
+    } catch { /* try next instance */ }
+  }
+
+  return null
 }
 
 export async function getTranscript(url: string): Promise<VideoData> {
@@ -549,10 +832,11 @@ export async function getTranscript(url: string): Promise<VideoData> {
   }
 
   try {
-    const raw      = await fetchCaptions(videoId)
-    const merged   = mergeIntoSentences(raw)
-    const repaired = await repairASRPunctuation(merged)
-    const segments = splitAtSentenceBoundaries(repaired)
+    const raw       = await fetchCaptions(videoId)
+    const sanitized = sanitizeSegments(raw)
+    const merged    = mergeIntoSentences(sanitized)
+    const cleaned   = await reviewAndCleanSegments(merged)
+    const segments = splitAtSentenceBoundaries(cleaned)
     const transcript = segments.map((s) => s.text).join('\n')
 
     // Persist to cache asynchronously — don't block the response

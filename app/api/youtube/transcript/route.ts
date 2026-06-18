@@ -1,7 +1,24 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { getUserPremiumStatus, getWeeklyUsage, incrementWeeklyUsage, FREE_LIMITS } from '@/lib/subscription'
-import { getTranscript } from '@/lib/youtube'
+import {
+  getTranscriptFast,
+  reviewAndCleanSegments,
+  splitAtSentenceBoundaries,
+  updateTranscriptCache,
+} from '@/lib/youtube'
+
+function scheduleRepair(videoId: string, mergedSegments: Parameters<typeof reviewAndCleanSegments>[0]) {
+  after(async () => {
+    try {
+      const cleaned  = await reviewAndCleanSegments(mergedSegments)
+      const segments = splitAtSentenceBoundaries(cleaned)
+      await updateTranscriptCache(videoId, segments)
+    } catch (e) {
+      console.error('[transcript-repair] background repair failed:', e)
+    }
+  })
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +31,7 @@ export async function POST(request: Request) {
 
     const isFeed = !!body.feedItem
 
-    // Feed lessons are open to everyone — only user-imported videos count against quota
+    let isPremiumUser = true
     if (!isFeed) {
       const [{ isPremium }, usage] = await Promise.all([
         getUserPremiumStatus(user.id),
@@ -32,13 +49,14 @@ export async function POST(request: Request) {
         )
       }
 
-      const data = await getTranscript(body.url)
-      if (!isPremium) await incrementWeeklyUsage(user.id, 'yt_imports')
-      return NextResponse.json(data)
+      isPremiumUser = isPremium
     }
 
-    // Feed item — no quota check, no tracking
-    const data = await getTranscript(body.url)
+    const { data, videoId, mergedSegments, needsRepair } = await getTranscriptFast(body.url)
+
+    if (!isFeed && !isPremiumUser) await incrementWeeklyUsage(user.id, 'yt_imports')
+    if (needsRepair) scheduleRepair(videoId, mergedSegments)
+
     return NextResponse.json(data)
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })

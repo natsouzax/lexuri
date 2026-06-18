@@ -137,10 +137,9 @@ export async function fetchLyricsFromGeniusPublic(artist: string, title: string)
   }
 }
 
-// ── Main entry point ──────────────────────────────────────────────────────────
+// ── Individual source fetchers (exported for parallel use in merge route) ─────
 
-export async function fetchLyrics(artist: string, title: string): Promise<LyricsResult | null> {
-  // 1. lrclib.net — synced + plain, best case
+export async function fetchFromLrcLib(artist: string, title: string): Promise<LyricsResult | null> {
   try {
     const url =
       `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`
@@ -165,6 +164,30 @@ export async function fetchLyrics(artist: string, title: string): Promise<Lyrics
       }
     }
   } catch { /* fall through */ }
+  return null
+}
+
+// Free lyrics API — no key required, large English catalogue
+export async function fetchFromLyricsOvh(artist: string, title: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+    if (res.ok) {
+      const data = (await res.json()) as { lyrics?: string; error?: string }
+      if (!data.error && data.lyrics?.trim()) return data.lyrics.trim()
+    }
+  } catch { /* fall through */ }
+  return null
+}
+
+// ── Main entry point ──────────────────────────────────────────────────────────
+
+export async function fetchLyrics(artist: string, title: string): Promise<LyricsResult | null> {
+  // 1. lrclib.net — synced + plain, best case
+  const lrcResult = await fetchFromLrcLib(artist, title)
+  if (lrcResult) return lrcResult
 
   // 2. Genius — large human-curated database, no sync
   const geniusLyrics = await fetchLyricsFromGeniusPublic(artist, title)

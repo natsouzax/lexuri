@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-import { fetchLyrics } from '@/lib/lyrics'
+import { fetchFromLrcLib, fetchLyricsFromGeniusPublic, fetchFromLyricsOvh } from '@/lib/lyrics'
 import { getUserAccessToken, getSpotifyLyrics, searchSpotifyTrackId } from '@/lib/spotify'
 import { mergeLyricsSources } from '@/lib/lyrics-merge'
+import { searchYouTubeVideo } from '@/lib/youtube'
 import type { LyricsSourceInput } from '@/lib/lyrics-merge'
 
 interface RequestBody {
   artist: string
   title: string
   spotify_track_id?: string
-  // YouTube segments if available (from a prior fetch)
   youtube_segments?: Array<{ text: string; start: number; duration: number }>
+  existing_youtube_url?: string | null
 }
 
 export async function POST(request: Request) {
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
 
     const body = (await request.json()) as RequestBody
-    const { artist, title, spotify_track_id, youtube_segments } = body
+    const { artist, title, spotify_track_id, youtube_segments, existing_youtube_url } = body
 
     if (!artist || !title) {
       return NextResponse.json({ error: 'artist and title are required' }, { status: 400 })
@@ -38,7 +39,6 @@ export async function POST(request: Request) {
       if (userToken) {
         const trackId =
           spotify_track_id ?? (await searchSpotifyTrackId(artist, title, userToken))
-
         if (trackId) {
           const spotifyLines = await getSpotifyLyrics(trackId, userToken)
           if (spotifyLines) {
@@ -48,16 +48,27 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Sources 3-5: text-only fallbacks (lrclib, genius, happi) ──────────
-    const textResult = await fetchLyrics(artist, title)
-    if (textResult) {
-      if (textResult.lrc_content) {
-        sources.push({ name: 'lrclib', lrc: textResult.lrc_content, plain_text: textResult.plain_lyrics })
-      } else {
-        // Genius or Happi plain text
-        sources.push({ name: 'genius', plain_text: textResult.plain_lyrics })
-      }
+    // ── Sources 3-5: text fallbacks (parallel) + YouTube video search ─────
+    const [lrcResult, geniusText, ovhText, discoveredYoutubeUrl] = await Promise.allSettled([
+      fetchFromLrcLib(artist, title),
+      fetchLyricsFromGeniusPublic(artist, title),
+      fetchFromLyricsOvh(artist, title),
+      // Skip YouTube search if the song already has a video URL
+      existing_youtube_url ? Promise.resolve(null) : searchYouTubeVideo(artist, title),
+    ])
+
+    const lrc = lrcResult.status === 'fulfilled' ? lrcResult.value : null
+    const genius = geniusText.status === 'fulfilled' ? geniusText.value : null
+    const ovh = ovhText.status === 'fulfilled' ? ovhText.value : null
+    const youtubeUrl = discoveredYoutubeUrl.status === 'fulfilled' ? discoveredYoutubeUrl.value : null
+
+    if (lrc?.lrc_content) {
+      sources.push({ name: 'lrclib', lrc: lrc.lrc_content, plain_text: lrc.plain_lyrics })
+    } else if (lrc?.plain_lyrics) {
+      sources.push({ name: 'lrclib', plain_text: lrc.plain_lyrics })
     }
+    if (genius) sources.push({ name: 'genius', plain_text: genius })
+    if (ovh) sources.push({ name: 'lyricsovh', plain_text: ovh })
 
     if (!sources.length) {
       return NextResponse.json({ error: 'No lyrics found from any source' }, { status: 404 })
@@ -67,8 +78,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ...merged,
-      title: textResult?.title ?? title,
-      artist: textResult?.artist ?? artist,
+      title: lrc?.title ?? title,
+      artist: lrc?.artist ?? artist,
+      youtube_url: existing_youtube_url ?? youtubeUrl,
     })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })

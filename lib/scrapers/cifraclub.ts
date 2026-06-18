@@ -101,33 +101,37 @@ function extractFirstLetrasHref(html: string): string | null {
 }
 
 export async function scrapeCifraClub(artist: string, title: string): Promise<string | null> {
+  // Primary: direct slug URL — song pages render without JS, only search is SPA
   try {
-    // Small delay to be polite
-    await new Promise(r => setTimeout(r, 300))
+    const songRes = await fetch(
+      `https://www.cifraclub.com.br/${slugify(artist)}/${slugify(title)}/letra/`,
+      { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(10000) },
+    )
+    if (songRes.ok) {
+      const html = await songRes.text()
+      const lyrics = parseCifraHTML(html)
+      if (lyrics) return lyrics
+    }
+  } catch { /* fall through */ }
 
+  // Fallback: search-based (works when the slug doesn't match exactly)
+  try {
+    await new Promise(r => setTimeout(r, 300))
     const q = encodeURIComponent(`${artist} ${title}`)
     const searchRes = await fetch(
       `https://www.cifraclub.com.br/busca/?q=${q}&type=letters`,
-      {
-        headers: BROWSER_HEADERS,
-        signal: AbortSignal.timeout(10000),
-      },
+      { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(10000) },
     )
     if (!searchRes.ok) return null
-
     const searchHtml = await searchRes.text()
     const href = extractFirstLetrasHref(searchHtml)
     if (!href) return null
-
-    const songRes = await fetch(`https://www.cifraclub.com.br${href}letra/`, {
-      headers: BROWSER_HEADERS,
-      signal: AbortSignal.timeout(10000),
-    })
-    if (!songRes.ok) return null
-
-    const songHtml = await songRes.text()
-    const lyrics = parseCifraHTML(songHtml)
-    return lyrics || null
+    const songRes2 = await fetch(
+      `https://www.cifraclub.com.br${href}letra/`,
+      { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(10000) },
+    )
+    if (!songRes2.ok) return null
+    return parseCifraHTML(await songRes2.text()) || null
   } catch {
     return null
   }
