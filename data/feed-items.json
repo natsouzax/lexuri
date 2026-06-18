@@ -15,7 +15,7 @@
     "type": "music",
     "title": "Count on Me",
     "artist": "Bruno Mars",
-    "youtube_id": "ZMsvwwp6S7Q",
+    "youtube_id": "6k8cpUkKK4c",
     "duration": "3:16",
     "level": "A1",
     "tags": ["pop", "friendship", "simple vocabulary"],
@@ -37,7 +37,7 @@
     "type": "music",
     "title": "Shake It Off",
     "artist": "Taylor Swift",
-    "youtube_id": "nfWlot6h_JM",
+    "youtube_id": "mvVBuG4IOW4",
     "duration": "3:39",
     "level": "A2",
     "tags": ["pop", "phrasal verbs", "informal"],
@@ -48,11 +48,33 @@
     "type": "music",
     "title": "Roar",
     "artist": "Katy Perry",
-    "youtube_id": "VFA3nPFYU98",
+    "youtube_id": "e9SeJIgWRPk",
     "duration": "3:43",
     "level": "A2",
     "tags": ["pop", "empowerment", "idioms"],
     "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself."
+  },
+  {
+    "id": "video-mrbeast-circle",
+    "type": "video",
+    "title": "Last To Leave Circle Wins $500,000",
+    "channel": "MrBeast",
+    "youtube_id": "zxYjTTXc-J8",
+    "duration": "27:46",
+    "level": "B1",
+    "tags": ["challenge", "competition", "American English", "colloquial"],
+    "preview": "Contestants stand in small circles for as long as they can to win half a million dollars. Casual American English packed with encouragement phrases, colloquialisms and high-pressure negotiation — addictive B1 listening practice."
+  },
+  {
+    "id": "video-mrbeast-solitary",
+    "type": "video",
+    "title": "I Spent 50 Hours In Solitary Confinement",
+    "channel": "MrBeast",
+    "youtube_id": "9RhWXPcKBI8",
+    "duration": "16:17",
+    "level": "B1",
+    "tags": ["storytelling", "emotional", "narrative", "challenge"],
+    "preview": "MrBeast narrates 50 hours in complete isolation. First-person storytelling rich in descriptive vocabulary about time, emotions and physical sensations — excellent B1 practice for expressing inner states and sequential narration."
   },
   {
     "id": "music-hall-of-fame",
@@ -77,11 +99,33 @@
     "preview": "Adele's clear British pronunciation and emotional lyrics make this a classic for learners. Notice past tenses, conditionals and formulaic expressions."
   },
   {
+    "id": "music-rolling-in-the-deep",
+    "type": "music",
+    "title": "Rolling in the Deep",
+    "artist": "Adele",
+    "youtube_id": "rYEDA3JcQqw",
+    "duration": "3:48",
+    "level": "B1",
+    "tags": ["pop", "emotional", "idioms", "collocations"],
+    "preview": "Powerful and emotionally charged. Packed with idiomatic expressions like 'rolling in the deep', 'turning tables' and vivid imagery of heartbreak — excellent B1 listening and vocabulary practice."
+  },
+  {
+    "id": "video-yes-theory-flight",
+    "type": "video",
+    "title": "I Asked 100 Strangers To Buy Me a Flight",
+    "channel": "Yes Theory",
+    "youtube_id": "FNoT5aLSMqI",
+    "duration": "12:53",
+    "level": "B1",
+    "tags": ["adventure", "real speech", "social English", "conversation"],
+    "preview": "Yes Theory asks 100 strangers to fund a spontaneous flight anywhere in the world. Authentic conversational English full of polite requests, small talk and natural reactions — perfect for B1 learners practising real-world social interactions."
+  },
+  {
     "id": "music-fix-you",
     "type": "music",
     "title": "Fix You",
     "artist": "Coldplay",
-    "youtube_id": "k4V3Mo61fJM",
+    "youtube_id": "SIelMFCVJLI",
     "duration": "4:54",
     "level": "B1",
     "tags": ["ballad", "emotional", "vocabulary"],
@@ -110,92 +154,48 @@
     "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns."
   },
   {
+    "id": "video-kurzgesagt-egg",
+    "type": "video",
+    "title": "The Egg — A Short Story",
+    "channel": "Kurzgesagt",
+    "youtube_id": "h6fcK_fRYaI",
+    "duration": "8:32",
+    "level": "B2",
+    "tags": ["philosophy", "storytelling", "complex vocabulary", "narrative"],
+    "preview": "A beautifully animated short story by Andy Weir. Dense philosophical vocabulary, second-person narration and rich metaphors about identity and existence — a thought-provoking B2 challenge with stunning visuals."
+  },
+  {
+    "id": "video-kurzgesagt-nihilism",
+    "type": "video",
+    "title": "Optimistic Nihilism",
+    "channel": "Kurzgesagt",
+    "youtube_id": "MBRqu0YOH14",
+    "duration": "6:53",
+    "level": "B2",
+    "tags": ["philosophy", "abstract", "academic vocabulary", "science"],
+    "preview": "Kurzgesagt asks: if the universe is indifferent, does anything matter? Rich in abstract nouns, conditional reasoning and hedging language ('it seems', 'it might be'). A concise B2 dose of philosophical English."
+  },
+  {
     "id": "music-dont-stop-me-now",
     "type": "music",
     "title": "Don't Stop Me Now",
     "artist": "Queen",
-    "youtube_id": "HgzGwKwLmgM",
+    "youtube_id": "MHi9mKq0slA",
     "duration": "3:29",
     "level": "B2",
     "tags": ["rock", "idioms", "exaggeration"],
     "preview": "Freddie Mercury at his most energetic. Packed with hyperbole, idiomatic expressions and playful language — great for B2 learners studying rhetorical style."
   },
   {
-    "id": "music-bohemian-rhapsody",
+    "id": "music-hello-adele",
     "type": "music",
-    "title": "Bohemian Rhapsody",
-    "artist": "Queen",
-    "youtube_id": "fJ9rUzIMcZQ",
-    "duration": "5:55",
-    "level": "C1",
-    "tags": ["rock", "theatrical", "complex vocabulary", "opera"],
-    "preview": "One of the most complex songs in English pop music — shifting registers, theatrical vocabulary, Italian phrases, dramatic narrative. A challenge for advanced learners."
-  },
-  {
-    "id": "music-let-it-be",
-    "type": "music",
-    "title": "Let It Be",
-    "artist": "The Beatles",
-    "youtube_id": "CGj85pVzRJs",
-    "duration": "3:52",
-    "level": "A2",
-    "tags": ["classic rock", "ballad", "simple vocabulary", "hope"],
-    "preview": "Paul McCartney's timeless ballad with slow, clear pronunciation and simple, comforting vocabulary. Perfect for A2 learners to practice listening comprehension and present tense expressions."
-  },
-  {
-    "id": "music-hey-jude",
-    "type": "music",
-    "title": "Hey Jude",
-    "artist": "The Beatles",
-    "youtube_id": "A_MjCqQoLLA",
-    "duration": "7:11",
-    "level": "A2",
-    "tags": ["classic rock", "chorus", "phrasal verbs", "encouragement"],
-    "preview": "One of the most iconic choruses in rock history. Simple and repetitive structure with common phrasal verbs like 'take a sad song' and 'make it better' — great for A2 learners building vocabulary through repetition."
-  },
-  {
-    "id": "music-yesterday",
-    "type": "music",
-    "title": "Yesterday",
-    "artist": "The Beatles",
-    "youtube_id": "2eAhqbmXfqU",
-    "duration": "2:05",
-    "level": "B1",
-    "tags": ["ballad", "past tense", "grammar", "emotions"],
-    "preview": "Short and slow, rich in past tense and conditional structures ('Yesterday, all my troubles seemed so far away'). A grammar gem for B1 learners — packed with past simple and used-to patterns."
-  },
-  {
-    "id": "music-come-together",
-    "type": "music",
-    "title": "Come Together",
-    "artist": "The Beatles",
-    "youtube_id": "45cYwDMibGo",
-    "duration": "4:19",
+    "title": "Hello",
+    "artist": "Adele",
+    "youtube_id": "YQHsXMglC9A",
+    "duration": "4:55",
     "level": "B2",
-    "tags": ["classic rock", "abstract", "rhythm", "figurative language"],
-    "preview": "John Lennon's hypnotic lyrics are full of abstract imagery and unusual expressions. A B2 challenge that exposes learners to creative, non-literal English and the rhythm of native speech."
-  },
-  {
-    "id": "music-in-my-life",
-    "type": "music",
-    "title": "In My Life",
-    "artist": "The Beatles",
-    "youtube_id": "QR1CwJTXUIk",
-    "duration": "2:26",
-    "level": "B1",
-    "tags": ["classic rock", "nostalgia", "past tense", "comparative"],
-    "preview": "A reflective song about memory and love, rich in past tense and comparative structures. Lennon's clear diction and poetic simplicity make this perfect for intermediate learners."
-  },
-  {
-    "id": "music-under-the-bridge",
-    "type": "music",
-    "title": "Under the Bridge",
-    "artist": "Red Hot Chili Peppers",
-    "youtube_id": "GLvohMXgcBo",
-    "duration": "4:24",
-    "level": "B1",
-    "tags": ["rock", "storytelling", "emotions", "phrasal verbs"],
-    "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace."
+    "tags": ["ballad", "emotional", "past tense", "regret"],
+    "preview": "Adele's signature rich vocabulary and emotional delivery shine here. The lyrics are full of past tense structures, conditional regret ('I must have called a thousand times') and advanced emotional vocabulary."
   },
   {
     "id": "music-californication",
@@ -207,6 +207,50 @@
     "level": "B2",
     "tags": ["rock", "American culture", "advanced vocabulary", "figurative language"],
     "preview": "A critique of Hollywood culture packed with cultural references and advanced vocabulary. Challenging and rewarding for B2 learners interested in American idioms and figurative language."
+  },
+  {
+    "id": "music-hotel-california",
+    "type": "music",
+    "title": "Hotel California",
+    "artist": "Eagles",
+    "youtube_id": "dLl4PZtxia8",
+    "duration": "6:30",
+    "level": "B2",
+    "tags": ["classic rock", "metaphor", "storytelling", "American culture"],
+    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge."
+  },
+  {
+    "id": "video-veritasium-parallel",
+    "type": "video",
+    "title": "Parallel Worlds Probably Exist. Here's Why.",
+    "channel": "Veritasium",
+    "youtube_id": "S1tFT4smd6E",
+    "duration": "19:43",
+    "level": "C1",
+    "tags": ["science", "physics", "academic English", "hedging language"],
+    "preview": "Derek explores the many-worlds interpretation of quantum mechanics with stunning clarity. Dense scientific vocabulary, expert hedging ('it appears', 'one interpretation suggests') and complex causal reasoning — a demanding C1 challenge for science-minded learners."
+  },
+  {
+    "id": "music-bohemian-rhapsody",
+    "type": "music",
+    "title": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "youtube_id": "jFKBR1ggTMY",
+    "duration": "5:55",
+    "level": "C1",
+    "tags": ["rock", "theatrical", "complex vocabulary", "opera"],
+    "preview": "One of the most complex songs in English pop music — shifting registers, theatrical vocabulary, Italian phrases, dramatic narrative. A challenge for advanced learners."
+  },
+  {
+    "id": "music-under-the-bridge",
+    "type": "music",
+    "title": "Under the Bridge",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "GLvohMXgcBo",
+    "duration": "4:24",
+    "level": "B1",
+    "tags": ["rock", "storytelling", "emotions", "phrasal verbs"],
+    "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace."
   },
   {
     "id": "music-scar-tissue",
@@ -231,6 +275,17 @@
     "preview": "A haunting song about struggle and recovery. The measured pace and emotional vocabulary make it accessible for B1 learners wanting to explore deeper English expression through music."
   },
   {
+    "id": "music-by-the-way",
+    "type": "music",
+    "title": "By the Way",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "JnfyjwChuNU",
+    "duration": "3:37",
+    "level": "B1",
+    "tags": ["rock", "fast-paced", "slang", "conversational"],
+    "preview": "Fast, punchy and packed with energy. Kiedis's rapid-fire delivery challenges B1 learners to follow native-speed speech while picking up informal American expressions and rock slang."
+  },
+  {
     "id": "music-sweet-child-o-mine",
     "type": "music",
     "title": "Sweet Child O' Mine",
@@ -242,14 +297,63 @@
     "preview": "Axl Rose's iconic rock ballad paints a vivid portrait with descriptive vocabulary and a clear verse-chorus structure. The emotional delivery and consistent rhyme scheme help B1 learners build listening stamina."
   },
   {
-    "id": "music-hotel-california",
+    "id": "music-let-it-be",
     "type": "music",
-    "title": "Hotel California",
-    "artist": "Eagles",
-    "youtube_id": "dLl4PZtxia8",
-    "duration": "6:30",
+    "title": "Let It Be",
+    "artist": "The Beatles",
+    "youtube_id": "QDYfEBY9NM4",
+    "duration": "3:52",
+    "level": "A2",
+    "tags": ["classic rock", "ballad", "simple vocabulary", "hope"],
+    "preview": "Paul McCartney's timeless ballad with slow, clear pronunciation and simple, comforting vocabulary. Perfect for A2 learners to practice listening comprehension and present tense expressions.",
+    "maintenance": true
+  },
+  {
+    "id": "music-hey-jude",
+    "type": "music",
+    "title": "Hey Jude",
+    "artist": "The Beatles",
+    "youtube_id": "CG3jm4vvGXc",
+    "duration": "7:11",
+    "level": "A2",
+    "tags": ["classic rock", "chorus", "phrasal verbs", "encouragement"],
+    "preview": "One of the most iconic choruses in rock history. Simple and repetitive structure with common phrasal verbs like 'take a sad song' and 'make it better' — great for A2 learners building vocabulary through repetition.",
+    "maintenance": true
+  },
+  {
+    "id": "music-yesterday",
+    "type": "music",
+    "title": "Yesterday",
+    "artist": "The Beatles",
+    "youtube_id": "NrgmdOz227I",
+    "duration": "2:05",
+    "level": "B1",
+    "tags": ["ballad", "past tense", "grammar", "emotions"],
+    "preview": "Short and slow, rich in past tense and conditional structures ('Yesterday, all my troubles seemed so far away'). A grammar gem for B1 learners — packed with past simple and used-to patterns.",
+    "maintenance": true
+  },
+  {
+    "id": "music-come-together",
+    "type": "music",
+    "title": "Come Together",
+    "artist": "The Beatles",
+    "youtube_id": "huD8whbMRvU",
+    "duration": "4:19",
     "level": "B2",
-    "tags": ["classic rock", "metaphor", "storytelling", "American culture"],
-    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge."
+    "tags": ["classic rock", "abstract", "rhythm", "figurative language"],
+    "preview": "John Lennon's hypnotic lyrics are full of abstract imagery and unusual expressions. A B2 challenge that exposes learners to creative, non-literal English and the rhythm of native speech.",
+    "maintenance": true
+  },
+  {
+    "id": "music-in-my-life",
+    "type": "music",
+    "title": "In My Life",
+    "artist": "The Beatles",
+    "youtube_id": "YBcdt6DsLQA",
+    "duration": "2:26",
+    "level": "B1",
+    "tags": ["classic rock", "nostalgia", "past tense", "comparative"],
+    "preview": "A reflective song about memory and love, rich in past tense and comparative structures. Lennon's clear diction and poetic simplicity make this perfect for intermediate learners.",
+    "maintenance": true
   }
 ]

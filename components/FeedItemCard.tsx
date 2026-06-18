@@ -63,6 +63,12 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
         >
           {item.duration}
         </span>
+        {/* Maintenance overlay strip */}
+        {item.maintenance && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(217,119,6,0.92)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.05em' }}>
+            ⚠ UNDER MAINTENANCE
+          </div>
+        )}
         {/* Level badge */}
         <span
           style={{
@@ -129,6 +135,13 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
             </span>
           ))}
         </div>
+
+        {/* Maintenance warning */}
+        {item.maintenance && (
+          <div style={{ fontSize: '0.72rem', color: '#92400e', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 8, padding: '6px 10px', marginBottom: 10, fontWeight: 600 }}>
+            This lesson is under maintenance and may contain errors.
+          </div>
+        )}
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 8 }}>

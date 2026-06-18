@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Hero from '@/components/ui/Hero'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
+import SpotifyConnectModal from '@/components/SpotifyConnectModal'
 import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, Song } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
 import type { LrcLibSearchHit } from '@/lib/lyrics'
+import type { SpotifyTrackSummary } from '@/lib/spotify'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -32,7 +34,7 @@ function isUrl(input: string): boolean {
 const LEVEL_OPTIONS = ['A2', 'B1', 'B2', 'C1'] as const
 type Level = (typeof LEVEL_OPTIONS)[number]
 
-type Tab = 'discover' | 'library'
+type Tab = 'discover' | 'library' | 'for-you'
 
 interface WorkingSong {
   title: string
@@ -41,17 +43,25 @@ interface WorkingSong {
   plain_lyrics: string
   youtube_url: string | null
   spotify_url: string | null
+  spotify_track_id?: string
+  lyrics_source?: string
+  is_synced?: boolean
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
+function formatDuration(ms: number): string {
+  const totalSec = Math.floor(ms / 1000)
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 export default function MusicPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [tab, setTab] = useState<Tab>('discover')
+  const [spotifyConnected, setSpotifyConnected] = useState<boolean | null>(null)
+  const [showSpotifyModal, setShowSpotifyModal] = useState(false)
 
   // --- Discover state ---
   const [query, setQuery] = useState('')
@@ -59,6 +69,7 @@ export default function MusicPage() {
   const [searchResults, setSearchResults] = useState<LrcLibSearchHit[]>([])
   const [workingSong, setWorkingSong] = useState<WorkingSong | null>(null)
   const [fetchingLyrics, setFetchingLyrics] = useState(false)
+  const [mergingLyrics, setMergingLyrics] = useState(false)
 
   // --- Analysis state ---
   const [level, setLevel] = useState<Level>('B1')
@@ -74,10 +85,39 @@ export default function MusicPage() {
   const [librarySongs, setLibrarySongs] = useState<Song[]>([])
   const [loadingLibrary, setLoadingLibrary] = useState(false)
 
+  // --- For You (Spotify feed) state ---
+  const [feedTracks, setFeedTracks] = useState<SpotifyTrackSummary[]>([])
+  const [loadingFeed, setLoadingFeed] = useState(false)
+
   const [error, setError] = useState('')
 
+  // Check Spotify connection status on mount
   useEffect(() => {
-    if (tab === 'library') loadLibrary()
+    fetch('/api/spotify/status')
+      .then((r) => r.json())
+      .then((d: { connected: boolean }) => setSpotifyConnected(d.connected))
+      .catch(() => setSpotifyConnected(false))
+  }, [])
+
+  // Handle post-OAuth redirect params
+  useEffect(() => {
+    if (searchParams.get('spotify_connected') === '1') {
+      setSpotifyConnected(true)
+      setShowSpotifyModal(false)
+      // Re-merge if we have a working song
+      if (workingSong && !workingSong.is_synced) {
+        void handleMergeLyrics(workingSong)
+      }
+    }
+    if (searchParams.get('spotify_error') === '1') {
+      setError('Spotify connection failed. Please try again.')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  useEffect(() => {
+    if (tab === 'library') void loadLibrary()
+    if (tab === 'for-you') void loadFeed()
   }, [tab])
 
   async function loadLibrary() {
@@ -88,6 +128,58 @@ export default function MusicPage() {
     } catch { /* silent */ }
     finally { setLoadingLibrary(false) }
   }
+
+  async function loadFeed() {
+    setLoadingFeed(true)
+    try {
+      const data = await apiFetch<{ tracks: SpotifyTrackSummary[]; needs_auth?: boolean }>(
+        '/api/spotify/feed',
+      )
+      if ((data as { needs_auth?: boolean }).needs_auth) {
+        setShowSpotifyModal(true)
+      } else {
+        setFeedTracks(data.tracks)
+      }
+    } catch {
+      setShowSpotifyModal(true)
+    } finally {
+      setLoadingFeed(false)
+    }
+  }
+
+  const handleMergeLyrics = useCallback(async (song: WorkingSong) => {
+    setMergingLyrics(true)
+    try {
+      const merged = await apiFetch<{
+        plain_lyrics: string
+        lrc_content: string | null
+        source: string
+        is_synced: boolean
+        title: string
+        artist: string
+      }>('/api/music/merge-lyrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artist: song.artist,
+          title: song.title,
+          spotify_track_id: song.spotify_track_id,
+        }),
+      })
+      setWorkingSong((prev) =>
+        prev
+          ? {
+              ...prev,
+              plain_lyrics: merged.plain_lyrics || prev.plain_lyrics,
+              lrc_content: merged.lrc_content ?? prev.lrc_content,
+              lyrics_source: merged.source,
+              is_synced: merged.is_synced,
+            }
+          : prev,
+      )
+    } catch { /* keep existing lyrics */ }
+    finally { setMergingLyrics(false) }
+  }, [])
 
   async function handleSearch() {
     const q = query.trim()
@@ -101,12 +193,21 @@ export default function MusicPage() {
     if (isUrl(q)) {
       setFetchingLyrics(true)
       try {
-        const song = await apiFetch<WorkingSong>('/api/music/resolve-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: q }),
-        })
+        const song = await apiFetch<WorkingSong & { not_found?: boolean }>(
+          '/api/music/resolve-url',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: q }),
+          },
+        )
         setWorkingSong(song)
+        // Trigger AI merge in background (uses all sources including Spotify if connected)
+        void handleMergeLyrics(song)
+        // If not synced and Spotify not connected, prompt user
+        if (!song.is_synced && !spotifyConnected) {
+          setShowSpotifyModal(true)
+        }
       } catch (e) {
         setError(String(e))
       } finally {
@@ -131,14 +232,40 @@ export default function MusicPage() {
     setChunkAnalysis(null)
     setSavedSongId(null)
     setSearchResults([])
-    setWorkingSong({
+    const song: WorkingSong = {
       title: hit.trackName,
       artist: hit.artistName,
       lrc_content: hit.syncedLyrics ?? null,
       plain_lyrics: hit.plainLyrics ?? extractPlainFromLrc(hit.syncedLyrics ?? ''),
       youtube_url: null,
       spotify_url: null,
-    })
+    }
+    setWorkingSong(song)
+    // Trigger AI merge to potentially improve with Genius + Spotify
+    void handleMergeLyrics(song)
+    if (!hit.syncedLyrics && !spotifyConnected) {
+      setShowSpotifyModal(true)
+    }
+  }
+
+  function handleSelectFeedTrack(track: SpotifyTrackSummary) {
+    setTab('discover')
+    setQuery(`${track.title} ${track.artist}`)
+    const song: WorkingSong = {
+      title: track.title,
+      artist: track.artist,
+      lrc_content: null,
+      plain_lyrics: '',
+      youtube_url: null,
+      spotify_url: track.spotify_url,
+      spotify_track_id: track.id,
+    }
+    setWorkingSong(song)
+    setFeedTracks([])
+    setMergingLyrics(true)
+    handleMergeLyrics(song)
+      .catch(() => {})
+      .finally(() => setMergingLyrics(false))
   }
 
   async function handleAnalyzeChunks() {
@@ -208,6 +335,11 @@ export default function MusicPage() {
     }
   }
 
+  async function handleDisconnectSpotify() {
+    await fetch('/api/spotify/disconnect', { method: 'POST' })
+    setSpotifyConnected(false)
+  }
+
   const highChunks = chunkAnalysis?.chunks.filter((c) => c.importance === 'high') ?? []
   const otherChunks = chunkAnalysis?.chunks.filter((c) => c.importance !== 'high') ?? []
 
@@ -215,6 +347,13 @@ export default function MusicPage() {
 
   return (
     <>
+      {showSpotifyModal && (
+        <SpotifyConnectModal
+          returnTo="/music"
+          onClose={() => setShowSpotifyModal(false)}
+        />
+      )}
+
       <Hero
         title="Learn"
         subtitle="Music workspace."
@@ -231,26 +370,55 @@ export default function MusicPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        {(['discover', 'library'] as Tab[]).map((t) => (
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+        {([
+          { id: 'discover', label: '⊕ Discover' },
+          { id: 'library', label: '♪ My Library' },
+          { id: 'for-you', label: '✦ For You' },
+        ] as { id: Tab; label: string }[]).map((t) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={t.id}
+            onClick={() => setTab(t.id)}
             style={{
               padding: '8px 22px',
               borderRadius: 999,
-              border: `1.5px solid ${tab === t ? 'var(--ink)' : 'var(--line)'}`,
-              background: tab === t ? 'var(--ink)' : 'transparent',
-              color: tab === t ? '#fff' : 'var(--muted)',
-              fontWeight: tab === t ? 700 : 400,
+              border: `1.5px solid ${tab === t.id ? 'var(--ink)' : 'var(--line)'}`,
+              background: tab === t.id ? 'var(--ink)' : 'transparent',
+              color: tab === t.id ? '#fff' : 'var(--muted)',
+              fontWeight: tab === t.id ? 700 : 400,
               fontSize: '0.85rem',
               cursor: 'pointer',
               transition: 'all 120ms ease',
             }}
           >
-            {t === 'discover' ? '⊕ Discover' : '♪ My Library'}
+            {t.label}
+            {t.id === 'for-you' && spotifyConnected === false && (
+              <span style={{ marginLeft: 6, fontSize: '0.65rem', opacity: 0.7 }}>connect Spotify</span>
+            )}
           </button>
         ))}
+
+        {spotifyConnected && (
+          <button
+            onClick={handleDisconnectSpotify}
+            style={{
+              marginLeft: 'auto',
+              padding: '6px 14px',
+              borderRadius: 999,
+              border: '1.5px solid var(--line)',
+              background: 'transparent',
+              fontSize: '0.72rem',
+              color: 'var(--muted)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1DB954', display: 'inline-block' }} />
+            Spotify connected
+          </button>
+        )}
       </div>
 
       {/* ─── DISCOVER TAB ─────────────────────────────── */}
@@ -310,7 +478,7 @@ export default function MusicPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
                       {hit.duration > 0 && (
                         <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700 }}>
-                          {formatDuration(hit.duration)}
+                          {Math.floor(hit.duration / 60)}:{String(hit.duration % 60).padStart(2, '0')}
                         </span>
                       )}
                       {hit.syncedLyrics && (
@@ -328,7 +496,6 @@ export default function MusicPage() {
           {/* Song workspace */}
           {workingSong && (
             <>
-              {/* Header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div>
                   <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.35rem' }}>
@@ -354,17 +521,39 @@ export default function MusicPage() {
                 </div>
               </div>
 
-              {workingSong.lrc_content && (
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(70,98,74,0.12)', color: 'var(--moss)', display: 'inline-block', marginBottom: 12 }}>
-                  ✓ Synced lyrics available
-                </div>
-              )}
+              {/* Lyrics quality badge */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                {mergingLyrics && (
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(100,100,100,0.1)', color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <span className="spinner" style={{ width: 10, height: 10 }} />
+                    Improving lyrics…
+                  </span>
+                )}
+                {!mergingLyrics && workingSong.is_synced && (
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(70,98,74,0.12)', color: 'var(--moss)' }}>
+                    ✓ Synced — {workingSong.lyrics_source ?? 'lrclib'}
+                  </span>
+                )}
+                {!mergingLyrics && workingSong.lrc_content && !workingSong.is_synced && (
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(70,98,74,0.12)', color: 'var(--moss)' }}>
+                    ✓ Synced lyrics available
+                  </span>
+                )}
+                {!mergingLyrics && !workingSong.is_synced && !workingSong.lrc_content && !spotifyConnected && (
+                  <button
+                    onClick={() => setShowSpotifyModal(true)}
+                    style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(29,185,84,0.12)', color: '#1DB954', border: 'none', cursor: 'pointer' }}
+                  >
+                    ✦ Connect Spotify for better lyrics
+                  </button>
+                )}
+              </div>
 
               {workingSong.plain_lyrics ? (
                 <>
                   <details style={{ marginBottom: 16 }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}>Read lyrics</summary>
-                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', color: 'var(--muted)', marginTop: 12, lineHeight: 1.7 }}>
+                    <pre className="music-lyrics-pre" style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', color: 'var(--muted)', marginTop: 12, lineHeight: 1.7 }}>
                       {workingSong.plain_lyrics}
                     </pre>
                   </details>
@@ -391,19 +580,19 @@ export default function MusicPage() {
                         </button>
                       ))}
                     </div>
-                    <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing}>
+                    <button className="btn-primary btn-wide" onClick={handleAnalyzeChunks} disabled={analyzing || mergingLyrics}>
                       {analyzing ? <><span className="spinner" />Analyzing chunks…</> : 'Analyze language chunks'}
                     </button>
                   </div>
                 </>
+              ) : mergingLyrics ? (
+                <div className="alert-info">Finding the best lyrics from all sources…</div>
               ) : (
                 <div className="alert-info">
                   No lyrics found for this song. You can{' '}
                   <button
                     style={{ color: 'var(--moss)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    onClick={() => {
-                      setWorkingSong({ ...workingSong, plain_lyrics: '' })
-                    }}
+                    onClick={() => setWorkingSong({ ...workingSong, plain_lyrics: ' ' })}
                   >
                     paste them manually
                   </button>
@@ -565,6 +754,105 @@ export default function MusicPage() {
                     </div>
                   </div>
                 </a>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ─── FOR YOU TAB ──────────────────────────────── */}
+      {tab === 'for-you' && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div className="section-title" style={{ margin: 0 }}>Your Music</div>
+            {spotifyConnected && (
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#1DB954', display: 'inline-block' }} />
+                Based on your Spotify listening
+              </span>
+            )}
+          </div>
+
+          {!spotifyConnected && !loadingFeed && (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🎧</div>
+              <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 8 }}>
+                Connect Spotify to see your music
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 20 }}>
+                We'll build a personalized list of songs to study based on your listening history.
+              </p>
+              <button
+                onClick={() => setShowSpotifyModal(true)}
+                style={{
+                  background: '#1DB954',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 999,
+                  padding: '12px 28px',
+                  fontWeight: 700,
+                  fontSize: '0.92rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Connect Spotify
+              </button>
+            </div>
+          )}
+
+          {loadingFeed && <div className="alert-info">Loading your personalized feed…</div>}
+
+          {feedTracks.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {feedTracks.map((track) => (
+                <button
+                  key={track.id}
+                  onClick={() => handleSelectFeedTrack(track)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    padding: '12px 16px',
+                    borderRadius: 14,
+                    border: '1px solid var(--line)',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'box-shadow 120ms ease',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--shadow-md)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--shadow-sm)' }}
+                >
+                  {track.album_art ? (
+                    <img
+                      src={track.album_art}
+                      alt={track.album}
+                      style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div style={{ width: 48, height: 48, borderRadius: 8, background: 'rgba(29,185,84,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.3rem' }}>
+                      ♪
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {track.title}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
+                      {track.artist}
+                      {track.album ? ` · ${track.album}` : ''}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700 }}>
+                      {formatDuration(track.duration_ms)}
+                    </span>
+                    <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: 999, background: 'rgba(29,185,84,0.12)', color: '#1DB954', fontWeight: 700 }}>
+                      Study →
+                    </span>
+                  </div>
+                </button>
               ))}
             </div>
           )}

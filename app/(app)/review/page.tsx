@@ -91,7 +91,7 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
       </div>
 
       {/* Flip card */}
-      <div className="flashcard-scene" style={{ minHeight: 220, marginBottom: 20, cursor: revealed ? 'default' : 'pointer' }} onClick={() => !revealed && setRevealed(true)}>
+      <div className="flashcard-scene" style={{ marginBottom: 20, cursor: revealed ? 'default' : 'pointer' }} onClick={() => !revealed && setRevealed(true)}>
         <div className={`flashcard-inner${revealed ? ' flipped' : ''}`}>
           {/* Front */}
           <div className="flashcard-face flashcard-front">
@@ -116,7 +116,7 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
 
       {/* Before reveal: quick "I knew it" shortcut */}
       {!revealed && (
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="review-actions-sticky" style={{ display: 'flex', gap: 10 }}>
           <button
             className="btn-secondary btn-wide"
             onClick={() => setRevealed(true)}
@@ -138,7 +138,7 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
 
       {/* After reveal: rate recall */}
       {revealed && (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="review-actions-sticky" style={{ display: 'flex', gap: 8 }}>
           {[
             { label: 'Again',    n: 0, note: 'forgot',      bg: 'rgba(192,57,43,0.1)',   color: '#c0392b', border: 'rgba(192,57,43,0.35)' },
             { label: 'Hard',     n: 1, note: 'needed hint', bg: 'rgba(200,111,74,0.1)',  color: '#c86f4a', border: 'rgba(200,111,74,0.35)' },

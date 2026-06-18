@@ -13,12 +13,6 @@ const TYPE_LABELS: Record<string, string> = {
   conversational: 'Conversational',
 }
 
-const IMPORTANCE_DOT: Record<string, string> = {
-  high: '#E91E63',
-  medium: '#FF9800',
-  low: '#9E9E9E',
-}
-
 interface Props {
   chunk: ChunkItem
   isSelected?: boolean
@@ -42,63 +36,68 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
     <div
       onClick={() => onSelect?.(chunk)}
       style={{
-        borderTop: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
-        borderRight: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
-        borderBottom: isSelected ? `2px solid ${chunk.color}` : `1px solid ${chunk.color}40`,
+        border: isSelected
+          ? `1px solid ${chunk.color}`
+          : `1px solid ${chunk.color}44`,
         borderLeft: `4px solid ${chunk.color}`,
         borderRadius: 8,
-        padding: '14px 16px',
+        padding: '12px 14px',
         background: isSelected ? `${chunk.color}12` : `${chunk.color}06`,
         cursor: onSelect ? 'pointer' : 'default',
         transition: 'background 0.12s, border-color 0.12s',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          <span
-            style={{ width: 8, height: 8, borderRadius: '50%', background: IMPORTANCE_DOT[chunk.importance], flexShrink: 0, display: 'inline-block' }}
-            title={`${chunk.importance} importance`}
-          />
-          <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.08rem', overflowWrap: 'anywhere' }}>
-            {chunk.text}
-          </span>
-        </div>
-        <span
-          style={{
-            fontSize: '0.68rem',
-            fontWeight: 700,
-            padding: '2px 8px',
-            borderRadius: 20,
-            background: chunk.color + '22',
-            color: chunk.color,
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          {TYPE_LABELS[chunk.type] ?? chunk.type}
-        </span>
+      <span style={{
+        display: 'block',
+        fontSize: '0.62rem',
+        fontWeight: 900,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: chunk.color,
+      }}>
+        {TYPE_LABELS[chunk.type] ?? chunk.type}
+      </span>
+
+      <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', lineHeight: 1.2 }}>
+        {chunk.text}
       </div>
 
-      <div style={{ fontSize: '0.88rem', fontWeight: 600, marginBottom: 2 }}>
-        {chunk.contextual_translation}
-      </div>
-      {chunk.literal_translation !== chunk.contextual_translation && (
-        <div style={{ fontSize: '0.76rem', color: 'var(--muted)', marginBottom: 6, opacity: 0.75 }}>
-          literal: {chunk.literal_translation}
-        </div>
+      {chunk.why_it_matters && (
+        <p style={{ fontSize: '0.76rem', color: 'var(--muted)', lineHeight: 1.45, margin: 0 }}>
+          {chunk.why_it_matters}
+        </p>
       )}
-      <div style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, marginBottom: 10 }}>
-        {chunk.why_it_matters}
-      </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.7rem', color: 'var(--muted)', marginRight: 'auto' }}>
-          {chunk.learner_level} · freq {chunk.frequency_score}/10
-        </span>
+      {chunk.contextual_translation && (
+        <p style={{ fontSize: '0.78rem', fontWeight: 600, color: chunk.color, margin: 0 }}>
+          {chunk.contextual_translation}
+        </p>
+      )}
+
+      {chunk.example_sentence && (
+        <small style={{
+          display: 'block',
+          fontSize: '0.74rem',
+          fontStyle: 'italic',
+          color: 'var(--muted)',
+          opacity: 0.75,
+          lineHeight: 1.4,
+          marginTop: 4,
+          paddingLeft: 8,
+          borderLeft: `2px solid ${chunk.color}44`,
+        }}>
+          {chunk.example_sentence}
+        </small>
+      )}
+
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
         <button
           type="button"
           className="btn-secondary"
-          style={{ fontSize: '0.73rem', padding: '4px 10px' }}
+          style={{ fontSize: '0.72rem', padding: '3px 10px' }}
           onClick={(e) => { e.stopPropagation(); playAudio() }}
           title="Play pronunciation"
         >
@@ -107,7 +106,7 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
         {chunk.flashcard_suggestion && onMakeFlashcard && (
           <button
             className="btn-primary"
-            style={{ fontSize: '0.73rem', padding: '4px 12px' }}
+            style={{ fontSize: '0.72rem', padding: '3px 12px' }}
             onClick={(e) => { e.stopPropagation(); onMakeFlashcard(chunk) }}
             disabled={making || saved}
           >

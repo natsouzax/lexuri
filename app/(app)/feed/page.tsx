@@ -5,12 +5,12 @@ import Link from 'next/link'
 import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
 import FeedItemCard from '@/components/FeedItemCard'
+import SpotifyConnectModal from '@/components/SpotifyConnectModal'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { contentTabs } from '@/lib/product'
 import type { FeedItem } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
 
-const FREE_FEED_LIMIT = 5
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -30,7 +30,7 @@ export default function FeedPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('All')
   const [cardCount, setCardCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
-  const [isPremium, setIsPremium] = useState(false)
+  const [showSpotifyModal, setShowSpotifyModal] = useState(false)
 
   useEffect(() => {
     setSavedIds(getSavedItemIds())
@@ -38,7 +38,17 @@ export default function FeedPage() {
 
   useEffect(() => {
     apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => {})
-    apiFetch<{ isPremium: boolean }>('/api/usage').then((d) => setIsPremium(d.isPremium)).catch(() => {})
+  }, [])
+
+  // Show Spotify modal once per session if not connected
+  useEffect(() => {
+    if (sessionStorage.getItem('spotify_modal_dismissed')) return
+    fetch('/api/spotify/status')
+      .then((r) => r.json())
+      .then((d: { connected: boolean }) => {
+        if (!d.connected) setShowSpotifyModal(true)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -59,16 +69,24 @@ export default function FeedPage() {
     }
   }
 
-  const allFiltered = feedItems.filter(
+  const filtered = feedItems.filter(
     (item) =>
       (levelFilter === 'All' || item.level === levelFilter) &&
       (typeFilter === 'All' || item.type === typeFilter),
   )
-  const filtered = isPremium ? allFiltered : allFiltered.slice(0, FREE_FEED_LIMIT)
-  const hiddenCount = isPremium ? 0 : Math.max(0, allFiltered.length - FREE_FEED_LIMIT)
 
   return (
     <>
+      {showSpotifyModal && (
+        <SpotifyConnectModal
+          returnTo="/feed"
+          onClose={() => {
+            setShowSpotifyModal(false)
+            sessionStorage.setItem('spotify_modal_dismissed', '1')
+          }}
+        />
+      )}
+
       <Hero
         title="Learn"
         subtitle="Discover content, then turn it into memory."
@@ -158,28 +176,7 @@ export default function FeedPage() {
         <div className="alert-info">No lessons match that filter yet.</div>
       )}
 
-      {hiddenCount > 0 && (
-        <div style={{
-          border: '1.5px dashed var(--clay)',
-          borderRadius: 16,
-          padding: '24px 28px',
-          background: 'rgba(200,111,74,0.04)',
-          textAlign: 'center',
-          marginBottom: 32,
-        }}>
-          <div style={{ fontFamily: 'Fraunces,Georgia,serif', fontWeight: 900, fontSize: '1.05rem', marginBottom: 8 }}>
-            +{hiddenCount} more lessons available
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 16, lineHeight: 1.6 }}>
-            Free plan includes {FREE_FEED_LIMIT} feed items. Go Premium to unlock all curated lessons.
-          </p>
-          <Link href="/plans#coupon" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', padding: '10px 24px', borderRadius: 12, fontSize: '0.88rem' }}>
-            Get 2 weeks free →
-          </Link>
-        </div>
-      )}
-
-      {savedIds.length > 0 && (
+{savedIds.length > 0 && (
         <>
           <div className="section-title">Saved Lessons</div>
           <div

@@ -115,18 +115,14 @@ function parseSrt(srt: string): TranscriptSegment[] {
   return segments
 }
 
-// NEW: Fetch transcript via Supadata.ai — bypasses YouTube IP blocks on Vercel/datacenter IPs
-// Sign up free at https://supadata.ai (100 requests/day on free tier)
-// Set SUPADATA_API_KEY in Vercel environment variables
+// Fetch transcript via Supadata.ai — bypasses YouTube IP blocks on Vercel/datacenter IPs
 async function fetchCaptionsViaSupadata(videoId: string): Promise<TranscriptSegment[]> {
   if (!SUPADATA_API_KEY) throw new Error('SUPADATA_API_KEY is not set.')
 
   const res = await fetch(
-    `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=false`,
+    `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=false&lang=en`,
     {
-      headers: {
-        'x-api-key': SUPADATA_API_KEY,
-      },
+      headers: { 'x-api-key': SUPADATA_API_KEY },
       signal: AbortSignal.timeout(15000),
     },
   )
@@ -142,6 +138,11 @@ async function fetchCaptionsViaSupadata(videoId: string): Promise<TranscriptSegm
   }
 
   if (!data.content?.length) throw new Error('Supadata returned empty transcript.')
+
+  // Reject non-English captions so the next source is tried
+  if (data.lang && !data.lang.startsWith('en')) {
+    throw new Error(`Supadata returned non-English captions (lang: ${data.lang}).`)
+  }
 
   // Supadata returns offset in milliseconds
   return data.content.map(item => ({

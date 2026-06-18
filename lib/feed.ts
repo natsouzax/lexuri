@@ -11,6 +11,7 @@ export interface FeedItem {
   level: string
   tags: string[]
   preview: string
+  maintenance?: boolean
 }
 
 export const FEED_ITEMS: FeedItem[] = rawItems as FeedItem[]

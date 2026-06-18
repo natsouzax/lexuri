@@ -34,8 +34,113 @@ export async function searchLrcLib(query: string): Promise<LrcLibSearchHit[]> {
   }
 }
 
+// ── Genius HTML parser (no external deps) ────────────────────────────────────
+// Extracts text from <div data-lyrics-container="true"> elements by tracking
+// HTML depth, converting <br> to newlines, stripping all other tags.
+
+function parseGeniusHTML(html: string): string {
+  const blocks: string[] = []
+  let searchFrom = 0
+
+  while (true) {
+    const attrPos = html.indexOf('data-lyrics-container="true"', searchFrom)
+    if (attrPos === -1) break
+
+    const tagEnd = html.indexOf('>', attrPos)
+    if (tagEnd === -1) break
+
+    let depth = 1
+    let content = ''
+    let i = tagEnd + 1
+
+    while (i < html.length && depth > 0) {
+      if (html[i] !== '<') {
+        content += html[i++]
+        continue
+      }
+
+      const end = html.indexOf('>', i)
+      if (end === -1) break
+
+      const inner = html.slice(i + 1, end)
+      const isClose = inner.startsWith('/')
+      const tagName = inner.replace(/^\//, '').match(/^[a-zA-Z]+/)?.[0]?.toLowerCase() ?? ''
+
+      if (tagName === 'br') {
+        content += '\n'
+      } else if (tagName === 'div') {
+        if (!isClose) {
+          depth++
+        } else {
+          depth--
+          if (depth === 0) { i = end + 1; break }
+          content += '\n'
+        }
+      }
+
+      i = end + 1
+    }
+
+    const clean = content
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#x27;|&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+
+    if (clean) blocks.push(clean)
+    searchFrom = tagEnd + 1
+  }
+
+  return blocks.join('\n\n')
+}
+
+async function fetchLyricsFromGenius(artist: string, title: string): Promise<string | null> {
+  const token = process.env.GENIUS_API_KEY
+  if (!token) return null
+
+  try {
+    const q = encodeURIComponent(`${artist} ${title}`)
+    const searchRes = await fetch(`https://api.genius.com/search?q=${q}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!searchRes.ok) return null
+
+    const searchData = (await searchRes.json()) as {
+      response: {
+        hits: Array<{
+          result: { url: string; title: string; primary_artist: { name: string } }
+        }>
+      }
+    }
+
+    const hit = searchData.response.hits[0]
+    if (!hit) return null
+
+    const pageRes = await fetch(hit.result.url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!pageRes.ok) return null
+
+    const html = await pageRes.text()
+    const lyrics = parseGeniusHTML(html)
+    return lyrics || null
+  } catch {
+    return null
+  }
+}
+
+// ── Main entry point ──────────────────────────────────────────────────────────
+
 export async function fetchLyrics(artist: string, title: string): Promise<LyricsResult | null> {
-  // Primary: lrclib.net
+  // 1. lrclib.net — synced + plain, best case
   try {
     const url =
       `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`
@@ -61,7 +166,18 @@ export async function fetchLyrics(artist: string, title: string): Promise<Lyrics
     }
   } catch { /* fall through */ }
 
-  // Fallback: Happi.dev
+  // 2. Genius — large human-curated database, no sync
+  const geniusLyrics = await fetchLyricsFromGenius(artist, title)
+  if (geniusLyrics) {
+    return {
+      title,
+      artist,
+      lrc_content: null,
+      plain_lyrics: geniusLyrics,
+    }
+  }
+
+  // 3. Happi.dev — last text-only resort
   const happiKey = process.env.HAPPI_API_KEY
   if (happiKey) {
     try {
@@ -125,7 +241,7 @@ export function parseLrc(lrc: string): LrcLine[] {
   return lines
 }
 
-function extractPlainFromLrc(lrc: string): string {
+export function extractPlainFromLrc(lrc: string): string {
   return lrc
     .split('\n')
     .map((line) => line.replace(/^\[\d{1,2}:\d{2}\.\d+\]/, '').trim())

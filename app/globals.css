@@ -39,7 +39,7 @@ h1, h2, h3 {
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
 
 /* Layout */
-.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-shell { display: flex; flex-direction: column; min-height: 100svh; }
 
 .app-body {
   display: flex;
@@ -350,7 +350,14 @@ h1, h2, h3 {
 }
 .sidebar-site-link:hover { color: var(--paper); background: rgba(255,250,240,0.06); }
 
-.main-content { flex: 1; min-width: 0; padding: 0 48px 48px; }
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 0 48px 48px;
+  padding-right: max(48px, calc(48px + env(safe-area-inset-right)));
+  padding-bottom: max(48px, calc(24px + env(safe-area-inset-bottom)));
+  padding-left: max(48px, calc(48px + env(safe-area-inset-left)));
+}
 
 /* Sidebar logo link — hover state */
 .sidebar-logo-link { text-decoration: none; display: block; }
@@ -687,7 +694,6 @@ h1, h2, h3 {
 
 @media (max-width: 768px) {
   /* ── Layout ── */
-  .main-content { padding: 0 16px 40px; }
   .sidebar-wrap { display: none; }
 
   /* ── App top nav: hide links, show hamburger ── */
@@ -752,6 +758,31 @@ h1, h2, h3 {
   /* ── YoutubeSyncPlayer: stack to single column ── */
   .yt-player-grid     { grid-template-columns: 1fr !important; }
   .yt-transcript      { max-height: 360px !important; margin-top: 12px; }
+
+  /* ── Subtitle overlay: compact on mobile so it doesn't cover the video ──
+     IMPORTANT: do NOT change `display` here — it breaks pointer-events
+     pass-through on iOS Safari, blocking tap-to-play on the iframe.
+     max-height + overflow: hidden clips long subtitles safely. ── */
+  .subtitle-overlay {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    padding: 4px 10px;
+    bottom: 44px;
+    max-width: 86%;
+    max-height: 62px;   /* ~3 lines at 0.78rem × 1.35 + 8px padding */
+    overflow: hidden;
+  }
+
+  /* ── Subtitle controls: smaller touch targets on mobile ── */
+  .btn-subtitle-ctrl { padding: 6px 10px; font-size: 0.78rem; }
+
+  /* ── Main content: safe-area insets on mobile ── */
+  .main-content {
+    padding: 0 16px 40px;
+    padding-right: max(16px, calc(16px + env(safe-area-inset-right)));
+    padding-bottom: max(40px, calc(20px + env(safe-area-inset-bottom)));
+    padding-left: max(16px, calc(16px + env(safe-area-inset-left)));
+  }
 
   /* ── Alerts ── */
   .alert-info,
@@ -2671,3 +2702,143 @@ h1, h2, h3 {
 @media (max-width: 480px) {
   .social-proof-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
 }
+
+/* ── YouTube sync player layout classes ──────────────────────────────────── */
+.yt-sync-wrapper  { display: flex; flex-direction: column; gap: 14px; }
+.yt-controls-row  { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
+
+/* ── Landscape mobile optimizations ──────────────────────────────────────── */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Hide sidebar — frees full width for content */
+  .sidebar-wrap { display: none !important; }
+
+  /* Reduce vertical padding — every pixel counts */
+  .main-content {
+    padding: 0 16px 8px;
+    padding-right: max(16px, calc(16px + env(safe-area-inset-right)));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-left: max(16px, calc(16px + env(safe-area-inset-left)));
+  }
+
+  /* Cap video height so controls below it remain reachable */
+  .yt-video-container {
+    aspect-ratio: unset;
+    height: min(55svh, 260px);
+  }
+
+  /* Subtitle: smaller + height-capped for short landscape players */
+  .subtitle-overlay {
+    bottom: 32px;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    padding: 4px 10px;
+    max-height: 52px;   /* ~3 lines */
+    overflow: hidden;
+  }
+
+  /* Hide sync-calibration + word-collector row below video */
+  .yt-controls-row { display: none; }
+
+  /* Flashcard: shorter minimum height so rating buttons stay on screen */
+  .flashcard-scene { min-height: 140px !important; }
+
+  /* Rating buttons: stick to bottom so they're always reachable */
+  .review-actions-sticky {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--paper);
+    padding-top: 8px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+    z-index: 10;
+  }
+
+  /* Learn tabs: horizontal scroll instead of stacking */
+  .learn-tabs {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+  }
+  .learn-tabs::-webkit-scrollbar { display: none; }
+  .learn-tab { flex-shrink: 0; min-width: 130px; }
+
+  /* Music lyrics: independent scroll area */
+  .music-lyrics-pre { max-height: 35vh; overflow-y: auto; }
+}
+
+/* ── Rotate-to-landscape hint ─────────────────────────────────────────────── */
+@keyframes rotate-hint {
+  0%, 15%   { transform: rotate(0deg); }
+  40%, 60%  { transform: rotate(-90deg); }
+  85%, 100% { transform: rotate(0deg); }
+}
+
+.rotate-hint-phone {
+  animation: rotate-hint 2.4s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.rotate-hint-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(24, 33, 29, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotate-hint-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  padding: 36px 32px 28px;
+  max-width: 320px;
+  width: calc(100% - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: slide-up 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.rotate-hint-title {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.rotate-hint-body {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.rotate-hint-btn {
+  background: var(--clay);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 32px;
+  font: inherit;
+  font-weight: 900;
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 120px;
+  transition: background 120ms ease, transform 80ms ease;
+  box-shadow: 0 2px 10px rgba(200, 111, 74, 0.28);
+}
+.rotate-hint-btn:hover  { background: #b05a37; }
+.rotate-hint-btn:active { transform: translateY(1px); }

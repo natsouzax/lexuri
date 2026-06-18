@@ -11,7 +11,7 @@ export const FREE_LIMITS = {
   weeklyYoutubeImports: 5,
   weeklyMusicImports: 5,
   weeklyChunkAnalyses: 10,
-  feedItems: 5,
+  feedItems: 7,
 } as const
 
 export async function getUserPremiumStatus(userId: string): Promise<PremiumStatus> {

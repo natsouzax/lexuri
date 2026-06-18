@@ -185,9 +185,16 @@ export default function YoutubeSyncPlayer({
   useEffect(() => { captionDelayRef.current = captionDelay }, [captionDelay])
 
   useEffect(() => {
-    function onFsChange() { setIsFullscreen(!!document.fullscreenElement) }
+    function onFsChange() {
+      const doc = document as Document & { webkitFullscreenElement?: Element }
+      setIsFullscreen(!!(document.fullscreenElement || doc.webkitFullscreenElement))
+    }
     document.addEventListener('fullscreenchange', onFsChange)
-    return () => document.removeEventListener('fullscreenchange', onFsChange)
+    document.addEventListener('webkitfullscreenchange', onFsChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange)
+      document.removeEventListener('webkitfullscreenchange', onFsChange)
+    }
   }, [])
 
   useEffect(() => {
@@ -230,7 +237,7 @@ export default function YoutubeSyncPlayer({
     if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null }
     playerRef.current = new window.YT.Player(playerDivRef.current, {
       videoId,
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 },
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, enablejsapi: 1, fs: 1, iv_load_policy: 3, cc_load_policy: 0 },
       events: {
         onReady: () => {
           intervalRef.current = setInterval(syncAnchor, 500)
@@ -284,7 +291,19 @@ export default function YoutubeSyncPlayer({
 
   function toggleFullscreen() {
     if (!containerRef.current) return
-    document.fullscreenElement ? document.exitFullscreen() : containerRef.current.requestFullscreen()
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element
+      webkitExitFullscreen?: () => void
+    }
+    const el = containerRef.current as HTMLElement & {
+      webkitRequestFullscreen?: () => void
+    }
+    const isFs = !!(document.fullscreenElement || doc.webkitFullscreenElement)
+    if (isFs) {
+      ;(document.exitFullscreen ?? doc.webkitExitFullscreen)?.call(document)
+    } else {
+      ;(el.requestFullscreen ?? el.webkitRequestFullscreen)?.call(el)
+    }
   }
 
   const activeSeg = activeSegIdx >= 0 ? segments[activeSegIdx] : null
@@ -324,7 +343,7 @@ export default function YoutubeSyncPlayer({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="yt-sync-wrapper">
       {/* Video — full width */}
       <div style={{ border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', padding: 12 }}>
         <div ref={containerRef} className="yt-video-container">
@@ -366,7 +385,7 @@ export default function YoutubeSyncPlayer({
       </div>
 
       {/* Controls row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 14 }}>
+      <div className="yt-controls-row">
         {/* Sync calibration */}
         <div style={{ padding: 14, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.72)', boxShadow: 'var(--shadow-md)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, marginBottom: 10 }}>

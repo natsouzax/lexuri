@@ -88,6 +88,7 @@ export interface ChunkItem {
   flashcard_suggestion: boolean
   learner_level: string
   why_it_matters: string
+  example_sentence?: string
 }
 
 export interface ChunkAnalysis {
@@ -106,7 +107,7 @@ export function chunkToFlashcard(chunk: ChunkItem, originalText: string): Flashc
     word: chunk.text,
     translation: chunk.contextual_translation,
     explanation: `[${chunk.type}] ${chunk.why_it_matters}`,
-    example: sentenceContext,
+    example: chunk.example_sentence ?? sentenceContext,
   })!
 }
 
