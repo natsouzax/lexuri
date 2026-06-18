@@ -76,11 +76,9 @@ export async function GET(
       segments = videoData.segments
 
       // Persist async — don't block the response
-      admin
-        .from('feed_lessons')
-        .upsert({ feed_item_id: id, transcript, segments })
-        .then(() => {})
-        .catch((e: unknown) => console.error('[feed-lesson] transcript cache write failed:', e))
+      void Promise.resolve(
+        admin.from('feed_lessons').upsert({ feed_item_id: id, transcript, segments }),
+      ).catch((e: unknown) => console.error('[feed-lesson] transcript cache write failed:', e))
     }
 
     // ── Chunk cache ───────────────────────────────────────────────────────────
@@ -102,11 +100,9 @@ export async function GET(
       chunks = analysis.chunks
       chunksWereCached = false
 
-      admin
-        .from('feed_lesson_chunks')
-        .upsert({ feed_item_id: id, level, native_lang: nativeLang, chunks, original_text: transcript })
-        .then(() => {})
-        .catch((e: unknown) => console.error('[feed-lesson] chunks cache write failed:', e))
+      void Promise.resolve(
+        admin.from('feed_lesson_chunks').upsert({ feed_item_id: id, level, native_lang: nativeLang, chunks, original_text: transcript }),
+      ).catch((e: unknown) => console.error('[feed-lesson] chunks cache write failed:', e))
     }
 
     // ── Quota tracking ────────────────────────────────────────────────────────
