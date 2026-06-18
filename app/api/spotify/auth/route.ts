@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     client_id: clientId,
     scope: 'user-top-read user-read-recently-played',
     redirect_uri: buildRedirectUri(request),
-    state: encodeURIComponent(returnTo),
+    state: returnTo,
   })
 
   return NextResponse.redirect(`https://accounts.spotify.com/authorize?${params}`)

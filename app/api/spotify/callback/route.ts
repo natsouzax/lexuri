@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   const state = url.searchParams.get('state')
   const error = url.searchParams.get('error')
 
-  const returnTo = state ? decodeURIComponent(state) : '/music'
+  const returnTo = state ?? '/music'
 
   if (error || !code) {
     return NextResponse.redirect(new URL(`${returnTo}?spotify_error=1`, url.origin))
