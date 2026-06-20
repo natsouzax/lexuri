@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
@@ -62,7 +63,12 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
   }, [pathname])
 
   return (
-    <header className="app-top-nav">
+    <motion.header
+      className="app-top-nav"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+    >
       <div className="app-top-nav-inner">
         <button
           className="app-top-sidebar-toggle"
@@ -75,26 +81,37 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
         <Link href="/" className="app-top-logo">Lexuri</Link>
 
         <nav className="app-top-links">
-          {NAV_ITEMS.map((item) => (
-            <Link
+          {NAV_ITEMS.map((item, i) => (
+            <motion.div
               key={item.href}
-              href={item.href}
-              className={`app-top-link${pathname.startsWith(item.href) ? ' active' : ''}`}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
             >
-              {item.icon}
-              {item.label}
-            </Link>
+              <Link
+                href={item.href}
+                className={`app-top-link${pathname.startsWith(item.href) ? ' active' : ''}`}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            </motion.div>
           ))}
         </nav>
 
         <div className="app-top-right">
           {stats && (
-            <div className="app-top-xp">
+            <motion.div
+              className="app-top-xp"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
               <span style={{ color: stats.rank.color, fontWeight: 900, fontSize: '0.9rem' }}>
                 {stats.rank.icon}
               </span>
               <span className="app-top-xp-label">{stats.points.toLocaleString()} XP</span>
-            </div>
+            </motion.div>
           )}
 
           <div className="app-top-user">
@@ -142,7 +159,7 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
           )}
         </nav>
       )}
-    </header>
+    </motion.header>
   )
 }
 

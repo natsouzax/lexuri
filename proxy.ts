@@ -1,6 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PROTECTED_PREFIXES = [
+  '/youtube',
+  '/music',
+  '/feed',
+  '/flashcards',
+  '/review',
+  '/leaderboard',
+  '/reports',
+  '/settings',
+  '/dashboard',
+  '/onboarding',
+  '/placement',
+  '/supportus',
+]
+
+const AUTH_PAGES = ['/login', '/register']
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -23,8 +40,24 @@ export async function proxy(request: NextRequest) {
     },
   )
 
-  // Refresh session — do not add logic between createServerClient and getUser
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { pathname } = request.nextUrl
+
+  if (!user && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('next', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  if (user && AUTH_PAGES.some((p) => pathname.startsWith(p))) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }

@@ -10,15 +10,16 @@ export const metadata: Metadata = {
 export default async function PlansPage() {
   const br = await isBrazil()
 
-  const priceAmount = br ? 'R$25' : '$5'
+  const priceAmount = br ? 'R$29,90' : '$7'
   const pricePeriod = '/ month'
   const priceId = br
     ? (process.env.STRIPE_PRO_PRICE_ID_BRL ?? '')
     : (process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? '')
 
-  // Plano anual pré-pago — defina os valores anuais desejados e cole os price IDs do Stripe no .env.local
-  const annualPriceAmount = br ? 'R$240' : '$48'
-  const annualSavings = br ? 'R$60' : '$12'
+  // Plano anual: R$249/ano (≈ R$20,75/mês, economize R$109,80 = ~3 meses grátis)
+  //              $59/ano  (≈ $4,92/mês, save $25 = ~3,5 months free)
+  const annualPriceAmount = br ? 'R$249' : '$59'
+  const annualSavings = br ? 'R$109,80' : '$25'
   const annualPriceId = br
     ? (process.env.STRIPE_PRO_ANNUAL_PRICE_ID_BRL ?? '')
     : (process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL_PRICE_ID ?? '')

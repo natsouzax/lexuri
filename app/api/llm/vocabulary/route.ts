@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient, safeJsonParse } from '@/lib/openai'
+import { createClient } from '@/lib/supabase-server'
 import type { VocabItem } from '@/lib/types'
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = (await request.json()) as { transcript: string; level: string }
     const { transcript, level } = body
 

@@ -27,6 +27,7 @@ function validate(fields: {
   password: string
   confirm: string
   tos: boolean
+  privacy: boolean
 }): string | null {
   if (!fields.fullName.trim()) return 'Full name is required.'
   if (fields.fullName.trim().length < 2) return 'Full name must be at least 2 characters.'
@@ -37,6 +38,7 @@ function validate(fields: {
   if (!/[^A-Za-z0-9]/.test(fields.password)) return 'Password must contain a special character.'
   if (fields.password !== fields.confirm) return 'Passwords do not match.'
   if (!fields.tos) return 'You must accept the Terms of Service.'
+  if (!fields.privacy) return 'You must agree to the Privacy Policy and consent to data processing.'
   return null
 }
 
@@ -52,6 +54,7 @@ export default function RegisterPage() {
   const [tos, setTos] = useState(false)
   const [privacy, setPrivacy] = useState(false)
   const [marketing, setMarketing] = useState(false)
+
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null)
   const [error, setError] = useState('')
@@ -63,7 +66,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    const validationError = validate({ fullName, email, password, confirm, tos })
+    const validationError = validate({ fullName, email, password, confirm, tos, privacy })
     if (validationError) { setError(validationError); return }
 
     setLoading(true)
@@ -256,9 +259,10 @@ export default function RegisterPage() {
               <Link href="/terms" className="auth-link" target="_blank">Terms of Service</Link>
             </label>
             <label className="auth-checkbox-label">
-              <input type="checkbox" className="auth-checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} />
-              I have read the{' '}
+              <input type="checkbox" className="auth-checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} required />
+              I agree to the{' '}
               <Link href="/privacy" className="auth-link" target="_blank">Privacy Policy</Link>
+              {' '}and consent to data processing
             </label>
             <label className="auth-checkbox-label" style={{ color: 'var(--auth-muted)' }}>
               <input type="checkbox" className="auth-checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />

@@ -4,10 +4,13 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
 import type { Rank, XPProgressInfo } from '@/lib/gamification'
+
+const EASE_OUT = [0.16, 1, 0.3, 1] as const
 
 interface SidebarStats {
   points: number
@@ -55,7 +58,12 @@ function UsageBar({ used, max }: { used: number; max: number }) {
   const color = pct >= 100 ? '#ef4444' : pct >= 60 ? '#f59e0b' : '#4caf50'
   return (
     <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,250,240,0.08)', overflow: 'hidden' }}>
-      <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 99, transition: 'width 400ms ease' }} />
+      <motion.div
+        style={{ height: '100%', borderRadius: 99, background: color }}
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+      />
     </div>
   )
 }
@@ -73,7 +81,12 @@ function UsageWidget({ usage }: { usage: UsageInfo }) {
   ]
 
   return (
-    <div style={{ margin: '10px 0 4px', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,250,240,0.04)', border: '1px solid rgba(255,250,240,0.07)' }}>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.45, ease: EASE_OUT }}
+      style={{ margin: '10px 0 4px', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,250,240,0.04)', border: '1px solid rgba(255,250,240,0.07)' }}
+    >
       <div style={{ fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--dark-muted)', marginBottom: 10 }}>
         Free plan · this week
       </div>
@@ -95,7 +108,7 @@ function UsageWidget({ usage }: { usage: UsageInfo }) {
       <a href="/settings/billing" style={{ display: 'block', marginTop: 10, textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--clay-bright)', textDecoration: 'none', letterSpacing: '0.03em' }}>
         Go unlimited →
       </a>
-    </div>
+    </motion.div>
   )
 }
 
@@ -128,6 +141,8 @@ export default function Sidebar() {
     return () => subscription.unsubscribe()
   }, [])
 
+  let navItemIndex = 0
+
   return (
     <aside className="sidebar">
       <div style={{ flex: 1 }}>
@@ -135,60 +150,92 @@ export default function Sidebar() {
           {NAV_GROUPS.map((group, groupIndex) => (
             <div key={group.label ?? groupIndex} className="sidebar-nav-group">
               {group.label && <div className="sidebar-nav-label">{group.label}</div>}
-              {group.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`nav-link${pathname.startsWith(item.href) ? ' active' : ''}`}
-                >
-                  <span className="nav-icon">
-                    <item.Icon />
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {group.items.map((item) => {
+                const delay = 0.08 + navItemIndex++ * 0.055
+                const isActive = pathname.startsWith(item.href)
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay, ease: EASE_OUT }}
+                    whileHover={{ x: 3 }}
+                    style={{ originX: 0 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`nav-link${isActive ? ' active' : ''}`}
+                    >
+                      <span className="nav-icon">
+                        <item.Icon />
+                      </span>
+                      <span>{item.label}</span>
+                    </Link>
+                  </motion.div>
+                )
+              })}
             </div>
           ))}
         </nav>
 
         <hr className="sidebar-divider" />
 
-        {stats ? (
-          <div className="sidebar-rank-card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-              <span style={{ color: stats.rank.color, fontSize: '0.95rem', fontWeight: 900 }}>
-                {stats.rank.icon}
-              </span>
-              <span style={{ color: 'var(--paper)', fontWeight: 700, fontSize: '0.8rem' }}>
-                {stats.rank.label}
-              </span>
-              <span style={{ marginLeft: 'auto', color: 'var(--dark-muted)', fontSize: '0.65rem', fontWeight: 700 }}>
-                {stats.points.toLocaleString()} XP
-              </span>
-            </div>
-            <div className="xp-bar-track">
-              <div className="xp-bar-fill" style={{ width: `${stats.xpProgress.progressPct}%` }} />
-            </div>
-            {stats.xpProgress.nextRank && (
-              <div style={{ marginTop: 5, fontSize: '0.62rem', color: 'var(--dark-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{stats.xpProgress.progressPct}%</span>
-                <span>Next: {stats.xpProgress.nextRank.label}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.35, ease: EASE_OUT }}
+        >
+          {stats ? (
+            <div className="sidebar-rank-card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+                <motion.span
+                  style={{ color: stats.rank.color, fontSize: '0.95rem', fontWeight: 900 }}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, delay: 0.6, repeat: Infinity, repeatDelay: 8 }}
+                >
+                  {stats.rank.icon}
+                </motion.span>
+                <span style={{ color: 'var(--paper)', fontWeight: 700, fontSize: '0.8rem' }}>
+                  {stats.rank.label}
+                </span>
+                <span style={{ marginLeft: 'auto', color: 'var(--dark-muted)', fontSize: '0.65rem', fontWeight: 700 }}>
+                  {stats.points.toLocaleString()} XP
+                </span>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="sidebar-rank-card">
-            <div className="skeleton" style={{ height: 12, width: '70%', marginBottom: 8 }} />
-            <div className="skeleton" style={{ height: 4, borderRadius: 99 }} />
-          </div>
-        )}
+              <div className="xp-bar-track">
+                <motion.div
+                  className="xp-bar-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${stats.xpProgress.progressPct}%` }}
+                  transition={{ duration: 0.8, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                />
+              </div>
+              {stats.xpProgress.nextRank && (
+                <div style={{ marginTop: 5, fontSize: '0.62rem', color: 'var(--dark-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{stats.xpProgress.progressPct}%</span>
+                  <span>Next: {stats.xpProgress.nextRank.label}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="sidebar-rank-card">
+              <div className="skeleton" style={{ height: 12, width: '70%', marginBottom: 8 }} />
+              <div className="skeleton" style={{ height: 4, borderRadius: 99 }} />
+            </div>
+          )}
+        </motion.div>
 
         {usage && !usage.isPremium && (
           <UsageWidget usage={usage} />
         )}
       </div>
 
-      <div className="sidebar-bottom">
+      <motion.div
+        className="sidebar-bottom"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+      >
         <Link
           href="/feedback"
           style={{
@@ -232,7 +279,7 @@ export default function Sidebar() {
             <span>Public site</span>
           </Link>
         )}
-      </div>
+      </motion.div>
     </aside>
   )
 }

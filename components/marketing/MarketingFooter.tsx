@@ -19,6 +19,11 @@ const COMPANY_LINKS = [
   { href: '/feedback', label: 'Feedback' },
 ]
 
+const LEGAL_LINKS = [
+  { href: '/terms',   label: 'Terms of Service' },
+  { href: '/privacy', label: 'Privacy Policy'   },
+]
+
 export default function MarketingFooter() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-40px 0px' })
@@ -69,7 +74,13 @@ export default function MarketingFooter() {
 
         <div className="mkt-footer-bottom">
           <span>© {new Date().getFullYear()} Lexuri. All rights reserved.</span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.5 }}>Built for serious learners.</span>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+            {LEGAL_LINKS.map(({ href, label }) => (
+              <Link key={href} href={href} className="mkt-footer-link" style={{ display: 'inline', marginBottom: 0, fontSize: '0.75rem' }}>
+                {label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

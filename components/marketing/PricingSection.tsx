@@ -91,7 +91,7 @@ export default function PricingSection() {
               2 WEEKS FREE
             </span>
             <span className="mkt-eyebrow" style={{ color: 'var(--clay-bright)' }}>Premium</span>
-            <h3>$5<span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--muted)' }}>/mo</span></h3>
+            <h3>$7<span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--muted)' }}>/mo</span></h3>
             <p>For serious learners who want it all.</p>
             <div>
               {PREMIUM_FEATURES.map((f) => (

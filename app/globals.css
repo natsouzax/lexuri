@@ -142,7 +142,8 @@ h1, h2, h3 {
   padding: 11px 24px;
   border-radius: 10px;
   white-space: nowrap;
-  transition: color 100ms ease, background 100ms ease;
+  transition: color 100ms ease;
+  position: relative;
 }
 .app-top-link:hover { color: var(--paper); background: rgba(255,250,240,0.07); }
 .app-top-link.active { color: var(--clay-bright); background: rgba(200,111,74,0.12); }
@@ -2018,7 +2019,9 @@ h1, h2, h3 {
   background: #fff;
   border: 1px solid var(--line);
   box-shadow: var(--shadow-md);
+  transition: box-shadow 200ms ease;
 }
+.continue-card:hover { box-shadow: var(--shadow-lg); }
 .continue-card { display: grid; grid-template-columns: 42% 1fr; min-height: 255px; }
 .continue-card img,
 .recommendation-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -2038,7 +2041,9 @@ h1, h2, h3 {
   background: #fff;
   padding: 20px;
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 160ms ease;
 }
+.panel:hover { box-shadow: var(--shadow-md); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .panel-head strong { color: var(--ink); font-size: 0.9rem; }
 .goal-circle {
@@ -2849,3 +2854,107 @@ h1, h2, h3 {
   transition: box-shadow 160ms ease, transform 160ms ease;
 }
 .lesson-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.10); transform: translateY(-2px); }
+
+/* ── Legal Pages (/terms, /privacy) ─────────────────────────── */
+.mkt-legal {
+  padding: 80px 0 120px;
+}
+.mkt-legal-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.mkt-legal-header {
+  margin-bottom: 48px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--line);
+}
+.mkt-legal-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clay);
+  margin-bottom: 12px;
+}
+.mkt-legal-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.mkt-legal-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.mkt-legal-body {
+  color: var(--ink);
+  line-height: 1.75;
+}
+.mkt-legal-body p {
+  margin-bottom: 18px;
+  font-size: 0.95rem;
+}
+.mkt-legal-body h2 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin: 40px 0 12px;
+  color: var(--ink);
+}
+.mkt-legal-body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 24px 0 8px;
+  color: var(--ink);
+}
+.mkt-legal-body ul {
+  margin: 0 0 18px 0;
+  padding-left: 24px;
+}
+.mkt-legal-body ul li {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+.mkt-legal-note {
+  background: var(--sage);
+  border-left: 4px solid var(--moss);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+.mkt-legal-link {
+  color: var(--clay);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.mkt-legal-link:hover { color: var(--moss); }
+.mkt-legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 0.85rem;
+}
+.mkt-legal-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--sage);
+  font-weight: 700;
+  border-bottom: 2px solid var(--line);
+}
+.mkt-legal-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.mkt-legal-table tr:last-child td { border-bottom: none; }
+@media (max-width: 640px) {
+  .mkt-legal { padding: 48px 0 80px; }
+  .mkt-legal-table { font-size: 0.78rem; }
+  .mkt-legal-table th,
+  .mkt-legal-table td { padding: 8px 10px; }
+}
