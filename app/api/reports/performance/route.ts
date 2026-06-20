@@ -36,12 +36,12 @@ export async function GET(req: NextRequest) {
 
   const total = rows.length
   const correct = rows.filter(r => Number(r.payload.quality ?? 0) >= 3).length
-  const taxa_acerto = total > 0 ? Math.round((correct / total) * 100) : 0
+  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
 
   const times = rows
     .map(r => Number(r.payload.response_time_sec))
     .filter(t => !isNaN(t) && t > 0)
-  const tempo_medio = times.length > 0 ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null
+  const avg_response = times.length > 0 ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null
 
   // Retention: cards answered correctly after >= 1 previous review (simplified)
   const cardSeen = new Map<string, number>()
@@ -70,8 +70,8 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     period: { from: from ?? null, to: to ?? null },
     total_reviews:  total,
-    taxa_acerto,
-    tempo_medio,
+    accuracy,
+    avg_response,
     retention,
     streak:         statsRow?.streak         ?? 0,
     total_points:   statsRow?.points         ?? 0,

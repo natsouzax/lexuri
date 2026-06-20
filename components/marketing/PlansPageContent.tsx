@@ -142,7 +142,7 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId, an
                   transition: 'all 200ms',
                 }}
               >
-                Mensal
+                Monthly
               </button>
               <button
                 onClick={() => setBilling('annual')}
@@ -162,9 +162,9 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId, an
                   transition: 'all 200ms',
                 }}
               >
-                Anual
+                Annual
                 <span style={{ background: 'var(--clay)', color: '#fff', fontSize: '0.65rem', fontWeight: 900, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.04em' }}>
-                  ECONOMIZE {annualSavings}
+                  SAVE {annualSavings}
                 </span>
               </button>
             </div>
@@ -224,7 +224,7 @@ export default function PlansPageContent({ priceAmount, pricePeriod, priceId, an
               </div>
               {billing === 'annual' && (
                 <p style={{ fontSize: '0.78rem', color: 'var(--clay)', fontWeight: 700, marginBottom: 4 }}>
-                  Pré-pago anual · economize {annualSavings}
+                  Annual plan · save {annualSavings}
                 </p>
               )}
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 24, lineHeight: 1.6 }}>Everything in Free, plus:</p>

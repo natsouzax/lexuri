@@ -7,6 +7,9 @@ import { EASE_OUT } from '@/lib/easing'
 import { createClient } from '@/lib/supabase-browser'
 import WeeklyCalendar from '@/components/ui/WeeklyCalendar'
 import FeedItemCard from '@/components/FeedItemCard'
+import DueCardsHero from '@/components/ui/DueCardsHero'
+import StreakWidget from '@/components/ui/StreakWidget'
+import DailyMissions from '@/components/ui/DailyMissions'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { learningLoop } from '@/lib/product'
 import { getThumbnail } from '@/lib/feed'
@@ -90,6 +93,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function DashboardPage() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [dueCount, setDueCount] = useState(0)
+  const [oldestAgo, setOldestAgo] = useState(0)
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
   const [feedItems, setFeedItems] = useState<FeedItem[]>([])
@@ -117,7 +121,15 @@ export default function DashboardPage() {
       apiFetch<Flashcard[]>('/api/flashcards')
         .then(async (cards) => {
           const { getDueCards } = await import('@/lib/srs')
-          setDueCount(getDueCards(cards).length)
+          const due = getDueCards(cards)
+          setDueCount(due.length)
+          if (due.length > 0) {
+            const oldest = due.reduce((a, b) =>
+              new Date(a.next_review) < new Date(b.next_review) ? a : b
+            )
+            const daysAgo = Math.floor((Date.now() - new Date(oldest.next_review).getTime()) / 86_400_000)
+            setOldestAgo(Math.max(0, daysAgo))
+          }
         })
         .catch(() => null),
       apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => null),
@@ -151,6 +163,9 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* ── Due cards hero ── */}
+      <DueCardsHero dueCount={dueCount} oldestAgo={oldestAgo} loading={loading} />
+
       {/* ── Hero ── */}
       <div className="home-hero">
         <div className="home-hero-copy">
@@ -282,22 +297,29 @@ export default function DashboardPage() {
         </motion.section>
 
         <motion.section
-          className="panel review-panel"
+          className="panel"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.46, ease: EASE_OUT } }}
           whileHover={{ y: -4 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
         >
-          <div>
-            <span className="mini-label">Today&apos;s review</span>
-            <h2>{loading ? '...' : dueCount} cards due</h2>
-            <p className="panel-copy">Your fastest path to retention is one focused review session.</p>
-          </div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link href="/review" className="btn-primary">Start Review</Link>
-          </motion.div>
+          <span className="mini-label" style={{ display: 'block', marginBottom: 14 }}>Streak</span>
+          <StreakWidget
+            streak={stats?.streak ?? 0}
+            hasFreezeAvailable={false}
+            freezeUsedToday={false}
+          />
         </motion.section>
       </div>
+
+      {/* ── Daily Missions ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.56, ease: EASE_OUT } }}
+        style={{ marginBottom: 8 }}
+      >
+        <DailyMissions missions={stats?.missionsToday ?? []} loading={loading} />
+      </motion.div>
 
       {/* ── Recommended Content ── */}
       <SectionTitle>Recommended Content</SectionTitle>

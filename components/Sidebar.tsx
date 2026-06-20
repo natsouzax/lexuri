@@ -40,9 +40,10 @@ const NAV_GROUPS: {
   {
     label: 'Practice',
     items: [
-      { href: '/flashcards', label: 'Library', Icon: LibraryIcon },
-      { href: '/review', label: 'Review', Icon: ReviewIcon },
-      { href: '/leaderboard', label: 'Leaderboard', Icon: TrophyIcon },
+      { href: '/flashcards',   label: 'Library',      Icon: LibraryIcon },
+      { href: '/review',       label: 'Review',       Icon: ReviewIcon },
+      { href: '/achievements', label: 'Conquistas',   Icon: TrophyIcon },
+      { href: '/leaderboard',  label: 'Leaderboard',  Icon: TrophyIcon },
     ],
   },
   {

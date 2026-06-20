@@ -1,11 +1,29 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
+import ReviewSummary from '@/components/ui/ReviewSummary'
 import type { Flashcard } from '@/lib/types'
 import type { SRSCard } from '@/lib/srs'
+
+// ── XP Float ─────────────────────────────────────────────────────────────────
+
+function XPFloat({ xp, onDone }: { xp: number; onDone: () => void }) {
+  return (
+    <motion.div
+      className="xp-float"
+      initial={{ opacity: 0, y: 0, scale: 0.8 }}
+      animate={{ opacity: [0, 1, 1, 0], y: [0, -12, -28, -44], scale: [0.8, 1.1, 1, 0.9] }}
+      transition={{ duration: 1.2, ease: 'easeOut', times: [0, 0.15, 0.7, 1] }}
+      onAnimationComplete={onDone}
+    >
+      +{xp} XP
+    </motion.div>
+  )
+}
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -47,11 +65,21 @@ interface ReviewCardProps {
   submitting: boolean
 }
 
+type FeedbackType = 'easy' | 'good' | 'hard' | 'again' | null
+
+const XP_BY_QUALITY: Record<number, number> = { 5: 15, 4: 15, 3: 10, 1: 3, 0: 3 }
+
 function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps) {
   const [revealed, setRevealed] = useState(false)
+  const [feedback, setFeedback] = useState<FeedbackType>(null)
+  const [floatXP, setFloatXP] = useState<number | null>(null)
+  const cardControls = useAnimation()
+  const wrapRef = useRef<HTMLDivElement>(null)
 
-  // reset flip when the card changes
-  useEffect(() => { setRevealed(false) }, [card.id])
+  useEffect(() => {
+    setRevealed(false)
+    setFeedback(null)
+  }, [card.id])
 
   function playAudio() {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
@@ -62,27 +90,51 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
     window.speechSynthesis.speak(utterance)
   }
 
+  function handleRate(quality: number) {
+    const type: FeedbackType =
+      quality >= 4 ? 'easy' :
+      quality >= 3 ? 'good' :
+      quality >= 1 ? 'hard' : 'again'
+    setFeedback(type)
+    setFloatXP(XP_BY_QUALITY[quality] ?? 3)
+
+    if (type === 'easy') {
+      cardControls.start({ scale: [1, 1.04, 1], transition: { duration: 0.5, ease: 'easeInOut' } })
+    } else if (type === 'hard') {
+      cardControls.start({ x: [0, -9, 9, -6, 6, -3, 3, 0], transition: { duration: 0.38 } })
+    } else if (type === 'again') {
+      cardControls.start({ x: [0, -14, 14, -9, 9, -4, 4, 0], scale: [1, 0.97, 1], transition: { duration: 0.45 } })
+    }
+
+    onRate(quality)
+  }
+
+  const feedbackBorder: Record<NonNullable<FeedbackType>, string> = {
+    easy:  'rgba(17,122,101,0.55)',
+    good:  'rgba(39,174,96,0.45)',
+    hard:  'rgba(200,111,74,0.5)',
+    again: 'rgba(192,57,43,0.5)',
+  }
+
   return (
     <div>
+      {/* Top bar */}
       <div className="panel" style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <span className="mini-label">Card {index + 1} of {total}</span>
-          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.84rem' }}>+10 XP for a good recall response</p>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.84rem' }}>+10 XP por boa resposta</p>
         </div>
-        <button type="button" className="btn-secondary" onClick={playAudio}>Play Audio</button>
+        <button type="button" className="btn-secondary" onClick={playAudio}>Áudio</button>
       </div>
 
-      {/* Progress */}
+      {/* Session progress bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ flex: 1, height: 6, background: 'var(--line)', borderRadius: 99 }}>
-          <div
-            style={{
-              height: '100%',
-              borderRadius: 99,
-              background: 'var(--clay)',
-              width: `${((index + 1) / total) * 100}%`,
-              transition: 'width 300ms ease',
-            }}
+        <div style={{ flex: 1, height: 6, background: 'var(--line)', borderRadius: 99, overflow: 'hidden' }}>
+          <motion.div
+            style={{ height: '100%', borderRadius: 99, background: 'var(--clay)' }}
+            initial={{ width: 0 }}
+            animate={{ width: `${(index / total) * 100}%` }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
         <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
@@ -90,67 +142,85 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
         </span>
       </div>
 
-      {/* Flip card */}
-      <div className="flashcard-scene" style={{ marginBottom: 20, cursor: revealed ? 'default' : 'pointer' }} onClick={() => !revealed && setRevealed(true)}>
-        <div className={`flashcard-inner${revealed ? ' flipped' : ''}`}>
-          {/* Front */}
-          <div className="flashcard-face flashcard-front">
-            <div className="flashcard-word">{card.word}</div>
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 'auto', textAlign: 'center' }}>
-              Tap to reveal answer
-            </p>
+      {/* Flip card with feedback animations */}
+      <div style={{ position: 'relative', marginBottom: 20 }} ref={wrapRef}>
+        <motion.div
+          animate={cardControls}
+          className={`flashcard-scene${feedback ? ` feedback-${feedback}` : ''}`}
+          style={{
+            cursor: revealed ? 'default' : 'pointer',
+            borderRadius: 14,
+            transition: feedback ? 'box-shadow 200ms ease, border-color 200ms ease' : undefined,
+            outline: feedback ? `2px solid ${feedbackBorder[feedback]}` : '2px solid transparent',
+          }}
+          onClick={() => !revealed && setRevealed(true)}
+        >
+          <div className={`flashcard-inner${revealed ? ' flipped' : ''}`}>
+            {/* Front */}
+            <div className="flashcard-face flashcard-front">
+              <div className="flashcard-word">{card.word}</div>
+              <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 'auto', textAlign: 'center' }}>
+                Toque para revelar
+              </p>
+            </div>
+            {/* Back */}
+            <div className="flashcard-face flashcard-back">
+              <div className="flashcard-word">{card.word}</div>
+              {card.translation && (
+                <p className="flashcard-translation">{card.translation}</p>
+              )}
+              <p className="flashcard-explanation">{card.definition}</p>
+              {card.example && (
+                <p className="flashcard-example">&ldquo;{card.example}&rdquo;</p>
+              )}
+            </div>
           </div>
-          {/* Back */}
-          <div className="flashcard-face flashcard-back">
-            <div className="flashcard-word">{card.word}</div>
-            {card.translation && (
-              <p className="flashcard-translation">{card.translation}</p>
-            )}
-            <p className="flashcard-explanation">{card.definition}</p>
-            {card.example && (
-              <p className="flashcard-example">&ldquo;{card.example}&rdquo;</p>
-            )}
-          </div>
-        </div>
+        </motion.div>
+
+        {/* XP Float */}
+        <AnimatePresence>
+          {floatXP !== null && (
+            <XPFloat key={`xp-${index}`} xp={floatXP} onDone={() => setFloatXP(null)} />
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Before reveal: quick "I knew it" shortcut */}
+      {/* Before reveal */}
       {!revealed && (
         <div className="review-actions-sticky" style={{ display: 'flex', gap: 10 }}>
-          <button
-            className="btn-secondary btn-wide"
-            onClick={() => setRevealed(true)}
-            disabled={submitting}
-          >
-            Show answer
+          <button className="btn-secondary btn-wide" onClick={() => setRevealed(true)} disabled={submitting}>
+            Mostrar resposta
           </button>
           <button
             className="btn-primary"
             style={{ whiteSpace: 'nowrap' }}
-            onClick={() => onRate(5)}
+            onClick={() => handleRate(5)}
             disabled={submitting}
             title="I remembered perfectly — no need to flip"
           >
-            {submitting ? <span className="spinner" /> : 'I knew it ★'}
+            {submitting ? <span className="spinner" /> : 'Sabia ★'}
           </button>
         </div>
       )}
 
-      {/* After reveal: rate recall */}
+      {/* After reveal */}
       {revealed && (
         <div className="review-actions-sticky" style={{ display: 'flex', gap: 8 }}>
           {[
-            { label: 'Again',    n: 0, note: 'forgot',      bg: 'rgba(192,57,43,0.1)',   color: '#c0392b', border: 'rgba(192,57,43,0.35)' },
-            { label: 'Hard',     n: 1, note: 'needed hint', bg: 'rgba(200,111,74,0.1)',  color: '#c86f4a', border: 'rgba(200,111,74,0.35)' },
-            { label: 'Good',     n: 3, note: 'remembered',  bg: 'rgba(39,174,96,0.1)',   color: '#27ae60', border: 'rgba(39,174,96,0.3)'   },
-            { label: 'Easy',     n: 5, note: 'perfect',     bg: 'rgba(17,122,101,0.12)', color: '#117a65', border: 'rgba(17,122,101,0.3)'  },
+            { label: 'Again', n: 0, note: 'esqueci',       bg: 'rgba(192,57,43,0.1)',   color: '#c0392b', border: 'rgba(192,57,43,0.35)' },
+            { label: 'Hard',  n: 1, note: 'precisei ajuda', bg: 'rgba(200,111,74,0.1)',  color: '#c86f4a', border: 'rgba(200,111,74,0.35)' },
+            { label: 'Good',  n: 3, note: 'lembrei',        bg: 'rgba(39,174,96,0.1)',   color: '#27ae60', border: 'rgba(39,174,96,0.3)'   },
+            { label: 'Easy',  n: 5, note: 'perfeito',       bg: 'rgba(17,122,101,0.12)', color: '#117a65', border: 'rgba(17,122,101,0.3)'  },
           ].map(({ label, n, note, bg, color, border }) => (
-            <button
+            <motion.button
               key={n}
               className="review-btn"
-              onClick={() => onRate(n)}
+              onClick={() => handleRate(n)}
               disabled={submitting}
               style={{ background: bg, color, borderColor: border, flex: 1 }}
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12 }}
             >
               {submitting
                 ? <span className="spinner" style={{ width: 14, height: 14 }} />
@@ -159,7 +229,7 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
                     <span style={{ fontSize: '0.62rem', opacity: 0.8 }}>{note}</span>
                   </>
               }
-            </button>
+            </motion.button>
           ))}
         </div>
       )}
@@ -377,54 +447,11 @@ export default function ReviewPage() {
       {tab === 'review' && (
         <>
           {sessionDone ? (
-            /* Session complete */
-            <div>
-              <div className="alert-info" style={{ marginBottom: 16 }}>
-                Session complete — {reviewed} card{reviewed !== 1 ? 's' : ''} reviewed, {correct} remembered.
-              </div>
-
-              <div className="section-title">Session Summary</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-                {sessionResults.map((r) => (
-                  <div
-                    key={r.cardId}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '10px 16px',
-                      borderRadius: 12,
-                      border: '1px solid var(--line)',
-                      background: '#fff',
-                    }}
-                  >
-                    <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900 }}>{r.word}</span>
-                    <span
-                      style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 900,
-                        padding: '3px 10px',
-                        borderRadius: 999,
-                        background: r.quality >= 3 ? 'rgba(70,98,74,0.12)' : 'rgba(200,80,60,0.1)',
-                        color: r.quality >= 3 ? 'var(--moss)' : '#7a1a0e',
-                      }}
-                    >
-                      {r.quality >= 3 ? 'Remembered' : 'Again'} · {r.quality}/5
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <button className="btn-secondary" onClick={() => setTab('words')}>See My Words</button>
-                <Link href="/feed" className="btn-primary">Back to Feed</Link>
-                {dueCards.length > 0 && (
-                  <button className="btn-secondary" onClick={handleRestart}>
-                    Keep reviewing ({dueCards.length} left)
-                  </button>
-                )}
-              </div>
-            </div>
+            <ReviewSummary
+              results={sessionResults}
+              dueRemaining={dueCards.length}
+              onRestart={handleRestart}
+            />
           ) : dueCards.length === 0 ? (
             /* Nothing due */
             <div>

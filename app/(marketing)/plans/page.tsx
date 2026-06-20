@@ -16,8 +16,8 @@ export default async function PlansPage() {
     ? (process.env.STRIPE_PRO_PRICE_ID_BRL ?? '')
     : (process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? '')
 
-  // Plano anual: R$249/ano (≈ R$20,75/mês, economize R$109,80 = ~3 meses grátis)
-  //              $59/ano  (≈ $4,92/mês, save $25 = ~3,5 months free)
+  // Annual plan: R$249/yr (≈ R$20.75/mo, save R$109.80 = ~3 months free)
+  //              $59/yr   (≈ $4.92/mo,  save $25   = ~3.5 months free)
   const annualPriceAmount = br ? 'R$249' : '$59'
   const annualSavings = br ? 'R$109,80' : '$25'
   const annualPriceId = br

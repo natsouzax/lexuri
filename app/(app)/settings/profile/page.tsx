@@ -116,11 +116,11 @@ export default function ProfileSettingsPage() {
                 style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--clay)' }}
               />
               <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--ink)' }}>
-                Receber lembretes diários de revisão por email
+                Receive daily review reminders by email
               </span>
             </label>
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4, marginLeft: 30 }}>
-              Avisamos quando você tem flashcards prontos para revisar.
+              We'll notify you when flashcards are ready to review.
             </p>
           </div>
 

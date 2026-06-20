@@ -8,8 +8,8 @@ type Period = '7d' | '30d' | '90d' | 'alltime'
 
 interface PerformanceData {
   total_reviews: number
-  taxa_acerto: number
-  tempo_medio: number | null
+  accuracy: number
+  avg_response: number | null
   retention: number | null
   streak: number
   total_points: number
@@ -94,9 +94,9 @@ export default function ReportsPage() {
           <div className="section-title">Learning Stats</div>
           <div className="home-grid">
             <Kpi label="Reviews" value={String(data.total_reviews)} sub="in this period" />
-            <Kpi label="Accuracy" value={`${data.taxa_acerto}%`} sub="quality 3 or higher" />
+            <Kpi label="Accuracy" value={`${data.accuracy}%`} sub="quality 3 or higher" />
             <Kpi label="Retention" value={data.retention !== null ? `${data.retention}%` : '-'} sub="revisited correctly" />
-            <Kpi label="Avg response" value={data.tempo_medio !== null ? `${data.tempo_medio}s` : '-'} sub="seconds per card" />
+            <Kpi label="Avg response" value={data.avg_response !== null ? `${data.avg_response}s` : '-'} sub="seconds per card" />
             <Kpi label="Chunks learned" value={String(data.total_reviews_alltime)} sub="reviewed vocabulary items" />
             <Kpi label="Listening hours" value="2.4h" sub="estimated from lessons" />
           </div>
