@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { searchLrcLib } from '@/lib/lyrics'
+import { searchTrackCandidates } from '@/lib/media/track-search'
 
 export async function GET(request: Request) {
   try {
@@ -9,8 +9,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Query parameter "q" is required.' }, { status: 400 })
     }
 
-    const hits = await searchLrcLib(q)
-    return NextResponse.json(hits)
+    const candidates = await searchTrackCandidates(q)
+    return NextResponse.json(candidates)
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

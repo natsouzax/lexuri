@@ -2710,7 +2710,7 @@ h1, h2, h3 {
 
 /* ── YouTube sync player layout classes ──────────────────────────────────── */
 .yt-sync-wrapper  { display: flex; flex-direction: column; gap: 14px; }
-.yt-controls-row  { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
+.yt-controls-row  { display: grid; grid-template-columns: 1fr; gap: 14px; }
 
 /* ── Landscape mobile optimizations ──────────────────────────────────────── */
 @media (orientation: landscape) and (max-height: 500px) {

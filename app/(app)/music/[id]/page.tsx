@@ -1,69 +1,26 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
+import SpotifySyncPlayer from '@/components/SpotifySyncPlayer'
+import YoutubeAudioSyncPlayer from '@/components/YoutubeAudioSyncPlayer'
+import SyncedLyricsList from '@/components/SyncedLyricsList'
+import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
+import { awardXP } from '@/lib/xp'
 import type { ChunkAnalysis, ChunkItem, Flashcard, Song } from '@/lib/types'
-import { chunkToFlashcard, normalizeFlashcard } from '@/lib/types'
-import { parseLrc } from '@/lib/lyrics'
-import type { LrcLine } from '@/lib/lyrics'
-
-interface YTOpts {
-  videoId?: string
-  playerVars?: Record<string, unknown>
-  events?: {
-    onStateChange?: (e: { data: number }) => void
-  }
-}
-interface YTPlayer {
-  getCurrentTime(): number
-  destroy(): void
-}
-
-interface WordDef {
-  word: string
-  partOfSpeech: string
-  definition: string
-  example: string
-  translation: string
-}
+import { chunkToFlashcard } from '@/lib/types'
+import { parseLrc, findActiveLineIndex, estimateLineTimings } from '@/lib/media/lyrics/parser'
+import { extractVideoId } from '@/lib/media/youtube/url'
+import { extractSpotifyTrackId } from '@/lib/media/spotify/url'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
   const data = await res.json()
   if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`)
   return data as T
-}
-
-function awardXP(event: string) {
-  fetch('/api/gamification/award-action', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event }),
-  }).catch(() => {})
-}
-
-function extractYouTubeId(url: string): string | null {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
-  return m?.[1] ?? null
-}
-
-function extractSpotifyTrackId(url: string): string | null {
-  const m = url.match(/track\/([A-Za-z0-9]+)/)
-  return m?.[1] ?? null
-}
-
-function tokenize(text: string): { display: string; lookup: string }[] {
-  return text.split(/(\s+)/).map((tok) => ({
-    display: tok,
-    lookup: tok.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '').toLowerCase(),
-  }))
-}
-
-function formatTime(s: number): string {
-  return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`
 }
 
 const LEVEL_OPTIONS = ['A2', 'B1', 'B2', 'C1'] as const
@@ -87,19 +44,9 @@ export default function SongPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [lrcLines, setLrcLines] = useState<LrcLine[]>([])
-  const [plainLines, setPlainLines] = useState<string[]>([])
   const [activeLine, setActiveLine] = useState<number | null>(null)
-
-  const [selectedWord, setSelectedWord] = useState('')
-  const [wordContext, setWordContext] = useState('')
-  const [wordDef, setWordDef] = useState<WordDef | null>(null)
-  const [defLoading, setDefLoading] = useState(false)
-  const [defError, setDefError] = useState('')
-  const [wordFlashcardSaved, setWordFlashcardSaved] = useState(false)
-  const [savingWordFlashcard, setSavingWordFlashcard] = useState(false)
-
-  const [rightTab, setRightTab] = useState<'word' | 'chunks'>('word')
+  const [duration, setDuration] = useState(0)
+  const [savedFromLyrics, setSavedFromLyrics] = useState<Flashcard[]>([])
 
   const [level, setLevel] = useState<Level>('B1')
   const [chunkAnalysis, setChunkAnalysis] = useState<ChunkAnalysis | null>(null)
@@ -109,135 +56,46 @@ export default function SongPage() {
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
   const [analysisError, setAnalysisError] = useState('')
 
-  const playerRef = useRef<YTPlayer | null>(null)
-  const lrcLinesRef = useRef<LrcLine[]>([])
-  const lineRefs = useRef<(HTMLDivElement | null)[]>([])
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const playerId = `yt-player-${id}`
-
   useEffect(() => {
+    setActiveLine(null)
+    setDuration(0)
     apiFetch<Song>(`/api/music/songs/${id}`)
-      .then((s) => {
-        setSong(s)
-        if (s.lrc_content) {
-          const lines = parseLrc(s.lrc_content)
-          setLrcLines(lines)
-          lrcLinesRef.current = lines
-        } else if (s.plain_lyrics) {
-          setPlainLines(s.plain_lyrics.split('\n').filter(Boolean))
-        }
-      })
+      .then(setSong)
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false))
   }, [id])
 
+  // Backfill: songs saved before audio-source resolution was wired up (or
+  // saved from a plain search that never found a match) may have neither
+  // spotify_url nor youtube_url — without either, there's no audio to sync,
+  // only lyrics. Try once to resolve a playable source (Spotify preferred,
+  // YouTube as fallback — merge-lyrics already searches for a matching video
+  // for any song) and persist it so future visits don't repeat this.
   useEffect(() => {
-    if (!song?.youtube_url) return
-    const videoId = extractYouTubeId(song.youtube_url)
-    if (!videoId) return
-
-    function syncLine() {
-      if (!playerRef.current) return
-      const t = playerRef.current.getCurrentTime()
-      const lines = lrcLinesRef.current
-      let found = -1
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].time <= t) found = i
-        else break
-      }
-      setActiveLine(found >= 0 ? found : null)
-    }
-
-    function createPlayer() {
-      if (playerRef.current) return
-      playerRef.current = new window.YT.Player(playerId, {
-        videoId: videoId ?? undefined,
-        playerVars: { rel: 0, modestbranding: 1 },
-        events: {
-          onStateChange: (e) => {
-            if (window.YT?.PlayerState && e.data === window.YT.PlayerState.PLAYING) {
-              if (!pollingRef.current) pollingRef.current = setInterval(syncLine, 500)
-            } else {
-              if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
-            }
-          },
-        },
-      })
-    }
-
-    if (window.YT?.Player) {
-      createPlayer()
-    } else {
-      window.onYouTubeIframeAPIReady = createPlayer
-      if (!document.getElementById('yt-api-script')) {
-        const tag = document.createElement('script')
-        tag.id = 'yt-api-script'
-        tag.src = 'https://www.youtube.com/iframe_api'
-        document.head.appendChild(tag)
-      }
-    }
-
-    return () => {
-      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
-      playerRef.current?.destroy()
-      playerRef.current = null
-    }
-  }, [song, playerId])
-
-  useEffect(() => {
-    if (activeLine !== null) {
-      lineRefs.current[activeLine]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-  }, [activeLine])
-
-  async function handleWordClick(word: string, context: string) {
-    if (!word) return
-    setSelectedWord(word)
-    setWordContext(context)
-    setWordDef(null)
-    setDefError('')
-    setWordFlashcardSaved(false)
-    setRightTab('word')
-    setDefLoading(true)
-    try {
-      const def = await apiFetch<WordDef>('/api/llm/define', {
+    if (!song || song.spotify_url || song.youtube_url) return
+    apiFetch<{ spotify_url?: string | null; youtube_url?: string | null; lrc_content?: string | null }>(
+      '/api/music/merge-lyrics',
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word, context }),
-      })
-      setWordDef(def)
-      awardXP('word_looked_up')
-    } catch (e) {
-      setDefError(String(e))
-    } finally {
-      setDefLoading(false)
-    }
-  }
+        body: JSON.stringify({ artist: song.artist, title: song.title, existing_youtube_url: song.youtube_url }),
+      },
+    ).then((merged) => {
+      if (!merged.spotify_url && !merged.youtube_url) return
+      const patch: { spotify_url?: string; youtube_url?: string; lrc_content?: string } = {}
+      if (merged.spotify_url) patch.spotify_url = merged.spotify_url
+      if (merged.youtube_url) patch.youtube_url = merged.youtube_url
+      if (merged.lrc_content && !song.lrc_content) patch.lrc_content = merged.lrc_content
+      return apiFetch<Song>(`/api/music/songs/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      }).then(setSong)
+    }).catch(() => { /* no match found — stay lyrics-only */ })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [song?.id])
 
-  async function handleSaveWordFlashcard() {
-    if (!wordDef) return
-    setSavingWordFlashcard(true)
-    try {
-      const card = normalizeFlashcard({
-        word: wordDef.word,
-        translation: wordDef.translation,
-        explanation: `(${wordDef.partOfSpeech}) ${wordDef.definition}`,
-        example: wordDef.example,
-      })
-      if (card) {
-        await apiFetch('/api/flashcards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cards: [card] }),
-        })
-      }
-      setWordFlashcardSaved(true)
-    } catch (e) {
-      setDefError(String(e))
-    } finally {
-      setSavingWordFlashcard(false)
-    }
-  }
+  const lrcLines = useMemo(() => (song?.lrc_content ? parseLrc(song.lrc_content) : []), [song?.lrc_content])
 
   async function handleAnalyze() {
     if (!song?.plain_lyrics) return
@@ -270,7 +128,7 @@ export default function SongPage() {
     if (!chunkAnalysis) return
     setMakingFlashcard(chunk.text)
     try {
-      const card: Flashcard = chunkToFlashcard(chunk, chunkAnalysis.original_text)
+      const card = chunkToFlashcard(chunk, chunkAnalysis.original_text)
       await apiFetch('/api/flashcards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -303,12 +161,19 @@ export default function SongPage() {
     )
   }
 
-  const ytId = song.youtube_url ? extractYouTubeId(song.youtube_url) : null
   const spotifyId = song.spotify_url ? extractSpotifyTrackId(song.spotify_url) : null
-  const hasPlayer = !!(ytId || spotifyId)
+  const videoId = song.youtube_url ? extractVideoId(song.youtube_url) : null
+  const hasAudioSource = !!(spotifyId || videoId)
 
-  const displayLines = lrcLines.length > 0
-    ? lrcLines.map((l) => ({ text: l.text, time: l.time as number | null }))
+  const plainLines = song.plain_lyrics.split('\n').filter(Boolean)
+  // No real LRC timing? Estimate per-line timestamps from the player's
+  // duration so the highlight still roughly tracks playback instead of
+  // sitting static.
+  const effectiveLines = lrcLines.length > 0
+    ? lrcLines
+    : (hasAudioSource && duration > 0 ? estimateLineTimings(plainLines, duration) : [])
+  const displayLines = effectiveLines.length > 0
+    ? effectiveLines.map((l) => ({ text: l.text, time: l.time as number | null }))
     : plainLines.map((l) => ({ text: l, time: null as number | null }))
 
   const highChunks = chunkAnalysis?.chunks.filter((c) => c.importance === 'high') ?? []
@@ -321,7 +186,15 @@ export default function SongPage() {
         <Link href="/music" style={{ fontSize: '0.83rem', color: 'var(--muted)', fontWeight: 700, textDecoration: 'none' }}>
           ← Music Lab
         </Link>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {videoId && (
+            <a
+              href={`/youtube?url=${encodeURIComponent(song.youtube_url ?? '')}`}
+              style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 999, background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', textDecoration: 'none' }}
+            >
+              ▶ Watch the video on YouTube Studio
+            </a>
+          )}
           {song.lrc_content && (
             <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 999, background: 'rgba(70,98,74,0.12)', color: 'var(--moss)' }}>
               ✓ Synced
@@ -343,197 +216,47 @@ export default function SongPage() {
       {/* Studio two-panel layout */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
-        {/* LEFT: player + lyrics */}
+        {/* LEFT: audio + synced lyrics */}
         <div style={{ flex: '1 1 55%', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {ytId && (
-            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000', boxShadow: 'var(--shadow-md)' }}>
-              <div id={playerId} style={{ width: '100%', height: '100%' }} />
-            </div>
-          )}
-
-          {!ytId && spotifyId && (
+          {spotifyId ? (
             <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
-              <iframe
-                src={`https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator`}
-                width="100%"
-                height="152"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                style={{ border: 'none', display: 'block' }}
+              <SpotifySyncPlayer
+                trackId={spotifyId}
+                onPositionChange={(t) => setActiveLine(findActiveLineIndex(effectiveLines, t))}
+                onDurationChange={setDuration}
               />
             </div>
-          )}
+          ) : videoId ? (
+            <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+              <YoutubeAudioSyncPlayer
+                videoId={videoId}
+                onPositionChange={(t) => setActiveLine(findActiveLineIndex(effectiveLines, t))}
+                onDurationChange={setDuration}
+              />
+            </div>
+          ) : null}
 
-          {/* Lyrics panel */}
-          <div style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--line)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              Lyrics — click any word to look it up
-            </div>
-            <div style={{ maxHeight: hasPlayer ? '44vh' : '65vh', overflowY: 'auto', padding: '8px 8px' }}>
-              {displayLines.length > 0 ? displayLines.map((line, i) => {
-                const isActive = activeLine === i
-                const tokens = tokenize(line.text)
-                return (
-                  <div
-                    key={i}
-                    ref={(el) => { lineRefs.current[i] = el }}
-                    style={{
-                      padding: '5px 10px',
-                      borderRadius: 8,
-                      borderLeft: `3px solid ${isActive ? 'var(--clay)' : 'transparent'}`,
-                      background: isActive ? 'rgba(200,111,74,0.09)' : 'transparent',
-                      transition: 'all 100ms ease',
-                      fontSize: '0.91rem',
-                      lineHeight: 1.9,
-                      display: 'flex',
-                      gap: 8,
-                      alignItems: 'baseline',
-                    }}
-                  >
-                    {line.time !== null && (
-                      <span style={{ fontSize: '0.6rem', color: 'var(--muted)', opacity: 0.45, flexShrink: 0, fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>
-                        {formatTime(line.time)}
-                      </span>
-                    )}
-                    <span>
-                      {tokens.map((tok, j) =>
-                        tok.lookup ? (
-                          <span
-                            key={j}
-                            onClick={() => handleWordClick(tok.lookup, line.text)}
-                            title={tok.lookup}
-                            style={{
-                              cursor: 'pointer',
-                              borderRadius: 3,
-                              padding: '0 1px',
-                              color: selectedWord === tok.lookup ? 'var(--clay)' : isActive ? 'var(--ink)' : 'var(--muted)',
-                              fontWeight: isActive ? 600 : 400,
-                              background: selectedWord === tok.lookup ? 'rgba(200,111,74,0.15)' : 'transparent',
-                              transition: 'color 80ms, background 80ms',
-                              textDecoration: selectedWord === tok.lookup ? 'underline' : 'none',
-                              textDecorationStyle: 'dotted',
-                            }}
-                          >
-                            {tok.display}
-                          </span>
-                        ) : (
-                          <span key={j}>{tok.display}</span>
-                        )
-                      )}
-                    </span>
-                  </div>
-                )
-              }) : (
-                <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: '16px' }}>No lyrics available.</div>
-              )}
-            </div>
-          </div>
+          <SyncedLyricsList
+            lines={displayLines}
+            activeLineIndex={hasAudioSource ? activeLine : null}
+            maxHeight={hasAudioSource ? '44vh' : '65vh'}
+            resetKey={song.id}
+            onWordSaved={(card) => setSavedFromLyrics((prev) => [card, ...prev.filter((c) => c.id !== card.id)])}
+          />
+
+          {savedFromLyrics.length > 0 && (
+            <>
+              <div className="section-title">Saved from lyrics</div>
+              {savedFromLyrics.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
+            </>
+          )}
         </div>
 
-        {/* RIGHT: word lookup + chunks tabs */}
+        {/* RIGHT: language chunks */}
         <div style={{ flex: '1 1 38%', minWidth: 280, position: 'sticky', top: 20, maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }}>
-
-          {/* Tab switcher */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-            {(['word', 'chunks'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setRightTab(t)}
-                style={{
-                  padding: '7px 18px',
-                  borderRadius: 999,
-                  border: `1.5px solid ${rightTab === t ? 'var(--clay)' : 'var(--line)'}`,
-                  background: rightTab === t ? 'var(--clay)' : 'transparent',
-                  color: rightTab === t ? '#fff' : 'var(--muted)',
-                  fontWeight: rightTab === t ? 700 : 400,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  transition: 'all 120ms ease',
-                }}
-              >
-                {t === 'word' ? 'Word Lookup' : 'Language Chunks'}
-              </button>
-            ))}
-          </div>
-
-          {/* Word Lookup */}
-          {rightTab === 'word' && (
-            <div style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid var(--line)', borderRadius: 14, padding: '20px', minHeight: 200 }}>
-              {!selectedWord ? (
-                <div style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '40px 10px', lineHeight: 1.8 }}>
-                  Click any word in the lyrics<br />to look it up instantly.
-                </div>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.55rem', color: 'var(--ink)' }}>
-                      {selectedWord}
-                    </span>
-                    {wordDef && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-                        {wordDef.partOfSpeech}
-                      </span>
-                    )}
-                  </div>
-
-                  {wordContext && (
-                    <div style={{ fontSize: '0.77rem', color: 'var(--muted)', fontStyle: 'italic', marginBottom: 14, padding: '6px 10px', background: 'rgba(0,0,0,0.04)', borderRadius: 7, borderLeft: '3px solid var(--line)', lineHeight: 1.6 }}>
-                      "{wordContext}"
-                    </div>
-                  )}
-
-                  {defLoading && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted)', fontSize: '0.88rem', padding: '8px 0' }}>
-                      <span className="spinner" />
-                      Looking up…
-                    </div>
-                  )}
-
-                  {defError && <div className="alert-error" style={{ fontSize: '0.82rem' }}>{defError}</div>}
-
-                  {wordDef && !defLoading && (
-                    <>
-                      <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Definition</div>
-                        <div style={{ fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--ink)' }}>{wordDef.definition}</div>
-                      </div>
-
-                      {wordDef.translation && (
-                        <div style={{ marginBottom: 12 }}>
-                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Translation</div>
-                          <div style={{ fontSize: '0.9rem', color: 'var(--moss)', fontWeight: 700 }}>{wordDef.translation}</div>
-                        </div>
-                      )}
-
-                      {wordDef.example && (
-                        <div style={{ marginBottom: 18 }}>
-                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Example</div>
-                          <div style={{ fontSize: '0.83rem', fontStyle: 'italic', color: 'var(--muted)', lineHeight: 1.6 }}>"{wordDef.example}"</div>
-                        </div>
-                      )}
-
-                      <button
-                        className="btn-primary btn-wide"
-                        style={{ fontSize: '0.8rem' }}
-                        onClick={handleSaveWordFlashcard}
-                        disabled={savingWordFlashcard || wordFlashcardSaved}
-                      >
-                        {wordFlashcardSaved
-                          ? '✓ Saved to flashcards'
-                          : savingWordFlashcard
-                          ? <><span className="spinner" />Saving…</>
-                          : '+ Save as Flashcard'}
-                      </button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Language Chunks */}
-          {rightTab === 'chunks' && (
-            <div>
+          <div className="section-title" style={{ marginTop: 0 }}>Language Chunks</div>
+          <div>
               {song.plain_lyrics && (
                 <div style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid var(--line)', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -639,7 +362,6 @@ export default function SongPage() {
                 </>
               )}
             </div>
-          )}
         </div>
       </div>
     </>

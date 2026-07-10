@@ -11,6 +11,7 @@ import DueCardsHero from '@/components/ui/DueCardsHero'
 import StreakWidget from '@/components/ui/StreakWidget'
 import DailyMissions from '@/components/ui/DailyMissions'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
+import { playSelect, playTap } from '@/lib/sfx'
 import { learningLoop } from '@/lib/product'
 import { getThumbnail } from '@/lib/feed'
 import type { FeedItem } from '@/lib/feed'
@@ -138,9 +139,11 @@ export default function DashboardPage() {
 
   function handleToggleSave(id: string) {
     if (savedIds.includes(id)) {
+      playTap()
       unsaveItem(id)
       setSavedIds((prev) => prev.filter((s) => s !== id))
     } else {
+      playSelect()
       saveItem(id)
       setSavedIds((prev) => [...prev, id])
     }

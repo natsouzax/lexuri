@@ -6,7 +6,7 @@ import SpotifyConnectModal from './SpotifyConnectModal'
 
 // Shown once per browser session if the user isn't connected to Spotify.
 // Skipped on auth-related pages and on pages that have their own Spotify flow.
-const SKIP_PATHS = ['/login', '/signup', '/api/', '/spotify', '/settings']
+const SKIP_PATHS = ['/login', '/signup', '/api/', '/spotify', '/settings', '/onboarding']
 
 export default function SpotifyGlobalCheck() {
   const pathname = usePathname()

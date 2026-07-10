@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-import { getUserAccessToken, getPersonalizedTracks } from '@/lib/spotify'
+import { getUserAccessToken, getPersonalizedTracks } from '@/lib/media/spotify'
 
 export async function GET() {
   const supabase = await createClient()

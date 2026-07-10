@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
+import { playSuccess } from '@/lib/sfx'
 
 export default function LoginPage() {
   return (
@@ -57,6 +58,8 @@ function LoginForm() {
       .select('user_id')
       .eq('user_id', signInData.user!.id)
       .maybeSingle()
+
+    playSuccess()
 
     if (!onboarding) {
       router.push('/onboarding')

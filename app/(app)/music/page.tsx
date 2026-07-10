@@ -8,25 +8,25 @@ import ChunkCard from '@/components/ui/ChunkCard'
 import SpotifyConnectModal from '@/components/SpotifyConnectModal'
 import UnverifiedModal from '@/components/UnverifiedModal'
 import UnverifiedCard from '@/components/UnverifiedCard'
+import SpotifySyncPlayer from '@/components/SpotifySyncPlayer'
+import YoutubeAudioSyncPlayer from '@/components/YoutubeAudioSyncPlayer'
+import SyncedLyricsList from '@/components/SyncedLyricsList'
+import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
+import { awardXP } from '@/lib/xp'
 import { contentTabs } from '@/lib/product'
 import type { ChunkAnalysis, ChunkItem, Flashcard, Song } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
-import type { LrcLibSearchHit } from '@/lib/lyrics'
-import type { SpotifyTrackSummary } from '@/lib/spotify'
+import type { SpotifyTrackSummary } from '@/lib/media/spotify/types'
+import type { TrackCandidate } from '@/lib/media/track-search'
+import { parseLrc, findActiveLineIndex, estimateLineTimings } from '@/lib/media/lyrics/parser'
+import { extractSpotifyTrackId } from '@/lib/media/spotify/url'
+import { extractVideoId } from '@/lib/media/youtube/url'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
   const data = await res.json()
   if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`)
   return data as T
-}
-
-function awardXP(event: string) {
-  fetch('/api/gamification/award-action', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event }),
-  }).catch(() => {})
 }
 
 function isUrl(input: string): boolean {
@@ -71,7 +71,7 @@ export default function MusicPage() {
   // --- Discover state ---
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
-  const [searchResults, setSearchResults] = useState<LrcLibSearchHit[]>([])
+  const [searchResults, setSearchResults] = useState<TrackCandidate[]>([])
   const [workingSong, setWorkingSong] = useState<WorkingSong | null>(null)
   const [fetchingLyrics, setFetchingLyrics] = useState(false)
   const [mergingLyrics, setMergingLyrics] = useState(false)
@@ -85,6 +85,9 @@ export default function MusicPage() {
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [savedSongId, setSavedSongId] = useState<string | null>(null)
+  const [activeLine, setActiveLine] = useState<number | null>(null)
+  const [duration, setDuration] = useState(0)
+  const [savedFromLyrics, setSavedFromLyrics] = useState<Flashcard[]>([])
 
   // --- Library state ---
   const [librarySongs, setLibrarySongs] = useState<Song[]>([])
@@ -163,6 +166,8 @@ export default function MusicPage() {
         title: string
         artist: string
         youtube_url?: string | null
+        spotify_track_id?: string | null
+        spotify_url?: string | null
       }>('/api/music/merge-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -182,6 +187,11 @@ export default function MusicPage() {
               lyrics_source: merged.source,
               is_synced: merged.is_synced,
               youtube_url: merged.youtube_url ?? prev.youtube_url,
+              // merge-lyrics resolves a Spotify track internally (via search) even
+              // when the input wasn't a Spotify link — surface it so the audio
+              // player can render instead of only showing lyrics.
+              spotify_track_id: merged.spotify_track_id ?? prev.spotify_track_id,
+              spotify_url: merged.spotify_url ?? prev.spotify_url,
             }
           : prev,
       )
@@ -197,6 +207,8 @@ export default function MusicPage() {
     setWorkingSong(null)
     setChunkAnalysis(null)
     setSavedSongId(null)
+    setActiveLine(null)
+    setDuration(0)
 
     if (isUrl(q)) {
       setFetchingLyrics(true)
@@ -224,8 +236,8 @@ export default function MusicPage() {
     } else {
       setSearching(true)
       try {
-        const hits = await apiFetch<LrcLibSearchHit[]>(`/api/music/search?q=${encodeURIComponent(q)}`)
-        setSearchResults(hits.slice(0, 12))
+        const hits = await apiFetch<TrackCandidate[]>(`/api/music/search?q=${encodeURIComponent(q)}`)
+        setSearchResults(hits)
         if (!hits.length) setError('No results found. Try a different search.')
       } catch (e) {
         setError(String(e))
@@ -235,29 +247,34 @@ export default function MusicPage() {
     }
   }
 
-  function handleSelectResult(hit: LrcLibSearchHit) {
+  function handleSelectResult(candidate: TrackCandidate) {
     setError('')
     setChunkAnalysis(null)
     setSavedSongId(null)
     setSearchResults([])
+    setActiveLine(null)
+    setDuration(0)
+    // The candidate only identifies the song (title/artist) — actual lyrics,
+    // sync, and audio source resolution goes through the same multi-source
+    // pipeline as pasting a URL (handleMergeLyrics), which is far more
+    // reliable than trusting whatever a single search hit carried inline.
     const song: WorkingSong = {
-      title: hit.trackName,
-      artist: hit.artistName,
-      lrc_content: hit.syncedLyrics ?? null,
-      plain_lyrics: hit.plainLyrics ?? extractPlainFromLrc(hit.syncedLyrics ?? ''),
+      title: candidate.title,
+      artist: candidate.artist,
+      lrc_content: null,
+      plain_lyrics: '',
       youtube_url: null,
       spotify_url: null,
     }
     setWorkingSong({ ...song, verified: true })
     void handleMergeLyrics(song)
-    if (!hit.syncedLyrics && !spotifyConnected) {
-      setShowSpotifyModal(true)
-    }
   }
 
   function handleSelectFeedTrack(track: SpotifyTrackSummary) {
     setTab('discover')
     setQuery(`${track.title} ${track.artist}`)
+    setActiveLine(null)
+    setDuration(0)
     const song: WorkingSong = {
       title: track.title,
       artist: track.artist,
@@ -465,10 +482,10 @@ export default function MusicPage() {
             <>
               <div className="section-title">Results</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-                {searchResults.map((hit) => (
+                {searchResults.map((candidate, i) => (
                   <button
-                    key={hit.id}
-                    onClick={() => handleSelectResult(hit)}
+                    key={`${candidate.title}-${candidate.artist}-${i}`}
+                    onClick={() => handleSelectResult(candidate)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -485,29 +502,27 @@ export default function MusicPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--shadow-md)' }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--shadow-sm)' }}
                   >
-                    <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(140,30,180,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.3rem' }}>
-                      ♪
-                    </div>
+                    {candidate.artworkUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={candidate.artworkUrl} alt={candidate.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(140,30,180,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.3rem' }}>
+                        ♪
+                      </div>
+                    )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {hit.trackName}
+                        {candidate.title}
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
-                        {hit.artistName}{hit.albumName ? ` · ${hit.albumName}` : ''}
+                        {candidate.artist}{candidate.album ? ` · ${candidate.album}` : ''}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                      {hit.duration > 0 && (
-                        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700 }}>
-                          {Math.floor(hit.duration / 60)}:{String(hit.duration % 60).padStart(2, '0')}
-                        </span>
-                      )}
-                      {hit.syncedLyrics && (
-                        <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: 'rgba(70,98,74,0.15)', color: 'var(--moss)' }}>
-                          synced
-                        </span>
-                      )}
-                    </div>
+                    {candidate.durationMs > 0 && (
+                      <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700, flexShrink: 0 }}>
+                        {formatDuration(candidate.durationMs)}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -542,7 +557,7 @@ export default function MusicPage() {
                   </button>
                   <button
                     style={{ fontSize: '0.8rem', padding: '7px 16px', borderRadius: 999, border: '1.5px solid var(--line)', background: 'transparent', cursor: 'pointer', color: 'var(--muted)' }}
-                    onClick={() => { setWorkingSong(null); setChunkAnalysis(null); setSavedSongId(null) }}
+                    onClick={() => { setWorkingSong(null); setChunkAnalysis(null); setSavedSongId(null); setActiveLine(null); setDuration(0); setSavedFromLyrics([]) }}
                   >
                     ← Back
                   </button>
@@ -553,6 +568,18 @@ export default function MusicPage() {
               {workingSong.verified === false && !mergingLyrics && (
                 <div style={{ marginBottom: 14 }}>
                   <UnverifiedCard />
+                </div>
+              )}
+
+              {/* Watch the video, if a clip was found — Music stays audio + lyrics only */}
+              {workingSong.youtube_url && (
+                <div style={{ marginBottom: 12 }}>
+                  <a
+                    href={`/youtube?url=${encodeURIComponent(workingSong.youtube_url)}`}
+                    style={{ fontSize: '0.78rem', fontWeight: 700, padding: '4px 12px', borderRadius: 999, background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', textDecoration: 'none' }}
+                  >
+                    ▶ Watch the video on YouTube Studio
+                  </a>
                 </div>
               )}
 
@@ -586,12 +613,57 @@ export default function MusicPage() {
 
               {workingSong.plain_lyrics ? (
                 <>
-                  <details style={{ marginBottom: 16 }}>
-                    <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}>Read lyrics</summary>
-                    <pre className="music-lyrics-pre" style={{ whiteSpace: 'pre-wrap', fontSize: '0.88rem', color: 'var(--muted)', marginTop: 12, lineHeight: 1.7 }}>
-                      {workingSong.plain_lyrics}
-                    </pre>
-                  </details>
+                  {(() => {
+                    const spotifyId = workingSong.spotify_track_id
+                      ?? (workingSong.spotify_url ? extractSpotifyTrackId(workingSong.spotify_url) : null)
+                    const videoId = workingSong.youtube_url ? extractVideoId(workingSong.youtube_url) : null
+                    const hasAudioSource = !!(spotifyId || videoId)
+                    const realLrcLines = workingSong.lrc_content ? parseLrc(workingSong.lrc_content) : []
+                    const plainLines = workingSong.plain_lyrics.split('\n').filter(Boolean)
+                    // No real LRC timing? Estimate per-line timestamps from the
+                    // player's duration so the highlight still roughly tracks
+                    // playback instead of sitting static.
+                    const effectiveLines = realLrcLines.length > 0
+                      ? realLrcLines
+                      : (hasAudioSource && duration > 0 ? estimateLineTimings(plainLines, duration) : [])
+                    const displayLines = effectiveLines.length > 0
+                      ? effectiveLines.map((l) => ({ text: l.text, time: l.time as number | null }))
+                      : plainLines.map((l) => ({ text: l, time: null as number | null }))
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+                        {spotifyId ? (
+                          <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+                            <SpotifySyncPlayer
+                              trackId={spotifyId}
+                              onPositionChange={(t) => setActiveLine(findActiveLineIndex(effectiveLines, t))}
+                              onDurationChange={setDuration}
+                            />
+                          </div>
+                        ) : videoId ? (
+                          <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+                            <YoutubeAudioSyncPlayer
+                              videoId={videoId}
+                              onPositionChange={(t) => setActiveLine(findActiveLineIndex(effectiveLines, t))}
+                              onDurationChange={setDuration}
+                            />
+                          </div>
+                        ) : null}
+                        <SyncedLyricsList
+                          lines={displayLines}
+                          activeLineIndex={hasAudioSource ? activeLine : null}
+                          maxHeight={hasAudioSource ? '40vh' : '50vh'}
+                          resetKey={`${workingSong.title}-${workingSong.artist}`}
+                          onWordSaved={(card) => setSavedFromLyrics((prev) => [card, ...prev.filter((c) => c.id !== card.id)])}
+                        />
+                        {savedFromLyrics.length > 0 && (
+                          <>
+                            <div className="section-title">Saved from lyrics</div>
+                            {savedFromLyrics.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
+                          </>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   <div className="input-row" style={{ alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -895,12 +967,4 @@ export default function MusicPage() {
       )}
     </>
   )
-}
-
-function extractPlainFromLrc(lrc: string): string {
-  return lrc
-    .split('\n')
-    .map((line) => line.replace(/^\[\d{1,2}:\d{2}\.\d+\]/, '').trim())
-    .filter(Boolean)
-    .join('\n')
 }

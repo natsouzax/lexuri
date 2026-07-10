@@ -18,7 +18,7 @@ const PROTECTED_PREFIXES = [
 
 const AUTH_PAGES = ['/login', '/register']
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(

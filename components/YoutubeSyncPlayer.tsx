@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ChunkItem, TranscriptSegment } from '@/lib/types'
+import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
+import { useWordHoverSave } from '@/hooks/useWordHoverSave'
+import WordHoverTooltip from '@/components/WordHoverTooltip'
 
 declare global {
   interface Window {
@@ -25,6 +27,7 @@ declare global {
 
 interface YTPlayer {
   getCurrentTime(): number
+  getDuration(): number
   destroy(): void
 }
 
@@ -69,14 +72,17 @@ function splitByChunks(
   return parts
 }
 
-// Render plain text as individually clickable words.
-// No per-word background — the overlay container provides the single dark bar.
-// Only selected words get a highlight.
+// Render plain text as individually hoverable/clickable words. Hovering a
+// word previews its translation (see WordTooltipState); clicking saves it
+// as a flashcard immediately using whatever the hover already fetched.
 function renderWords(
   text: string,
   keyPrefix: string,
-  selected: Set<string>,
-  toggleWord: (w: string) => void,
+  savedWords: Set<string>,
+  savingWord: string | null,
+  onHover: (word: string, context: string, rect: DOMRect) => void,
+  onLeave: () => void,
+  onClick: (word: string, context: string) => void,
 ): React.ReactNode[] {
   const parts: React.ReactNode[] = []
   let lastIdx = 0
@@ -89,23 +95,27 @@ function renderWords(
     }
     const word = match[0]
     const norm = normalizeWord(word)
-    const isSel = selected.has(norm)
+    const isSaved = savedWords.has(norm)
+    const isSaving = savingWord === norm
     parts.push(
       <span
         key={`${keyPrefix}-w${wc++}`}
-        onClick={() => toggleWord(norm)}
+        onMouseEnter={(e) => onHover(norm, text, e.currentTarget.getBoundingClientRect())}
+        onMouseLeave={onLeave}
+        onClick={() => !isSaved && !isSaving && onClick(norm, text)}
         style={{
-          cursor: 'pointer',
+          cursor: isSaved ? 'default' : 'pointer',
           pointerEvents: 'auto',
           borderRadius: 4,
-          padding: isSel ? '1px 4px' : undefined,
-          background: isSel ? 'rgba(246,202,95,0.9)' : undefined,
-          color:  '#1a1a1a',
-          fontWeight: isSel ? 900 : undefined,
-          transition: 'background 100ms ease',
+          padding: isSaved ? '1px 4px' : undefined,
+          background: isSaved ? 'rgba(120,190,120,0.9)' : undefined,
+          color: '#1a1a1a',
+          fontWeight: isSaved ? 900 : undefined,
+          opacity: isSaving ? 0.5 : 1,
+          transition: 'background 100ms ease, opacity 100ms ease',
         }}
       >
-        {word}
+        {word}{isSaved ? ' ✓' : ''}
       </span>,
     )
     lastIdx = match.index + word.length
@@ -119,21 +129,20 @@ function renderWords(
 interface Props {
   videoId: string
   segments: TranscriptSegment[]
-  selectedWords: string[]
-  onWordsChange: (words: string[]) => void
   chunks?: ChunkItem[]
   selectedChunk?: ChunkItem | null
   onChunkSelect?: (chunk: ChunkItem) => void
+  /** Called right after a word is saved as a flashcard from the caption overlay. */
+  onWordSaved?: (card: Flashcard) => void
 }
 
 export default function YoutubeSyncPlayer({
   videoId,
   segments,
-  selectedWords,
-  onWordsChange,
   chunks,
   selectedChunk,
   onChunkSelect,
+  onWordSaved,
 }: Props) {
   const playerRef        = useRef<YTPlayer | null>(null)
   const playerDivRef     = useRef<HTMLDivElement>(null)
@@ -143,14 +152,16 @@ export default function YoutubeSyncPlayer({
   const anchorRef        = useRef({ videoTime: 0, wallTime: 0 })
   const isPlayingRef     = useRef(false)
   const holdRef          = useRef({ idx: -1, until: 0 })
-  const selectedSet      = useRef(new Set(selectedWords))
-  const [, forceUpdate]  = useState(0)
   const [captionDelay, setCaptionDelay] = useState(0)
   const [activeSegIdx, setActiveSegIdx] = useState(-1)
   const [showCaptions, setShowCaptions] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const captionDelayRef  = useRef(0)
   const updateActiveRef  = useRef<(t: number) => void>(() => {})
+
+  // Hover-to-translate + click-to-save-flashcard, shared with SyncedLyricsList
+  const { tooltip, savedWords, savingWord, onHover, onLeave, onWordClick, cancelHide, hideNow } =
+    useWordHoverSave(videoId, onWordSaved)
 
   // Pre-compute each segment's start offset in the full transcript (segments joined by '\n').
   // Adding 1 per segment for the single-char separator, same as join('\n').
@@ -177,11 +188,6 @@ export default function YoutubeSyncPlayer({
         end:   Math.min(segments[activeSegIdx].text.length, c.end - segStart),
       }))
   }, [chunks, activeSegIdx, segments, segmentOffsets])
-
-  useEffect(() => {
-    selectedSet.current = new Set(selectedWords)
-    forceUpdate((n) => n + 1)
-  }, [selectedWords])
 
   useEffect(() => { captionDelayRef.current = captionDelay }, [captionDelay])
 
@@ -276,15 +282,6 @@ export default function YoutubeSyncPlayer({
 
   useEffect(() => { updateActiveRef.current = updateActive }, [updateActive])
 
-  function toggleWord(word: string) {
-    const next = new Set(selectedSet.current)
-    if (next.has(word)) next.delete(word)
-    else next.add(word)
-    selectedSet.current = next
-    forceUpdate((n) => n + 1)
-    onWordsChange(Array.from(next).sort())
-  }
-
   function adjustDelay(delta: number) {
     setCaptionDelay((prev) => Math.min(20, Math.max(-20, Math.round((prev + delta) * 10) / 10)))
     setActiveSegIdx(-2)
@@ -309,7 +306,7 @@ export default function YoutubeSyncPlayer({
 
   const activeSeg = activeSegIdx >= 0 ? segments[activeSegIdx] : null
 
-  // Subtitle: chunks as inline colored underlines, plain words individually clickable.
+  // Subtitle: chunks as inline colored underlines, plain words hoverable/clickable.
   // The overlay container provides the single dark background — no per-element boxes.
   function renderSubtitle(): React.ReactNode {
     if (!activeSeg || isNonSpeech(activeSeg.text)) return null
@@ -339,7 +336,11 @@ export default function YoutubeSyncPlayer({
           </span>
         )
       }
-      return <span key={i}>{renderWords(part.text, String(i), selectedSet.current, toggleWord)}</span>
+      return (
+        <span key={i}>
+          {renderWords(part.text, String(i), savedWords, savingWord, onHover, onLeave, onWordClick)}
+        </span>
+      )
     })
   }
 
@@ -385,6 +386,9 @@ export default function YoutubeSyncPlayer({
         </div>
       </div>
 
+      {/* Word translation tooltip — compact (translation only) so it doesn't compete with the playing video; click the word to save */}
+      <WordHoverTooltip tooltip={tooltip} onMouseEnter={cancelHide} onMouseLeave={hideNow} compact />
+
       {/* Controls row */}
       <div className="yt-controls-row">
         {/* Sync calibration */}
@@ -406,27 +410,6 @@ export default function YoutubeSyncPlayer({
                 {label}
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* Word collector */}
-        <div style={{ padding: 16, border: '1px solid var(--line)', borderRadius: 22, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, marginBottom: 10 }}>
-            <span>Selected words</span>
-            <span>{selectedSet.current.size}</span>
-          </div>
-          <div className="chip-list">
-            {selectedSet.current.size === 0 ? (
-              <span style={{ color: 'var(--muted)', fontSize: '0.92rem' }}>
-                {chunks?.length ? 'Click chunks or words on the subtitle' : 'Click words on the subtitle to select them'}
-              </span>
-            ) : (
-              Array.from(selectedSet.current).sort().map((word) => (
-                <button key={word} className="chip" onClick={() => toggleWord(word)}>
-                  {word} ×
-                </button>
-              ))
-            )}
           </div>
         </div>
       </div>

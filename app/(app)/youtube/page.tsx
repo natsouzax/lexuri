@@ -1,14 +1,46 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Hero from '@/components/ui/Hero'
 import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import ChunkCard from '@/components/ui/ChunkCard'
 import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
 import { contentTabs } from '@/lib/product'
+import { awardXP } from '@/lib/xp'
 import type { ChunkAnalysis, ChunkItem, Flashcard, VideoData } from '@/lib/types'
 import { chunkToFlashcard } from '@/lib/types'
+import feedItems from '@/data/feed-items.json'
+
+interface ExampleVideo {
+  id: string
+  title: string
+  youtube_id: string
+  level: string
+  kind: 'music video' | 'video'
+  subtitle: string
+}
+
+const EXAMPLE_VIDEOS: ExampleVideo[] = (feedItems as Array<{
+  id: string
+  type: string
+  title: string
+  artist?: string
+  channel?: string
+  youtube_id: string
+  level: string
+  featured?: boolean
+}>)
+  .filter((item) => item.featured && item.youtube_id)
+  .map((item) => ({
+    id: item.id,
+    title: item.title,
+    youtube_id: item.youtube_id,
+    level: item.level,
+    kind: item.type === 'music' ? 'music video' : 'video',
+    subtitle: item.artist ?? item.channel ?? '',
+  }))
 
 interface SavedVideo {
   url: string
@@ -39,23 +71,14 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T
 }
 
-function awardXP(event: string) {
-  fetch('/api/gamification/award-action', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event }),
-  }).catch(() => {})
-}
-
 export default function YouTubePage() {
+  const searchParams = useSearchParams()
   const [url, setUrl]           = useState('')
   const [videoData, setVideoData] = useState<VideoData | null>(null)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
 
-  const [selectedWords, setSelectedWords]     = useState<string[]>([])
-  const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
-  const [generatingCards, setGeneratingCards] = useState(false)
+  const [savedCards, setSavedCards]           = useState<Flashcard[]>([])
 
   const [chunkAnalysis, setChunkAnalysis]     = useState<ChunkAnalysis | null>(null)
   const [analyzing, setAnalyzing]             = useState(false)
@@ -73,6 +96,14 @@ export default function YouTubePage() {
     setIsVideoSaved(savedVideos.some((v) => v.video_id === videoData.video_id))
   }, [videoData, savedVideos])
 
+  // Deep-link support: /youtube?url=... auto-loads the video (e.g. the
+  // "Watch the video on YouTube Studio" link from the Music workspace).
+  useEffect(() => {
+    const deepLinkUrl = searchParams.get('url')
+    if (deepLinkUrl) void handleLoadVideo(deepLinkUrl)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
   // Auto-analyze as soon as video loads
   useEffect(() => {
     if (!videoData) return
@@ -85,8 +116,7 @@ export default function YouTubePage() {
     setLoading(true)
     setError('')
     setVideoData(null)
-    setSelectedWords([])
-    setGeneratedCards([])
+    setSavedCards([])
     setChunkAnalysis(null)
     setSelectedChunk(null)
     setSavedChunks(new Set())
@@ -128,37 +158,8 @@ export default function YouTubePage() {
     if (videoData?.video_id === video_id) setIsVideoSaved(false)
   }
 
-  async function handleGenerateFlashcards() {
-    if (!selectedWords.length || !videoData) return
-    setGeneratingCards(true)
-    try {
-      const timestamps: Record<string, number | null> = {}
-      for (const word of selectedWords) {
-        const seg = videoData.segments.find((s) =>
-          (s.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) ?? []).some((w) => w.toLowerCase() === word),
-        )
-        timestamps[word] = seg?.start ?? null
-      }
-      const cards = await apiFetch<Flashcard[]>('/api/llm/flashcards-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: selectedWords, source_video: videoData.video_id, timestamps }),
-      })
-      const valid = cards.filter((c) => !('error' in c))
-      if (valid.length) {
-        await apiFetch('/api/flashcards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cards: valid }),
-        })
-        setGeneratedCards(valid)
-        setSelectedWords([])
-      }
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setGeneratingCards(false)
-    }
+  function handleWordSaved(card: Flashcard) {
+    setSavedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
   }
 
   async function handleAnalyzeChunks() {
@@ -236,6 +237,48 @@ export default function YouTubePage() {
       </div>
       {error && <div className="alert-error">{error}</div>}
 
+      {/* ── Example videos ─────────────────────────────────────────────────── */}
+      {!videoData && !loading && EXAMPLE_VIDEOS.length > 0 && (
+        <>
+          <div className="section-title" style={{ marginTop: 24 }}>Not sure what to try? Pick one:</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10, marginBottom: 8 }}>
+            {EXAMPLE_VIDEOS.map((ex) => (
+              <button
+                key={ex.id}
+                onClick={() => handleLoadVideo(`https://www.youtube.com/watch?v=${ex.youtube_id}`)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 12px',
+                  borderRadius: 12,
+                  border: '1px solid var(--line)',
+                  background: '#fff',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://img.youtube.com/vi/${ex.youtube_id}/mqdefault.jpg`}
+                  alt={ex.title}
+                  style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+                />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.82rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {ex.title}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                    {ex.kind} · {ex.level}{ex.subtitle ? ` · ${ex.subtitle}` : ''}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* ── Lesson workspace ───────────────────────────────────────────────── */}
       {videoData && (
         <>
@@ -263,33 +306,16 @@ export default function YouTubePage() {
           <YoutubeSyncPlayer
             videoId={videoData.video_id}
             segments={videoData.segments}
-            selectedWords={selectedWords}
-            onWordsChange={setSelectedWords}
             chunks={chunkAnalysis?.chunks}
             selectedChunk={selectedChunk}
             onChunkSelect={setSelectedChunk}
+            onWordSaved={handleWordSaved}
           />
 
-          {selectedWords.length > 0 && (
+          {savedCards.length > 0 && (
             <>
-              <div className="section-title">Vocabulary Collector</div>
-              <div className="chip-list">
-                {selectedWords.map((word) => (
-                  <button key={word} className="chip" onClick={() => setSelectedWords((prev) => prev.filter((w) => w !== word))}>
-                    {word} ×
-                  </button>
-                ))}
-              </div>
-              <button className="btn-primary btn-wide" onClick={handleGenerateFlashcards} disabled={generatingCards}>
-                {generatingCards ? <><span className="spinner" />Generating flashcards…</> : 'Generate flashcards'}
-              </button>
-            </>
-          )}
-
-          {generatedCards.length > 0 && (
-            <>
-              <div className="section-title">Generated Flashcards</div>
-              {generatedCards.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
+              <div className="section-title">Saved from captions</div>
+              {savedCards.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
             </>
           )}
 

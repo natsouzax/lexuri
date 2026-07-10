@@ -18,13 +18,15 @@ export async function sendEmail(
   react: ReactElement,
 ): Promise<void> {
   try {
-    await getResend().emails.send({
+    const { error } = await getResend().emails.send({
       from: process.env.RESEND_FROM ?? 'Lexuri <onboarding@resend.dev>',
       to,
       subject,
       react,
     })
-  } catch {
+    if (error) console.error(`[email] Resend rejected "${subject}" to ${to}:`, error)
+  } catch (e) {
     // email is fire-and-forget — never crashes the caller
+    console.error(`[email] failed to send "${subject}" to ${to}:`, e)
   }
 }

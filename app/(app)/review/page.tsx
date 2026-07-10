@@ -6,8 +6,10 @@ import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 import Hero from '@/components/ui/Hero'
 import MetricCard from '@/components/ui/MetricCard'
 import ReviewSummary from '@/components/ui/ReviewSummary'
+import ConfettiBurst from '@/components/ui/ConfettiBurst'
 import type { Flashcard } from '@/lib/types'
 import type { SRSCard } from '@/lib/srs'
+import { playTap, playSuccess, playSoft, playFanfare } from '@/lib/sfx'
 
 // ── XP Float ─────────────────────────────────────────────────────────────────
 
@@ -73,12 +75,14 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
   const [revealed, setRevealed] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackType>(null)
   const [floatXP, setFloatXP] = useState<number | null>(null)
+  const [celebrate, setCelebrate] = useState(false)
   const cardControls = useAnimation()
   const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setRevealed(false)
     setFeedback(null)
+    setCelebrate(false)
   }, [card.id])
 
   function playAudio() {
@@ -99,10 +103,17 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
     setFloatXP(XP_BY_QUALITY[quality] ?? 3)
 
     if (type === 'easy') {
+      playSuccess()
+      setCelebrate(true)
       cardControls.start({ scale: [1, 1.04, 1], transition: { duration: 0.5, ease: 'easeInOut' } })
+    } else if (type === 'good') {
+      playSuccess()
+      cardControls.start({ scale: [1, 1.02, 1], transition: { duration: 0.35, ease: 'easeInOut' } })
     } else if (type === 'hard') {
+      playSoft()
       cardControls.start({ x: [0, -9, 9, -6, 6, -3, 3, 0], transition: { duration: 0.38 } })
     } else if (type === 'again') {
+      playSoft()
       cardControls.start({ x: [0, -14, 14, -9, 9, -4, 4, 0], scale: [1, 0.97, 1], transition: { duration: 0.45 } })
     }
 
@@ -153,8 +164,9 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
             transition: feedback ? 'box-shadow 200ms ease, border-color 200ms ease' : undefined,
             outline: feedback ? `2px solid ${feedbackBorder[feedback]}` : '2px solid transparent',
           }}
-          onClick={() => !revealed && setRevealed(true)}
+          onClick={() => { if (!revealed) { playTap(); setRevealed(true) } }}
         >
+          {celebrate && <ConfettiBurst count={20} />}
           <div className={`flashcard-inner${revealed ? ' flipped' : ''}`}>
             {/* Front */}
             <div className="flashcard-face flashcard-front">
@@ -370,6 +382,7 @@ export default function ReviewPage() {
         // finished the queue — reload so "My Words" reflects updated schedules
         await loadCards()
         setSessionDone(true)
+        playFanfare()
       } else {
         setQueueIndex((i) => i + 1)
       }
@@ -421,7 +434,7 @@ export default function ReviewPage() {
         {(['review', 'words'] as Tab[]).map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => { playTap(); setTab(t) }}
             style={{
               border: 'none',
               background: 'none',

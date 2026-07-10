@@ -36,11 +36,22 @@ export async function PATCH(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = (await request.json()) as { chunks_count?: number }
+    const body = (await request.json()) as {
+      chunks_count?: number
+      spotify_url?: string | null
+      youtube_url?: string | null
+      lrc_content?: string | null
+    }
+
+    const update: Record<string, unknown> = {}
+    if ('chunks_count' in body) update.chunks_count = body.chunks_count ?? 0
+    if ('spotify_url' in body) update.spotify_url = body.spotify_url
+    if ('youtube_url' in body) update.youtube_url = body.youtube_url
+    if ('lrc_content' in body) update.lrc_content = body.lrc_content
 
     const { data, error } = await supabase
       .from('songs')
-      .update({ chunks_count: body.chunks_count ?? 0 })
+      .update(update)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()

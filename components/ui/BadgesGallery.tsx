@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EASE_OUT } from '@/lib/easing'
+import { playTap } from '@/lib/sfx'
 
 interface BadgeDef {
   id: string
@@ -135,7 +136,7 @@ export default function BadgesGallery({ unlockedIds, totalReviews = 0, streak = 
           <motion.button
             key={cat}
             className={`badges-tab${activeCategory === cat ? ' active' : ''}`}
-            onClick={() => setActiveCategory(cat)}
+            onClick={() => { playTap(); setActiveCategory(cat) }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >

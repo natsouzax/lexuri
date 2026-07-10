@@ -11,7 +11,7 @@
 
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import { getTranscript } from '../lib/youtube'
+import { getTranscript } from '../lib/media/youtube'
 import { analyzeChunks } from '../lib/chunks'
 import rawItems from '../data/feed-items.json'
 import type { StaticLesson } from '../lib/featured-lesson'

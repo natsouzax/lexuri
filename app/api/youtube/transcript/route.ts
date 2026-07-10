@@ -6,7 +6,7 @@ import {
   reviewAndCleanSegments,
   splitAtSentenceBoundaries,
   updateTranscriptCache,
-} from '@/lib/youtube'
+} from '@/lib/media/youtube'
 
 function scheduleRepair(videoId: string, mergedSegments: Parameters<typeof reviewAndCleanSegments>[0]) {
   after(async () => {

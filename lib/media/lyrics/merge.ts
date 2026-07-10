@@ -1,21 +1,26 @@
-import OpenAI from 'openai'
-import { parseLrc, extractPlainFromLrc } from './lyrics'
-import type { SpotifyLyricsLine } from './spotify'
+// Multi-source lyrics merge: combines imperfect text versions with AI, then
+// marries the result with the best available timing data (line-synced timed
+// lines > lrclib LRC > none). Platform-neutral — timed lines arrive as the
+// internal TimedLine model regardless of which platform produced them.
+
+import { getOpenAIClient } from '@/lib/openai'
+import { buildLrc, parseLrc, extractPlainFromLrc } from './parser'
+import type { TimedLine } from './types'
 
 export interface LyricsSourceInput {
-  name: 'youtube' | 'spotify' | 'genius' | 'lrclib' | 'happi' | 'lyricsovh'
-  plain_text?: string
-  // YouTube segments with timing
+  name: 'youtube' | 'spotify' | 'genius' | 'lrclib' | 'lyricsovh'
+  plainText?: string
+  // Caption segments with timing (e.g. YouTube)
   segments?: Array<{ text: string; start: number; duration: number }>
   // LRC format string
   lrc?: string
-  // Spotify line-synced lines
-  spotify_lines?: SpotifyLyricsLine[]
+  // Line-synced lyrics (e.g. Spotify Musixmatch)
+  timedLines?: TimedLine[]
 }
 
 export interface MergedSegment {
   text: string
-  start: number   // seconds
+  start: number // seconds
   duration: number
 }
 
@@ -27,8 +32,6 @@ export interface MergeResult {
   is_synced: boolean
 }
 
-const openai = new OpenAI()
-
 // ── ♪ detection ─────────────────────────────────────────────────────────────
 // YouTube auto-captions that were verified/synced by YouTube contain ♪ markers.
 // If present, the timing is already correct — skip the AI merge entirely.
@@ -37,21 +40,11 @@ function hasYoutubeSync(segments: Array<{ text: string }> | undefined): boolean 
   return !!segments?.some((s) => s.text.includes('♪'))
 }
 
-// ── LRC builder from segments ────────────────────────────────────────────────
-
 function segmentsToLrc(segments: MergedSegment[]): string {
-  return segments
-    .map(({ text, start }) => {
-      const m = Math.floor(start / 60).toString().padStart(2, '0')
-      const s = (start % 60).toFixed(2).padStart(5, '0')
-      return `[${m}:${s}]${text}`
-    })
-    .join('\n')
+  return buildLrc(segments.map(({ text, start }) => ({ time: start, text })))
 }
 
-// ── Spotify lines → MergedSegments ───────────────────────────────────────────
-
-function spotifyLinesToSegments(lines: SpotifyLyricsLine[]): MergedSegment[] {
+function timedLinesToSegments(lines: TimedLine[]): MergedSegment[] {
   return lines
     .filter((l) => l.words.trim() && l.words !== '♪')
     .map((l, i) => {
@@ -64,15 +57,14 @@ function spotifyLinesToSegments(lines: SpotifyLyricsLine[]): MergedSegment[] {
 
 // ── AI merge ─────────────────────────────────────────────────────────────────
 // Sends all available text sources to GPT-4o-mini and asks it to produce
-// the most accurate plain-text lyrics. Then marries that text with the
-// best timing data available (Spotify > lrclib > none).
+// the most accurate plain-text lyrics.
 
 async function aiMergeText(sources: Array<{ name: string; text: string }>): Promise<string> {
   const sourcesBlock = sources
     .map((s) => `=== ${s.name.toUpperCase()} ===\n${s.text.slice(0, 2000)}`)
     .join('\n\n')
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getOpenAIClient().chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0,
     max_tokens: 2000,
@@ -113,12 +105,12 @@ export async function mergeLyricsSources(inputs: LyricsSourceInput[]): Promise<M
 
   for (const src of inputs) {
     let text = ''
-    if (src.spotify_lines) {
-      text = src.spotify_lines.filter((l) => l.words !== '♪').map((l) => l.words).join('\n')
+    if (src.timedLines) {
+      text = src.timedLines.filter((l) => l.words !== '♪').map((l) => l.words).join('\n')
     } else if (src.lrc) {
       text = extractPlainFromLrc(src.lrc)
-    } else if (src.plain_text) {
-      text = src.plain_text
+    } else if (src.plainText) {
+      text = src.plainText
     } else if (src.segments) {
       text = src.segments.map((s) => s.text).join('\n')
     }
@@ -136,15 +128,15 @@ export async function mergeLyricsSources(inputs: LyricsSourceInput[]): Promise<M
       : textSources[0].text
 
   // ─ Collect timing (best source wins) ─
-  const spotifyInput = inputs.find((s) => s.name === 'spotify' && s.spotify_lines?.length)
-  const lrclibInput = inputs.find((s) => s.name === 'lrclib' && s.lrc)
+  const timedInput = inputs.find((s) => s.timedLines?.length)
+  const lrcInput = inputs.find((s) => s.name === 'lrclib' && s.lrc)
 
-  if (spotifyInput?.spotify_lines) {
-    // Spotify line-synced is highest quality for timing
-    const baseSegments = spotifyLinesToSegments(spotifyInput.spotify_lines)
+  if (timedInput?.timedLines) {
+    // Line-synced source (Spotify) is highest quality for timing
+    const baseSegments = timedLinesToSegments(timedInput.timedLines)
     const mergedLines = mergedText.split('\n').filter(Boolean)
 
-    // Align merged text lines to Spotify timing segments by index
+    // Align merged text lines to the timed segments by index
     const segments: MergedSegment[] = baseSegments.map((seg, i) => ({
       text: mergedLines[i] ?? seg.text,
       start: seg.start,
@@ -155,14 +147,14 @@ export async function mergeLyricsSources(inputs: LyricsSourceInput[]): Promise<M
       plain_lyrics: mergedText,
       lrc_content: segmentsToLrc(segments),
       segments,
-      source: 'spotify+ai',
+      source: `${timedInput.name}+ai`,
       is_synced: true,
     }
   }
 
-  if (lrclibInput?.lrc) {
+  if (lrcInput?.lrc) {
     // lrclib LRC as timing fallback
-    const lrcLines = parseLrc(lrclibInput.lrc)
+    const lrcLines = parseLrc(lrcInput.lrc)
     const mergedLines = mergedText.split('\n').filter(Boolean)
 
     const segments: MergedSegment[] = lrcLines.map((l, i) => {

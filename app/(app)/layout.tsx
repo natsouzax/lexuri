@@ -1,18 +1,10 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase-server'
-import AppShell from '@/components/AppShell'
-import PremiumPopup from '@/components/PremiumPopup'
-import SpotifyGlobalCheck from '@/components/SpotifyGlobalCheck'
+import AppChrome from '@/components/AppChrome'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser()
   if (!user) redirect('/login')
 
-  return (
-    <AppShell>
-      {children}
-      <PremiumPopup />
-      <SpotifyGlobalCheck />
-    </AppShell>
-  )
+  return <AppChrome>{children}</AppChrome>
 }

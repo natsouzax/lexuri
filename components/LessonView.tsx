@@ -47,9 +47,7 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
   const [loading, setLoading]                     = useState(false)
   const [loadError, setLoadError]                 = useState('')
 
-  const [selectedWords, setSelectedWords]   = useState<string[]>([])
   const [generatedCards, setGeneratedCards] = useState<Flashcard[]>([])
-  const [generatingCards, setGeneratingCards] = useState(false)
 
   const [selectedChunk, setSelectedChunk]   = useState<ChunkItem | null>(null)
   const [savedChunks, setSavedChunks]       = useState<Set<string>>(new Set())
@@ -89,38 +87,8 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
     else       { saveItem(id);   setSaved(true)  }
   }
 
-  async function handleGenerateFlashcards() {
-    if (!selectedWords.length || !lesson) return
-    setGeneratingCards(true)
-    setError('')
-    try {
-      const timestamps: Record<string, number | null> = {}
-      for (const word of selectedWords) {
-        const seg = lesson.segments.find((s) =>
-          (s.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) ?? []).some((w) => w.toLowerCase() === word),
-        )
-        timestamps[word] = seg?.start ?? null
-      }
-      const cards = await apiFetch<Flashcard[]>('/api/llm/flashcards-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: selectedWords, source_video: lesson.video_id, timestamps }),
-      })
-      const valid = cards.filter((c) => !('error' in c))
-      if (valid.length) {
-        await apiFetch('/api/flashcards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cards: valid }),
-        })
-        setGeneratedCards(valid)
-        setSelectedWords([])
-      }
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setGeneratingCards(false)
-    }
+  function handleWordSaved(card: Flashcard) {
+    setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
   }
 
   async function handleMakeFlashcard(chunk: ChunkItem) {
@@ -227,28 +195,11 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
           <YoutubeSyncPlayer
             videoId={lesson.video_id}
             segments={lesson.segments}
-            selectedWords={selectedWords}
-            onWordsChange={setSelectedWords}
             chunks={lesson.chunks}
             selectedChunk={selectedChunk}
             onChunkSelect={setSelectedChunk}
+            onWordSaved={handleWordSaved}
           />
-
-          {selectedWords.length > 0 && (
-            <>
-              <div className="section-title">Vocabulary Collector</div>
-              <div className="chip-list">
-                {selectedWords.map((word) => (
-                  <button key={word} className="chip" onClick={() => setSelectedWords((prev) => prev.filter((w) => w !== word))}>
-                    {word} ×
-                  </button>
-                ))}
-              </div>
-              <button className="btn-primary btn-wide" onClick={handleGenerateFlashcards} disabled={generatingCards}>
-                {generatingCards ? <><span className="spinner" />Generating flashcards...</> : 'Generate flashcards'}
-              </button>
-            </>
-          )}
 
           {error && <div className="alert-error">{error}</div>}
 
