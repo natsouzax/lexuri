@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = [
   '/onboarding',
   '/placement',
   '/supportus',
+  '/extension',
 ]
 
 const AUTH_PAGES = ['/login', '/register']
