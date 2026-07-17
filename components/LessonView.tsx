@@ -171,12 +171,12 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
 
       {loadError && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <UnverifiedCard />
+          <UnverifiedCard youtubeId={item.youtube_id} feedItemId={item.id} />
           <button className="btn-secondary" onClick={loadLesson}>Retry</button>
         </div>
       )}
 
-      {lesson?.unverified && <UnverifiedCard />}
+      {lesson?.unverified && <UnverifiedCard youtubeId={item.youtube_id} feedItemId={item.id} />}
 
       {lesson && !lesson.unverified && (
         <>

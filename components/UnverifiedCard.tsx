@@ -1,5 +1,14 @@
+interface Props {
+  youtubeId?: string
+  feedItemId?: string
+}
+
 // Shown inline in the feed when captions/lyrics couldn't be verified.
-export default function UnverifiedCard() {
+export default function UnverifiedCard({ youtubeId, feedItemId }: Props) {
+  const watchUrl = youtubeId
+    ? `https://www.youtube.com/watch?v=${youtubeId}${feedItemId ? `&lexuri_feed_id=${feedItemId}` : ''}`
+    : null
+
   return (
     <div
       style={{
@@ -23,6 +32,29 @@ export default function UnverifiedCard() {
         Subtitles may be missing, inaccurate, or out of sync. Connect your Spotify
         account to unlock Musixmatch-verified lyrics.
       </p>
+      {watchUrl && (
+        <a
+          href={watchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            alignSelf: 'flex-start',
+            marginTop: 4,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 16px',
+            borderRadius: 999,
+            background: '#92400e',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            textDecoration: 'none',
+          }}
+        >
+          🎧 Assistir no YouTube pra destravar essa lição
+        </a>
+      )}
     </div>
   )
 }
