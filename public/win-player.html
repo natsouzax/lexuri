@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Lexuri player</title>
+<style>
+  html,body{margin:0;padding:0;background:#000;height:100%;overflow:hidden}
+  #p{position:absolute;inset:0;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div id="p"></div>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  // Player usado pelo Lexuri Windows (app desktop) dentro de um WebView2
+  // (pacote webview_windows). Carregado como https://lexuri.app/win-player.html?v=ID
+  // — precisa estar nessa origem para vídeos com restrição de embed (Vevo etc.)
+  // não darem erro 150/152. Espelha o player do lexuri-mobile (lib/widgets/lexuri_player.dart),
+  // trocando o canal de mensagens do WebView (JavaScriptChannel) pelo do
+  // WebView2 (window.chrome.webview.postMessage).
+  var player, timer;
+  var params = new URLSearchParams(window.location.search);
+  var videoId = params.get('v') || '';
+
+  function post(data) {
+    if (window.chrome && window.chrome.webview) {
+      window.chrome.webview.postMessage(JSON.stringify(data));
+    }
+  }
+
+  function onYouTubeIframeAPIReady(){
+    player = new YT.Player('p', {
+      videoId: videoId,
+      playerVars: {playsinline:1, rel:0, modestbranding:1, fs:0,
+                   origin:'https://lexuri.app'},
+      events: {
+        onReady: function(){
+          post({event:'ready'});
+          timer = setInterval(function(){
+            if(player && player.getCurrentTime){
+              post({event:'time', t: player.getCurrentTime()});
+            }
+          }, 350);
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>
