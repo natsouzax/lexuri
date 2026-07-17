@@ -6,11 +6,13 @@ interface Props {
   item: FeedItem
   saved: boolean
   onToggleSave: (id: string) => void
+  ready?: boolean
 }
 
-export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
+export default function FeedItemCard({ item, saved, onToggleSave, ready = true }: Props) {
   const thumb = getThumbnail(item.youtube_id)
   const levelColor = getLevelColor(item.level)
+  const watchUrl = `https://www.youtube.com/watch?v=${item.youtube_id}&lexuri_feed_id=${item.id}`
 
   return (
     <div
@@ -73,6 +75,12 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
         {item.maintenance && (
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(217,119,6,0.92)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.05em' }}>
             ⚠ UNDER MAINTENANCE
+          </div>
+        )}
+        {/* Needs unlock strip */}
+        {!ready && !item.maintenance && !item.featured && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.05em' }}>
+            🎧 WATCH ON YOUTUBE TO UNLOCK
           </div>
         )}
         {/* Level badge */}
@@ -169,13 +177,25 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <Link
-            href={`/feed/${item.id}`}
-            className="btn-primary"
-            style={{ flex: 1, textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
-          >
-            Study
-          </Link>
+          {ready ? (
+            <Link
+              href={`/feed/${item.id}`}
+              className="btn-primary"
+              style={{ flex: 1, textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
+            >
+              Study
+            </Link>
+          ) : (
+            <a
+              href={watchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{ flex: 1, textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
+            >
+              🎧 Watch to unlock
+            </a>
+          )}
           <button
             onClick={() => onToggleSave(item.id)}
             style={{

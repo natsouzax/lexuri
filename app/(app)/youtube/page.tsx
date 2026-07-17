@@ -209,7 +209,7 @@ export default function YouTubePage() {
       <Hero
         title="YouTube Studio"
         subtitle="Any video. Any clip. Study it."
-        body="Paste a YouTube URL, get the transcript synced to the video, save useful expressions as flashcards, and keep a personal library of videos worth revisiting."
+        body="Watch anything on YouTube with the Lexuri extension active — when you're done, come back here with the transcript, chunks, and flashcards ready to go."
       />
 
       <div className="learn-tabs">
@@ -221,20 +221,28 @@ export default function YouTubePage() {
         ))}
       </div>
 
-      {/* ── Load video ─────────────────────────────────────────────────────── */}
-      <div className="section-title">Load a Video or Clip</div>
-      <div className="input-row">
-        <input
-          className="input-field"
-          placeholder="https://www.youtube.com/watch?v=..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLoadVideo()}
-        />
-        <button className="btn-primary" onClick={() => handleLoadVideo()} disabled={loading}>
-          {loading ? <><span className="spinner" />Loading…</> : 'Load'}
-        </button>
+      {/* ── Watch on YouTube ──────────────────────────────────────────────── */}
+      <div className="section-title">Watch Something New</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 8 }}>
+        <a
+          href="https://www.youtube.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary"
+          style={{ textDecoration: 'none', padding: '10px 22px' }}
+        >
+          🎧 Search on YouTube
+        </a>
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0, maxWidth: 420 }}>
+          Find any video or music clip on YouTube. With the Lexuri extension active, watching it builds the lesson automatically — no link pasting needed.{' '}
+          <a href="/extension/connect" style={{ color: 'var(--moss)', fontWeight: 700 }}>Connect the extension</a>
+        </p>
       </div>
+      {loading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted)', fontSize: '0.86rem' }}>
+          <span className="spinner" />Loading…
+        </div>
+      )}
       {error && <div className="alert-error">{error}</div>}
 
       {/* ── Example videos ─────────────────────────────────────────────────── */}

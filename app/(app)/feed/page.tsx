@@ -23,16 +23,25 @@ const ALL_ITEMS = FEED_ITEMS.filter((item) => !item.maintenance)
 const LEVELS = ['All', 'A1', 'A2', 'B1', 'B2', 'C1'] as const
 type LevelFilter = (typeof LEVELS)[number]
 type TypeFilter = 'featured' | 'All' | 'video' | 'music'
+type ReadinessFilter = 'all' | 'ready' | 'unlock'
 
 export default function FeedPage() {
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('featured')
+  const [readinessFilter, setReadinessFilter] = useState<ReadinessFilter>('all')
+  const [readyIds, setReadyIds] = useState<Set<string> | null>(null)
   const [cardCount, setCardCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
 
   useEffect(() => {
     setSavedIds(getSavedItemIds())
+  }, [])
+
+  useEffect(() => {
+    apiFetch<{ ready: string[] }>('/api/feed/status')
+      .then((res) => setReadyIds(new Set(res.ready)))
+      .catch(() => setReadyIds(new Set()))
   }, [])
 
   useEffect(() => {
@@ -53,7 +62,13 @@ export default function FeedPage() {
     }
   }
 
+  function isReady(id: string): boolean {
+    return readyIds === null || readyIds.has(id)
+  }
+
   const filtered = ALL_ITEMS.filter((item) => {
+    if (readinessFilter === 'ready' && !isReady(item.id)) return false
+    if (readinessFilter === 'unlock' && isReady(item.id)) return false
     if (typeFilter === 'featured') return item.featured === true
     return (
       (levelFilter === 'All' || item.level === levelFilter) &&
@@ -136,6 +151,31 @@ export default function FeedPage() {
             ))}
           </div>
         )}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Status:</span>
+          {([
+            { id: 'all', label: 'All' },
+            { id: 'ready', label: '✓ Ready to study' },
+            { id: 'unlock', label: '🎧 Watch to unlock' },
+          ] as { id: ReadinessFilter; label: string }[]).map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setReadinessFilter(r.id)}
+              style={{
+                padding: '5px 14px',
+                borderRadius: 999,
+                border: `1.5px solid ${readinessFilter === r.id ? 'var(--moss)' : 'var(--line)'}`,
+                background: readinessFilter === r.id ? 'var(--moss)' : 'transparent',
+                color: readinessFilter === r.id ? '#fff' : 'var(--muted)',
+                fontWeight: readinessFilter === r.id ? 700 : 400,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+              }}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div
@@ -149,6 +189,7 @@ export default function FeedPage() {
         {filtered.map((item) => (
           <FeedItemCard
             key={item.id}
+            ready={isReady(item.id)}
             item={item}
             saved={savedIds.includes(item.id)}
             onToggleSave={handleToggleSave}
@@ -174,6 +215,7 @@ export default function FeedPage() {
             {ALL_ITEMS.filter((item) => savedIds.includes(item.id)).map((item) => (
               <FeedItemCard
                 key={item.id}
+                ready={isReady(item.id)}
                 item={item}
                 saved={true}
                 onToggleSave={handleToggleSave}
