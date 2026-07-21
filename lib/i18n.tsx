@@ -507,8 +507,12 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
     setChosen(true)
   }
 
+  // A INTERFACE é sempre em inglês (imersão) — o idioma escolhido no popup
+  // guia apenas a tradução de conteúdo (palavras, letras, chunks) via
+  // getNativeLangName(). Os dicionários pt/es/… permanecem para o caso de
+  // se querer localizar a UI no futuro, mas hoje t() resolve sempre em EN.
   function t(key: DictKey, vars?: Record<string, string | number>): string {
-    let text: string = ALL_DICTS[lang][key] ?? DICT.en[key]
+    let text: string = DICT.en[key]
     if (vars) {
       for (const [k, v] of Object.entries(vars)) text = text.replace(`{${k}}`, String(v))
     }

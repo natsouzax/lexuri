@@ -1029,12 +1029,21 @@ h1, h2, h3 {
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 .mkt-nav-logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  line-height: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: var(--paper);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .mkt-nav-links {
   display: flex;

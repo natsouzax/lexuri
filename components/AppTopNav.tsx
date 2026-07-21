@@ -71,7 +71,7 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
           <PanelIcon />
         </button>
 
-        <Link href="/dashboard" className="app-top-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <Link href="/" className="app-top-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 26, height: 26, borderRadius: 8, background: 'var(--clay)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', color: '#fff', flexShrink: 0 }}>L</span>
           Lexuri
         </Link>

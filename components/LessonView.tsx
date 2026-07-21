@@ -51,6 +51,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
   const [savedChunks, setSavedChunks]         = useState<Set<string>>(new Set())
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
   const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
+  const [cardsExpanded, setCardsExpanded]     = useState(false)
   const [lyricsOpen, setLyricsOpen]           = useState(true)
   const [error, setError]                     = useState('')
   const [finishing, setFinishing]             = useState(false)
@@ -232,9 +233,18 @@ export default function LessonView({ feedItemId: propId }: Props) {
                 {t('lesson.savedWords')} ({generatedCards.length})
                 <Link href="/review" style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', textDecoration: 'none' }}>{t('nav.review')} →</Link>
               </div>
-              {generatedCards.map((card) => (
+              {/* Só a primeira fica aberta; as demais escondidas atrás de um toggle. */}
+              {(cardsExpanded ? generatedCards : generatedCards.slice(0, 1)).map((card) => (
                 <GeneratedLearningCard key={card.id} card={card} />
               ))}
+              {generatedCards.length > 1 && (
+                <button
+                  onClick={() => setCardsExpanded((v) => !v)}
+                  style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--moss)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0 16px' }}
+                >
+                  {cardsExpanded ? '▲ Show less' : `▼ Show ${generatedCards.length - 1} more`}
+                </button>
+              )}
             </>
           )}
 

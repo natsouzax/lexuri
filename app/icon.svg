@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#fffaf0"/>
+  <rect width="64" height="64" rx="14" fill="#c86f4a"/>
   <text
-    x="32" y="48"
+    x="32" y="47"
     text-anchor="middle"
     font-family="Fraunces, Georgia, 'Times New Roman', serif"
     font-weight="900"
     font-size="40"
-    fill="#18211d"
+    fill="#fffaf0"
   >L</text>
 </svg>

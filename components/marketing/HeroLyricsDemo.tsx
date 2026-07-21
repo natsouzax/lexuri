@@ -3,41 +3,113 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Demo interativa da experiência central: a letra avança sozinha (linha
-// ativa em destaque, como no player real) e os chunks são clicáveis —
-// tocar revela a tradução, mostrando o diferencial sem precisar logar.
+// Demo interativa da experiência central: a faixa "Happy" toca de fundo
+// (via YouTube, autoplay mudo + loop das primeiras linhas), a letra
+// sincroniza com o tempo real e os chunks são clicáveis — tocar revela a
+// tradução. Botão de som pra ligar/desligar o áudio.
 interface Line {
+  at: number // segundo em que a linha entra (timestamp real de Happy)
   before: string
   chunk?: { text: string; tr: string }
   after: string
 }
 
+const VIDEO_ID = 'ZbZSe6N_BXs'
+const LOOP_START = 5
+const LOOP_END = 38
+
 const LINES: Line[] = [
-  { before: 'It might seem crazy what ', chunk: { text: "I'm 'bout to say", tr: 'o que estou prestes a dizer' }, after: '' },
-  { before: 'Sunshine she’s here, you can ', chunk: { text: 'take a break', tr: 'fazer uma pausa' }, after: '' },
-  { before: 'Clap along if you feel like a ', chunk: { text: 'room without a roof', tr: 'sala sem teto (sem limites)' }, after: '' },
-  { before: 'Because I’m ', chunk: { text: 'happy', tr: 'feliz' }, after: '' },
+  { at: 5.5,  before: 'It might seem crazy what ', chunk: { text: "I'm 'bout to say", tr: 'o que vou dizer' }, after: '' },
+  { at: 13.0, before: 'Sunshine she’s here, you can ', chunk: { text: 'take a break', tr: 'fazer uma pausa' }, after: '' },
+  { at: 24.2, before: 'With the air like I don’t care, baby, ', chunk: { text: 'by the way', tr: 'a propósito' }, after: '' },
+  { at: 30.7, before: 'Clap along if you feel like a ', chunk: { text: 'room without a roof', tr: 'sala sem teto' }, after: '' },
 ]
 
+interface YTPlayer {
+  getCurrentTime(): number
+  seekTo(s: number, allow: boolean): void
+  mute(): void
+  unMute(): void
+  setVolume(v: number): void
+  playVideo(): void
+  destroy(): void
+}
+
+// Acesso ao YT sem redeclarar o global (o YoutubeSyncPlayer já o declara).
+interface YTApi {
+  YT?: { Player: new (el: HTMLElement, opts: unknown) => YTPlayer }
+  onYouTubeIframeAPIReady?: () => void
+}
+function ytWindow(): YTApi {
+  return window as unknown as YTApi
+}
+
 export default function HeroLyricsDemo() {
-  const [active, setActive] = useState(2)
-  const [revealed, setRevealed] = useState<number | null>(2)
-  const timer = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+  const [active, setActive] = useState(0)
+  const [revealed, setRevealed] = useState<number | null>(null)
+  const [muted, setMuted] = useState(true)
+  const [ready, setReady] = useState(false)
+  const playerRef = useRef<YTPlayer | null>(null)
+  const mountRef = useRef<HTMLDivElement>(null)
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
-    timer.current = setInterval(() => {
-      setActive((a) => {
-        const next = (a + 1) % LINES.length
-        setRevealed(null)
-        return next
+    function init() {
+      const yt = ytWindow()
+      if (!mountRef.current || !yt.YT?.Player) return
+      playerRef.current = new yt.YT.Player(mountRef.current, {
+        videoId: VIDEO_ID,
+        playerVars: { autoplay: 1, mute: 1, controls: 0, loop: 1, playsinline: 1, rel: 0, modestbranding: 1, disablekb: 1, fs: 0 },
+        events: {
+          onReady: (e: { target: YTPlayer }) => {
+            e.target.mute()
+            e.target.seekTo(LOOP_START, true)
+            e.target.playVideo()
+            setReady(true)
+            const tick = () => {
+              const p = playerRef.current
+              if (p) {
+                let t = p.getCurrentTime()
+                if (t >= LOOP_END || t < LOOP_START - 1) { p.seekTo(LOOP_START, true); t = LOOP_START }
+                let idx = 0
+                for (let i = 0; i < LINES.length; i++) if (t >= LINES[i].at) idx = i
+                setActive(idx)
+              }
+              rafRef.current = requestAnimationFrame(tick)
+            }
+            rafRef.current = requestAnimationFrame(tick)
+          },
+        },
       })
-    }, 2600)
-    return () => clearInterval(timer.current)
+    }
+
+    if (ytWindow().YT?.Player) {
+      init()
+    } else {
+      if (!document.getElementById('yt-iframe-api')) {
+        const s = document.createElement('script')
+        s.id = 'yt-iframe-api'
+        s.src = 'https://www.youtube.com/iframe_api'
+        document.head.appendChild(s)
+      }
+      ytWindow().onYouTubeIframeAPIReady = init
+    }
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      playerRef.current?.destroy()
+      playerRef.current = null
+    }
   }, [])
 
+  function toggleSound() {
+    const p = playerRef.current
+    if (!p) return
+    if (muted) { p.unMute(); p.setVolume(70); setMuted(false) }
+    else { p.mute(); setMuted(true) }
+  }
+
   function handleChunk(i: number) {
-    clearInterval(timer.current)
-    setActive(i)
     setRevealed((r) => (r === i ? null : i))
   }
 
@@ -54,9 +126,14 @@ export default function HeroLyricsDemo() {
         boxShadow: 'var(--shadow-lg)',
         width: '100%',
         maxWidth: 440,
+        position: 'relative',
       }}
     >
-      {/* barra de janela + faixa */}
+      {/* Player do YouTube — presente mas invisível (só o áudio importa) */}
+      <div style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <div ref={mountRef} />
+      </div>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 18 }}>
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--clay-bright)' }} />
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--butter)' }} />
@@ -66,12 +143,11 @@ export default function HeroLyricsDemo() {
         </span>
       </div>
 
-      {/* letra karaokê */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 176 }}>
         {LINES.map((line, i) => {
           const isActive = i === active
           return (
-            <div key={i} style={{ transition: 'opacity 400ms ease' }}>
+            <div key={i}>
               <p
                 style={{
                   margin: 0,
@@ -139,23 +215,29 @@ export default function HeroLyricsDemo() {
         })}
       </div>
 
-      {/* player fake */}
+      {/* Controles: som + faixa de progresso */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18 }}>
-        <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--clay)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: '#fff' }}>▶</span>
+        <button
+          onClick={toggleSound}
+          aria-label={muted ? 'Unmute' : 'Mute'}
+          title={muted ? 'Play with sound' : 'Mute'}
+          style={{
+            width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+            background: muted ? 'rgba(255,250,240,0.1)' : 'var(--clay)',
+            border: 'none', cursor: 'pointer', color: '#fff', fontSize: '0.85rem',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 200ms ease',
+          }}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
         <div style={{ flex: 1, height: 5, borderRadius: 999, background: 'rgba(255,250,240,0.12)', overflow: 'hidden' }}>
-          <motion.div
-            key={active}
-            initial={{ width: '8%' }}
-            animate={{ width: `${((active + 1) / LINES.length) * 100}%` }}
-            transition={{ duration: 2.4, ease: 'linear' }}
-            style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, var(--clay), var(--butter))' }}
-          />
+          <div style={{ width: `${((active + 1) / LINES.length) * 100}%`, height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, var(--clay), var(--butter))', transition: 'width 500ms ease' }} />
         </div>
-        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--dark-muted)' }}>0:{(active + 1) * 15}</span>
       </div>
 
       <p style={{ margin: '12px 0 0', fontSize: '0.68rem', color: 'var(--dark-muted)', textAlign: 'center' }}>
-        👆 tap a highlighted phrase
+        {muted ? (ready ? '🔇 tap the speaker for sound · 👆 tap a phrase' : '👆 tap a highlighted phrase') : '👆 tap a highlighted phrase'}
       </p>
     </motion.div>
   )
