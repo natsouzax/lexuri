@@ -1,4 +1,4 @@
-// Timestamps ajustados manualmente (delta +14s) — 2026-07-21
+// Timestamps ajustados manualmente (delta -1.1s → 1ª fala em 14s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,187 +8,187 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "I heard that you're settled down.",
-      "start": 15.135,
+      "start": 14.035,
       "duration": 5.167661475964794
     },
     {
       "text": "That you found a girl and you're married now.",
-      "start": 20.303,
+      "start": 19.203,
       "duration": 7.046811103588355
     },
     {
       "text": "I heard that your dreams came true.",
-      "start": 27.349,
+      "start": 26.249,
       "duration": 5.48085308056872
     },
     {
       "text": "Guess she gave you things I didn't give to you.",
-      "start": 32.83,
+      "start": 31.73,
       "duration": 7.360002708192281
     },
     {
       "text": "Old friend, why are you so shy?",
-      "start": 40.19,
+      "start": 39.09,
       "duration": 4.854469871360867
     },
     {
       "text": "Ain't like you to hold back or hide from the light.",
-      "start": 45.045,
+      "start": 43.945,
       "duration": 7.986385917400136
     },
     {
       "text": "I hate to turn up out of the blue, uninvited,",
-      "start": 53.031,
+      "start": 51.931,
       "duration": 7.046811103588355
     },
     {
       "text": "But I couldn't stay away; I couldn't fight it.",
-      "start": 60.078,
+      "start": 58.978,
       "duration": 7.2034069058903185
     },
     {
       "text": "I had hoped you'd see my face and that you'd be reminded",
-      "start": 67.281,
+      "start": 66.181,
       "duration": 8.769364928909953
     },
     {
       "text": "That for me it isn't over.",
-      "start": 76.051,
+      "start": 74.951,
       "duration": 4.07149085985105
     },
     {
       "text": "Never mind, I'll find someone like you.",
-      "start": 80.122,
+      "start": 79.022,
       "duration": 6.107236289776574
     },
     {
       "text": "I wish nothing but the best for you, too.",
-      "start": 86.229,
+      "start": 85.129,
       "duration": 6.420427894380501
     },
     {
       "text": "Don't forget me, I beg.",
-      "start": 92.65,
+      "start": 91.55,
       "duration": 3.6017034529451593
     },
     {
       "text": "I remember you said,",
-      "start": 96.252,
+      "start": 95.152,
       "duration": 3.131916046039269
     },
     {
       "text": "Sometimes it lasts in love, but sometimes it hurts instead.",
-      "start": 99.384,
+      "start": 98.284,
       "duration": 9.239152335815843
     },
     {
       "text": "You know how the time flies.",
-      "start": 108.623,
+      "start": 107.523,
       "duration": 4.3846824644549764
     },
     {
       "text": "Only yesterday was the time of our lives.",
-      "start": 113.007,
+      "start": 111.907,
       "duration": 6.420427894380501
     },
     {
       "text": "We were born and raised in a summer haze,",
-      "start": 119.428,
+      "start": 118.328,
       "duration": 6.420427894380501
     },
     {
       "text": "Bound by the surprise of our glory days.",
-      "start": 125.848,
+      "start": 124.748,
       "duration": 6.263832092078538
     },
     {
       "text": "I hate to turn up out of the blue, uninvited,",
-      "start": 132.112,
+      "start": 131.012,
       "duration": 7.046811103588355
     },
     {
       "text": "But I couldn't stay away; I couldn't fight it.",
-      "start": 139.159,
+      "start": 138.059,
       "duration": 7.2034069058903185
     },
     {
       "text": "I had hoped you'd see my face and that you'd be reminded",
-      "start": 146.362,
+      "start": 145.262,
       "duration": 8.769364928909953
     },
     {
       "text": "That for me it isn't over.",
-      "start": 155.132,
+      "start": 154.032,
       "duration": 4.07149085985105
     },
     {
       "text": "Never mind, I'll find someone like you.",
-      "start": 159.203,
+      "start": 158.103,
       "duration": 6.107236289776574
     },
     {
       "text": "I wish nothing but the best for you, too.",
-      "start": 165.31,
+      "start": 164.21,
       "duration": 6.420427894380501
     },
     {
       "text": "Don't forget me, I begged.",
-      "start": 171.731,
+      "start": 170.631,
       "duration": 4.07149085985105
     },
     {
       "text": "I remember you said,",
-      "start": 175.802,
+      "start": 174.702,
       "duration": 3.131916046039269
     },
     {
       "text": "Sometimes it lasts in love, but sometimes it hurts instead.",
-      "start": 178.934,
+      "start": 177.834,
       "duration": 9.239152335815843
     },
     {
       "text": "Nothing compares, no worries or cares.",
-      "start": 188.173,
+      "start": 187.073,
       "duration": 5.950640487474611
     },
     {
       "text": "Regrets and mistakes, they're memories made.",
-      "start": 194.124,
+      "start": 193.024,
       "duration": 6.890215301286391
     },
     {
       "text": "Who would have known how bittersweet this would taste?",
-      "start": 201.014,
+      "start": 199.914,
       "duration": 8.456173324306025
     },
     {
       "text": "Never mind, I'll find someone like you.",
-      "start": 209.47,
+      "start": 208.37,
       "duration": 6.107236289776574
     },
     {
       "text": "I wish nothing but the best for you.",
-      "start": 215.578,
+      "start": 214.478,
       "duration": 5.637448882870684
     },
     {
       "text": "Don't forget me, I beg.",
-      "start": 221.215,
+      "start": 220.115,
       "duration": 3.6017034529451593
     },
     {
       "text": "I remember you said,",
-      "start": 224.817,
+      "start": 223.717,
       "duration": 3.131916046039269
     },
     {
       "text": "Sometimes it lasts in love, but sometimes it hurts instead.",
-      "start": 227.949,
+      "start": 226.849,
       "duration": 9.239152335815843
     },
     {
       "text": "Sometimes it lasts in love, but sometimes it hurts instead.",
-      "start": 237.188,
+      "start": 236.088,
       "duration": 9.239152335815843
     }
   ],
@@ -500,7 +500,7 @@ const data: StaticLesson = {
       "example_sentence": "Graduating was a bittersweet moment for her."
     }
   ],
-  "generated_at": "2026-07-21T22:34:41.094Z"
+  "generated_at": "2026-07-21T23:19:12.555Z"
 }
 
 export default data

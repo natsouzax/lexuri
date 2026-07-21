@@ -1,4 +1,4 @@
-// Sincronizado via lrclib.net (legenda desativada no YouTube) — 2026-07-17
+// Timestamps ajustados manualmente (delta +8.1s → 1ª fala em 14s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,292 +8,292 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "I used to bite my tongue and hold my breath",
-      "start": 5.89,
+      "start": 13.99,
       "duration": 2.420000000000001
     },
     {
       "text": "Scared to rock the boat and make a mess",
-      "start": 8.31,
+      "start": 16.41,
       "duration": 2.92
     },
     {
       "text": "So I sat quietly, agreed politely",
-      "start": 11.23,
+      "start": 19.33,
       "duration": 4.84
     },
     {
       "text": "I guess that I forgot I had a choice",
-      "start": 16.07,
+      "start": 24.17,
       "duration": 2.879999999999999
     },
     {
       "text": "I let you push me past the breaking point",
-      "start": 18.95,
+      "start": 27.05,
       "duration": 2.7699999999999996
     },
     {
       "text": "I stood for nothing, so I fell for everything",
-      "start": 21.72,
+      "start": 29.82,
       "duration": 4.900000000000002
     },
     {
       "text": "You held me down, but I got up (hey)",
-      "start": 26.62,
+      "start": 34.72,
       "duration": 3.16
     },
     {
       "text": "Already brushing off the dust",
-      "start": 29.78,
+      "start": 37.88,
       "duration": 2.3100000000000023
     },
     {
       "text": "You hear my voice, you hear that sound",
-      "start": 32.09,
+      "start": 40.19,
       "duration": 2.719999999999999
     },
     {
       "text": "Like thunder, gonna shake the ground",
-      "start": 34.81,
+      "start": 42.91,
       "duration": 2.4199999999999946
     },
     {
       "text": "You held me down, but I got up (hey)",
-      "start": 37.23,
+      "start": 45.33,
       "duration": 2.9299999999999997
     },
     {
       "text": "Get ready 'cause I've had enough",
-      "start": 40.16,
+      "start": 48.26,
       "duration": 2.4000000000000057
     },
     {
       "text": "I see it all, I see it now",
-      "start": 42.56,
+      "start": 50.66,
       "duration": 3.030000000000001
     },
     {
       "text": "I got the eye of the tiger, a fighter",
-      "start": 45.59,
+      "start": 53.69,
       "duration": 4.6299999999999955
     },
     {
       "text": "Dancing through the fire",
-      "start": 50.22,
+      "start": 58.32,
       "duration": 2.6600000000000037
     },
     {
       "text": "'Cause I am a champion, and you're gonna hear me roar",
-      "start": 52.88,
+      "start": 60.98,
       "duration": 6.899999999999999
     },
     {
       "text": "Louder, louder than a lion",
-      "start": 59.78,
+      "start": 67.88,
       "duration": 3.780000000000001
     },
     {
       "text": "'Cause I am the champion, and you're gonna hear me roar",
-      "start": 63.56,
+      "start": 71.66,
       "duration": 6.670000000000002
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 70.23,
+      "start": 78.33,
       "duration": 2.200000000000003
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 72.43,
+      "start": 80.53,
       "duration": 2.2099999999999937
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 74.64,
+      "start": 82.74,
       "duration": 2.730000000000004
     },
     {
       "text": "You're gonna hear me roar",
-      "start": 77.37,
+      "start": 85.47,
       "duration": 5.47999999999999
     },
     {
       "text": "Now I'm floating like a butterfly",
-      "start": 82.85,
+      "start": 90.95,
       "duration": 2.9399999999999977
     },
     {
       "text": "Stinging like a bee, I earned my stripes",
-      "start": 85.78999999999999,
+      "start": 93.89,
       "duration": 2.690000000000012
     },
     {
       "text": "I went from zero, to my own hero",
-      "start": 88.48,
+      "start": 96.58,
       "duration": 4.749999999999986
     },
     {
       "text": "You held me down, but I got up (hey)",
-      "start": 93.22999999999999,
+      "start": 101.33,
       "duration": 3.1300000000000097
     },
     {
       "text": "Already brushing off the dust",
-      "start": 96.36,
+      "start": 104.46,
       "duration": 2.1400000000000006
     },
     {
       "text": "You hear my voice, you hear that sound",
-      "start": 98.5,
+      "start": 106.6,
       "duration": 2.969999999999999
     },
     {
       "text": "Like thunder, gonna shake the ground",
-      "start": 101.47,
+      "start": 109.57,
       "duration": 2.6099999999999994
     },
     {
       "text": "You held me down, but I got up (got up)",
-      "start": 104.08,
+      "start": 112.18,
       "duration": 2.8299999999999983
     },
     {
       "text": "Get ready 'cause I've had enough",
-      "start": 106.91,
+      "start": 115.01,
       "duration": 2.5600000000000023
     },
     {
       "text": "I see it all, I see it now",
-      "start": 109.47,
+      "start": 117.57,
       "duration": 2.730000000000004
     },
     {
       "text": "I got the eye of the tiger, a fighter",
-      "start": 112.2,
+      "start": 120.3,
       "duration": 4.75
     },
     {
       "text": "Dancing through the fire",
-      "start": 116.95,
+      "start": 125.05,
       "duration": 2.589999999999989
     },
     {
       "text": "'Cause I am a champion, and you're gonna hear me roar",
-      "start": 119.53999999999999,
+      "start": 127.64,
       "duration": 6.810000000000002
     },
     {
       "text": "Louder, louder than a lion",
-      "start": 126.35,
+      "start": 134.45,
       "duration": 3.8300000000000125
     },
     {
       "text": "'Cause I am a champion, and you're gonna hear me roar",
-      "start": 130.18,
+      "start": 138.28,
       "duration": 6.389999999999986
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 136.57,
+      "start": 144.67,
       "duration": 2.569999999999993
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 139.14,
+      "start": 147.24,
       "duration": 2.5400000000000205
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 141.68,
+      "start": 149.78,
       "duration": 2.490000000000009
     },
     {
       "text": "You're gonna hear me roar",
-      "start": 144.17000000000002,
+      "start": 152.27,
       "duration": 2.909999999999968
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh (yeah)",
-      "start": 147.07999999999998,
+      "start": 155.18,
       "duration": 2.5600000000000023
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh (you'll hear me roar)",
-      "start": 149.64,
+      "start": 157.74,
       "duration": 2.890000000000015
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 152.53,
+      "start": 160.63,
       "duration": 2.25
     },
     {
       "text": "You're gonna hear me roar",
-      "start": 154.78,
+      "start": 162.88,
       "duration": 10.580000000000013
     },
     {
       "text": "Roar, roar, roar, roar, roar",
-      "start": 165.36,
+      "start": 173.46,
       "duration": 8.259999999999991
     },
     {
       "text": "I got the eye of the tiger, a fighter",
-      "start": 173.62,
+      "start": 181.72,
       "duration": 4.849999999999994
     },
     {
       "text": "Dancing through the fire 'cause I am a champion",
-      "start": 178.47,
+      "start": 186.57,
       "duration": 5.449999999999989
     },
     {
       "text": "And you're gonna hear me roar, oh, louder, louder than a lion",
-      "start": 183.92,
+      "start": 192.02,
       "duration": 7.640000000000015
     },
     {
       "text": "'Cause I am a champion, and you're gonna hear me roar",
-      "start": 191.56,
+      "start": 199.66,
       "duration": 6.340000000000003
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 197.9,
+      "start": 206,
       "duration": 2.469999999999999
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh (yeah)",
-      "start": 200.37,
+      "start": 208.47,
       "duration": 3.1599999999999966
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 203.53,
+      "start": 211.63,
       "duration": 2.030000000000001
     },
     {
       "text": "You're gonna hear me roar",
-      "start": 205.56,
+      "start": 213.66,
       "duration": 3
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 208.56,
+      "start": 216.66,
       "duration": 2.6500000000000057
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh (you'll hear me roar)",
-      "start": 211.21,
+      "start": 219.31,
       "duration": 2.6799999999999784
     },
     {
       "text": "Oh-oh-oh-oh-oh-oh-oh",
-      "start": 213.89,
+      "start": 221.99,
       "duration": 2.240000000000009
     },
     {
       "text": "You're gonna hear me roar",
-      "start": 216.13,
+      "start": 224.23,
       "duration": 3
     }
   ],
@@ -622,7 +622,7 @@ const data: StaticLesson = {
       "example_sentence": "She went from zero to her own hero after starting her business."
     }
   ],
-  "generated_at": "2026-07-17T23:22:30.480Z"
+  "generated_at": "2026-07-21T23:19:12.420Z"
 }
 
 export default data
