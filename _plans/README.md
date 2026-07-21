@@ -11,6 +11,7 @@
 | [roadmap.md](./roadmap.md) | Funcionalidades planejadas e status |
 | [ai-tier-split.md](./ai-tier-split.md) | Plano de divisão de IA por tier (free/premium) |
 | [decisions.md](./decisions.md) | Log de decisões arquiteturais |
+| [deploy.md](./deploy.md) | Como colocar o MVP no ar (Vercel + Supabase) |
 | [legal-checklist.md](./legal-checklist.md) | Checklist de compliance LGPD |
 
 ## Documentação Técnica
