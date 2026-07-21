@@ -14,7 +14,6 @@ export default function UserDropdown({ user }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const [planLabel, setPlanLabel] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   const name = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? 'User'
@@ -32,16 +31,6 @@ export default function UserDropdown({ user }: Props) {
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  useEffect(() => {
-    fetch('/api/usage')
-      .then((r) => r.ok ? r.json() : null)
-      .then((d: { isPremium?: boolean; planKey?: string } | null) => {
-        if (!d?.isPremium) return
-        setPlanLabel(d.planKey === 'lifetime' ? 'Lifetime' : 'Premium')
-      })
-      .catch(() => {})
   }, [])
 
   async function handleSignOut() {
@@ -72,38 +61,9 @@ export default function UserDropdown({ user }: Props) {
       {open && (
         <div className="user-dropdown-menu" role="menu">
           <div className="user-dropdown-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="user-dropdown-name">{name}</span>
-              {planLabel && (
-                <span style={{
-                  fontSize: '0.62rem',
-                  fontWeight: 900,
-                  letterSpacing: '0.07em',
-                  padding: '2px 8px',
-                  borderRadius: 999,
-                  background: planLabel === 'Lifetime' ? 'rgba(139,92,246,0.15)' : 'rgba(200,111,74,0.15)',
-                  color: planLabel === 'Lifetime' ? '#7c3aed' : 'var(--clay)',
-                  textTransform: 'uppercase',
-                  lineHeight: 1,
-                }}>
-                  {planLabel}
-                </span>
-              )}
-            </div>
+            <span className="user-dropdown-name">{name}</span>
             <span className="user-dropdown-email">{user.email}</span>
           </div>
-
-          <div className="user-dropdown-divider" />
-
-          <Link href="/settings/profile" className="user-dropdown-item" onClick={() => setOpen(false)}>
-            <ProfileIcon /> Profile settings
-          </Link>
-          <Link href="/settings/password" className="user-dropdown-item" onClick={() => setOpen(false)}>
-            <LockIcon /> Change password
-          </Link>
-          <Link href="/settings/sessions" className="user-dropdown-item" onClick={() => setOpen(false)}>
-            <SessionIcon /> Sessions
-          </Link>
 
           <div className="user-dropdown-divider" />
 
@@ -140,33 +100,6 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-function ProfileIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  )
-}
-
-function SessionIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="3" width="20" height="14" rx="2"/>
-      <line x1="8" y1="21" x2="16" y2="21"/>
-      <line x1="12" y1="17" x2="12" y2="21"/>
-    </svg>
-  )
-}
 
 function SignOutIcon() {
   return (

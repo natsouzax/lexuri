@@ -7,34 +7,14 @@
     "youtube_id": "ZbZSe6N_BXs",
     "duration": "3:53",
     "level": "A1",
-    "tags": ["pop", "simple vocabulary", "positive mood"],
+    "tags": [
+      "pop",
+      "simple vocabulary",
+      "positive mood"
+    ],
     "preview": "One of the most positive songs in modern pop. The vocabulary is super simple and repetitive — perfect for absolute beginners learning everyday feelings.",
     "featured": true,
     "vibe": "Upbeat"
-  },
-  {
-    "id": "music-somewhere-rainbow",
-    "type": "music",
-    "title": "Somewhere Over the Rainbow",
-    "artist": "Israel Kamakawiwoʻole",
-    "youtube_id": "V1bFr2SWP1I",
-    "duration": "3:49",
-    "level": "A2",
-    "tags": ["classic", "dreams", "slow tempo"],
-    "preview": "The iconic ukulele version. Slow tempo, clear pronunciation and poetic imagery — great for A2 learners who want to work on vowel sounds.",
-    "vibe": "Emotional"
-  },
-  {
-    "id": "music-shake-it-off",
-    "type": "music",
-    "title": "Shake It Off",
-    "artist": "Taylor Swift",
-    "youtube_id": "mvVBuG4IOW4",
-    "duration": "3:39",
-    "level": "A2",
-    "tags": ["pop", "phrasal verbs", "informal"],
-    "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context.",
-    "vibe": "Energetic"
   },
   {
     "id": "music-roar",
@@ -44,9 +24,65 @@
     "youtube_id": "e9SeJIgWRPk",
     "duration": "3:43",
     "level": "A2",
-    "tags": ["pop", "empowerment", "idioms"],
+    "tags": [
+      "pop",
+      "empowerment",
+      "idioms"
+    ],
     "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself.",
-    "vibe": "Motivational"
+    "vibe": "Motivational",
+    "featured": true
+  },
+  {
+    "id": "music-shake-it-off",
+    "type": "music",
+    "title": "Shake It Off",
+    "artist": "Taylor Swift",
+    "youtube_id": "mvVBuG4IOW4",
+    "duration": "3:39",
+    "level": "A2",
+    "tags": [
+      "pop",
+      "phrasal verbs",
+      "informal"
+    ],
+    "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context.",
+    "vibe": "Energetic",
+    "featured": true
+  },
+  {
+    "id": "music-somewhere-rainbow",
+    "type": "music",
+    "title": "Somewhere Over the Rainbow",
+    "artist": "Israel Kamakawiwoʻole",
+    "youtube_id": "V1bFr2SWP1I",
+    "duration": "3:49",
+    "level": "A2",
+    "tags": [
+      "classic",
+      "dreams",
+      "slow tempo"
+    ],
+    "preview": "The iconic ukulele version. Slow tempo, clear pronunciation and poetic imagery — great for A2 learners who want to work on vowel sounds.",
+    "vibe": "Emotional",
+    "featured": true
+  },
+  {
+    "id": "music-fix-you",
+    "type": "music",
+    "title": "Fix You",
+    "artist": "Coldplay",
+    "youtube_id": "SIelMFCVJLI",
+    "duration": "4:54",
+    "level": "B1",
+    "tags": [
+      "ballad",
+      "emotional",
+      "vocabulary"
+    ],
+    "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension.",
+    "featured": true,
+    "vibe": "Emotional"
   },
   {
     "id": "music-hall-of-fame",
@@ -56,7 +92,11 @@
     "youtube_id": "mk48xRzuNvA",
     "duration": "3:47",
     "level": "B1",
-    "tags": ["pop", "motivation", "collocations"],
+    "tags": [
+      "pop",
+      "motivation",
+      "collocations"
+    ],
     "preview": "Inspiring lyrics about achieving your dreams. Great collocations: 'make a difference', 'touch the sky', 'go the extra mile' — practical B1 vocabulary.",
     "featured": true,
     "vibe": "Motivational"
@@ -69,9 +109,31 @@
     "youtube_id": "hLQl3WQQoQ0",
     "duration": "4:45",
     "level": "B1",
-    "tags": ["ballad", "emotional", "grammar patterns"],
+    "tags": [
+      "ballad",
+      "emotional",
+      "grammar patterns"
+    ],
     "preview": "Adele's clear British pronunciation and emotional lyrics make this a classic for learners. Notice past tenses, conditionals and formulaic expressions.",
-    "vibe": "Emotional"
+    "vibe": "Emotional",
+    "featured": true
+  },
+  {
+    "id": "music-by-the-way",
+    "type": "music",
+    "title": "By the Way",
+    "artist": "Red Hot Chili Peppers",
+    "youtube_id": "JnfyjwChuNU",
+    "duration": "3:37",
+    "level": "B1",
+    "tags": [
+      "rock",
+      "fast-paced",
+      "slang",
+      "conversational"
+    ],
+    "preview": "Fast, punchy and packed with energy. Kiedis's rapid-fire delivery challenges B1 learners to follow native-speed speech while picking up informal American expressions and rock slang.",
+    "featured": true
   },
   {
     "id": "music-rolling-in-the-deep",
@@ -81,120 +143,14 @@
     "youtube_id": "rYEDA3JcQqw",
     "duration": "3:48",
     "level": "B1",
-    "tags": ["pop", "emotional", "idioms", "collocations"],
+    "tags": [
+      "pop",
+      "emotional",
+      "idioms",
+      "collocations"
+    ],
     "preview": "Powerful and emotionally charged. Packed with idiomatic expressions like 'rolling in the deep', 'turning tables' and vivid imagery of heartbreak — excellent B1 listening and vocabulary practice.",
-    "vibe": "Emotional"
-  },
-  {
-    "id": "music-fix-you",
-    "type": "music",
-    "title": "Fix You",
-    "artist": "Coldplay",
-    "youtube_id": "SIelMFCVJLI",
-    "duration": "4:54",
-    "level": "B1",
-    "tags": ["ballad", "emotional", "vocabulary"],
-    "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension.",
-    "featured": true,
-    "vibe": "Emotional"
-  },
-  {
-    "id": "music-believer",
-    "type": "music",
-    "title": "Believer",
-    "artist": "Imagine Dragons",
-    "youtube_id": "7wtfhZwyrcc",
-    "duration": "3:24",
-    "level": "B1",
-    "tags": ["rock", "resilience", "emotional vocabulary"],
-    "preview": "High-energy rock anthem about overcoming pain. Introduces strong emotional vocabulary and idiomatic expressions in a memorable, rhythmic context.",
-    "featured": true,
-    "vibe": "Energetic"
-  },
-  {
-    "id": "music-stressed-out",
-    "type": "music",
-    "title": "Stressed Out",
-    "artist": "Twenty One Pilots",
-    "youtube_id": "pXRviuL6vMY",
-    "duration": "3:22",
-    "level": "B2",
-    "tags": ["pop", "conversational", "nostalgia", "slang"],
-    "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns.",
-    "featured": true
-  },
-  {
-    "id": "video-kurzgesagt-egg",
-    "type": "video",
-    "title": "The Egg — A Short Story",
-    "channel": "Kurzgesagt",
-    "youtube_id": "h6fcK_fRYaI",
-    "duration": "8:32",
-    "level": "B2",
-    "tags": ["philosophy", "storytelling", "complex vocabulary", "narrative"],
-    "preview": "A beautifully animated short story by Andy Weir. Dense philosophical vocabulary, second-person narration and rich metaphors about identity and existence — a thought-provoking B2 challenge with stunning visuals.",
-    "featured": true
-  },
-  {
-    "id": "video-kurzgesagt-nihilism",
-    "type": "video",
-    "title": "Optimistic Nihilism",
-    "channel": "Kurzgesagt",
-    "youtube_id": "MBRqu0YOH14",
-    "duration": "6:53",
-    "level": "B2",
-    "tags": ["philosophy", "abstract", "academic vocabulary", "science"],
-    "preview": "Kurzgesagt asks: if the universe is indifferent, does anything matter? Rich in abstract nouns, conditional reasoning and hedging language ('it seems', 'it might be'). A concise B2 dose of philosophical English.",
-    "featured": true,
-    "vibe": "Philosophical"
-  },
-  {
-    "id": "music-hello-adele",
-    "type": "music",
-    "title": "Hello",
-    "artist": "Adele",
-    "youtube_id": "YQHsXMglC9A",
-    "duration": "4:55",
-    "level": "B2",
-    "tags": ["ballad", "emotional", "past tense", "regret"],
-    "preview": "Adele's signature rich vocabulary and emotional delivery shine here. The lyrics are full of past tense structures, conditional regret ('I must have called a thousand times') and advanced emotional vocabulary.",
-    "vibe": "Emotional"
-  },
-  {
-    "id": "music-californication",
-    "type": "music",
-    "title": "Californication",
-    "artist": "Red Hot Chili Peppers",
-    "youtube_id": "YlUKcNNmywk",
-    "duration": "5:21",
-    "level": "B2",
-    "tags": ["rock", "American culture", "advanced vocabulary", "figurative language"],
-    "preview": "A critique of Hollywood culture packed with cultural references and advanced vocabulary. Challenging and rewarding for B2 learners interested in American idioms and figurative language.",
-    "featured": true,
-    "vibe": "Philosophical"
-  },
-  {
-    "id": "music-hotel-california",
-    "type": "music",
-    "title": "Hotel California",
-    "artist": "Eagles",
-    "youtube_id": "dLl4PZtxia8",
-    "duration": "6:30",
-    "level": "B2",
-    "tags": ["classic rock", "metaphor", "storytelling", "American culture"],
-    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge.",
-    "vibe": "Philosophical"
-  },
-  {
-    "id": "video-veritasium-parallel",
-    "type": "video",
-    "title": "Parallel Worlds Probably Exist. Here's Why.",
-    "channel": "Veritasium",
-    "youtube_id": "S1tFT4smd6E",
-    "duration": "19:43",
-    "level": "C1",
-    "tags": ["science", "physics", "academic English", "hedging language"],
-    "preview": "Derek explores the many-worlds interpretation of quantum mechanics with stunning clarity. Dense scientific vocabulary, expert hedging ('it appears', 'one interpretation suggests') and complex causal reasoning — a demanding C1 challenge for science-minded learners.",
+    "vibe": "Emotional",
     "featured": true
   },
   {
@@ -205,115 +161,67 @@
     "youtube_id": "GLvohMXgcBo",
     "duration": "4:24",
     "level": "B1",
-    "tags": ["rock", "storytelling", "emotions", "phrasal verbs"],
+    "tags": [
+      "rock",
+      "storytelling",
+      "emotions",
+      "phrasal verbs"
+    ],
     "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace.",
     "featured": true,
     "vibe": "Emotional"
   },
   {
-    "id": "music-scar-tissue",
+    "id": "music-stressed-out",
     "type": "music",
-    "title": "Scar Tissue",
-    "artist": "Red Hot Chili Peppers",
-    "youtube_id": "mzJj5-lubeM",
-    "duration": "3:37",
-    "level": "B1",
-    "tags": ["rock", "metaphors", "imagery", "emotional"],
-    "preview": "Slow, melodic, and full of vivid metaphors. The measured pace and poetic imagery ('scar tissue that I wish you saw') make it excellent for intermediate learners studying figurative language."
-  },
-  {
-    "id": "music-otherside",
-    "type": "music",
-    "title": "Otherside",
-    "artist": "Red Hot Chili Peppers",
-    "youtube_id": "rn_YodiJO6k",
-    "duration": "4:15",
-    "level": "B1",
-    "tags": ["rock", "emotional vocabulary", "imagery", "storytelling"],
-    "preview": "A haunting song about struggle and recovery. The measured pace and emotional vocabulary make it accessible for B1 learners wanting to explore deeper English expression through music."
-  },
-  {
-    "id": "music-by-the-way",
-    "type": "music",
-    "title": "By the Way",
-    "artist": "Red Hot Chili Peppers",
-    "youtube_id": "JnfyjwChuNU",
-    "duration": "3:37",
-    "level": "B1",
-    "tags": ["rock", "fast-paced", "slang", "conversational"],
-    "preview": "Fast, punchy and packed with energy. Kiedis's rapid-fire delivery challenges B1 learners to follow native-speed speech while picking up informal American expressions and rock slang."
-  },
-  {
-    "id": "music-sweet-child-o-mine",
-    "type": "music",
-    "title": "Sweet Child O' Mine",
-    "artist": "Guns N' Roses",
-    "youtube_id": "1w7OgIMMRc4",
-    "duration": "5:55",
-    "level": "B1",
-    "tags": ["rock", "80s", "romantic", "descriptive vocabulary"],
-    "preview": "Axl Rose's iconic rock ballad paints a vivid portrait with descriptive vocabulary and a clear verse-chorus structure. The emotional delivery and consistent rhyme scheme help B1 learners build listening stamina.",
-    "featured": true,
-    "vibe": "Energetic"
-  },
-  {
-    "id": "music-let-it-be",
-    "type": "music",
-    "title": "Let It Be",
-    "artist": "The Beatles",
-    "youtube_id": "QDYfEBY9NM4",
-    "duration": "3:52",
-    "level": "A2",
-    "tags": ["classic rock", "ballad", "simple vocabulary", "hope"],
-    "preview": "Paul McCartney's timeless ballad with slow, clear pronunciation and simple, comforting vocabulary. Perfect for A2 learners to practice listening comprehension and present tense expressions.",
-    "maintenance": true
-  },
-  {
-    "id": "music-hey-jude",
-    "type": "music",
-    "title": "Hey Jude",
-    "artist": "The Beatles",
-    "youtube_id": "CG3jm4vvGXc",
-    "duration": "7:11",
-    "level": "A2",
-    "tags": ["classic rock", "chorus", "phrasal verbs", "encouragement"],
-    "preview": "One of the most iconic choruses in rock history. Simple and repetitive structure with common phrasal verbs like 'take a sad song' and 'make it better' — great for A2 learners building vocabulary through repetition.",
-    "maintenance": true
-  },
-  {
-    "id": "music-yesterday",
-    "type": "music",
-    "title": "Yesterday",
-    "artist": "The Beatles",
-    "youtube_id": "NrgmdOz227I",
-    "duration": "2:05",
-    "level": "B1",
-    "tags": ["ballad", "past tense", "grammar", "emotions"],
-    "preview": "Short and slow, rich in past tense and conditional structures ('Yesterday, all my troubles seemed so far away'). A grammar gem for B1 learners — packed with past simple and used-to patterns.",
-    "maintenance": true
-  },
-  {
-    "id": "music-come-together",
-    "type": "music",
-    "title": "Come Together",
-    "artist": "The Beatles",
-    "youtube_id": "huD8whbMRvU",
-    "duration": "4:19",
+    "title": "Stressed Out",
+    "artist": "Twenty One Pilots",
+    "youtube_id": "pXRviuL6vMY",
+    "duration": "3:22",
     "level": "B2",
-    "tags": ["classic rock", "abstract", "rhythm", "figurative language"],
-    "preview": "John Lennon's hypnotic lyrics are full of abstract imagery and unusual expressions. A B2 challenge that exposes learners to creative, non-literal English and the rhythm of native speech.",
-    "maintenance": true
+    "tags": [
+      "pop",
+      "conversational",
+      "nostalgia",
+      "slang"
+    ],
+    "preview": "Conversational lyrics full of modern American English slang and phrasal verbs. Themes of anxiety and nostalgia — very natural, authentic speech patterns.",
+    "featured": true
   },
   {
-    "id": "music-in-my-life",
+    "id": "music-hello-adele",
     "type": "music",
-    "title": "In My Life",
-    "artist": "The Beatles",
-    "youtube_id": "YBcdt6DsLQA",
-    "duration": "2:26",
-    "level": "B1",
-    "tags": ["classic rock", "nostalgia", "past tense", "comparative"],
-    "preview": "A reflective song about memory and love, rich in past tense and comparative structures. Lennon's clear diction and poetic simplicity make this perfect for intermediate learners.",
-    "maintenance": true
+    "title": "Hello",
+    "artist": "Adele",
+    "youtube_id": "YQHsXMglC9A",
+    "duration": "4:55",
+    "level": "B2",
+    "tags": [
+      "ballad",
+      "emotional",
+      "past tense",
+      "regret"
+    ],
+    "preview": "Adele's signature rich vocabulary and emotional delivery shine here. The lyrics are full of past tense structures, conditional regret ('I must have called a thousand times') and advanced emotional vocabulary.",
+    "vibe": "Emotional",
+    "featured": true
+  },
+  {
+    "id": "music-hotel-california",
+    "type": "music",
+    "title": "Hotel California",
+    "artist": "Eagles",
+    "youtube_id": "dLl4PZtxia8",
+    "duration": "6:30",
+    "level": "B2",
+    "tags": [
+      "classic rock",
+      "metaphor",
+      "storytelling",
+      "American culture"
+    ],
+    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge.",
+    "vibe": "Philosophical",
+    "featured": true
   }
 ]

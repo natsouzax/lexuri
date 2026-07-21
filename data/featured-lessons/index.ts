@@ -1,48 +1,41 @@
 // Registry of all generated static lessons.
 // Used by the API route as a fast-path shortcut (zero DB/AI calls).
 // Individual files are populated by: npm run generate:lessons
+//
+// Curadoria MVP (2026-07-21): só as 13 músicas com sync e chunks verificados.
+// Removidas: believer (transcript vazio), sweet-child (sync errada),
+// californication (legenda truncada), come-together/in-my-life/yesterday
+// (maintenance) e os 3 vídeos (fora da hipótese música).
 import type { StaticLesson } from '@/lib/featured-lesson'
 
-import musicHappy              from './music-happy'
-import musicShakeItOff         from './music-shake-it-off'
-import musicHallOfFame         from './music-hall-of-fame'
-import musicFixYou             from './music-fix-you'
-import musicStressedOut        from './music-stressed-out'
-import videoKurzgesagtEgg      from './video-kurzgesagt-egg'
-import videoVeritasiumParallel from './video-veritasium-parallel'
-import musicByTheWay           from './music-by-the-way'
-import musicSomewhereRainbow   from './music-somewhere-rainbow'
-import musicRoar               from './music-roar'
-import musicSomeoneLikeYou     from './music-someone-like-you'
-import musicBeliever           from './music-believer'
-import musicHotelCalifornia    from './music-hotel-california'
-import musicSweetChildOMine    from './music-sweet-child-o-mine'
-import musicHelloAdele         from './music-hello-adele'
-import musicUnderTheBridge     from './music-under-the-bridge'
-import musicRollingInTheDeep   from './music-rolling-in-the-deep'
-import videoKurzgesagtNihilism from './video-kurzgesagt-nihilism'
-import musicCalifornication    from './music-californication'
+import musicHappy            from './music-happy'
+import musicRoar             from './music-roar'
+import musicShakeItOff       from './music-shake-it-off'
+import musicSomewhereRainbow from './music-somewhere-rainbow'
+import musicFixYou           from './music-fix-you'
+import musicHallOfFame       from './music-hall-of-fame'
+import musicSomeoneLikeYou   from './music-someone-like-you'
+import musicByTheWay         from './music-by-the-way'
+import musicRollingInTheDeep from './music-rolling-in-the-deep'
+import musicUnderTheBridge   from './music-under-the-bridge'
+import musicStressedOut      from './music-stressed-out'
+import musicHelloAdele       from './music-hello-adele'
+import musicHotelCalifornia  from './music-hotel-california'
 
 const ALL: Array<StaticLesson | null> = [
   musicHappy,
-  musicShakeItOff,
-  musicHallOfFame,
-  musicFixYou,
-  musicStressedOut,
-  videoKurzgesagtEgg,
-  videoVeritasiumParallel,
-  musicByTheWay,
-  musicSomewhereRainbow,
   musicRoar,
+  musicShakeItOff,
+  musicSomewhereRainbow,
+  musicFixYou,
+  musicHallOfFame,
   musicSomeoneLikeYou,
-  musicBeliever,
-  musicHotelCalifornia,
-  musicSweetChildOMine,
-  musicHelloAdele,
-  musicUnderTheBridge,
+  musicByTheWay,
   musicRollingInTheDeep,
-  videoKurzgesagtNihilism,
-  musicCalifornication,
+  musicUnderTheBridge,
+  musicStressedOut,
+  musicHelloAdele,
+  musicHotelCalifornia,
 ]
 
 export const STATIC_LESSONS: Record<string, StaticLesson> = Object.fromEntries(

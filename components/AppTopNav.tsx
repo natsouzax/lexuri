@@ -7,24 +7,14 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
-import type { Rank, XPProgressInfo } from '@/lib/gamification'
-
-interface AppStats {
-  points: number
-  rank: Rank
-  xpProgress: XPProgressInfo
-}
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Overview', icon: <HomeIcon /> },
-  { href: '/feed', label: 'Lessons', icon: <FeedIcon /> },
-  { href: '/review', label: 'Review', icon: <ProgressIcon /> },
+  { href: '/feed', label: 'Músicas', icon: <FeedIcon /> },
+  { href: '/review', label: 'Revisão', icon: <ProgressIcon /> },
+  { href: '/flashcards', label: 'Biblioteca', icon: <HomeIcon /> },
 ]
 
-const MOBILE_EXTRA_ITEMS = [
-  { href: '/flashcards', label: 'My Cards' },
-  { href: '/settings', label: 'Settings' },
-]
+const MOBILE_EXTRA_ITEMS: Array<{ href: string; label: string }> = []
 
 interface Props {
   sidebarOpen: boolean
@@ -34,7 +24,6 @@ interface Props {
 export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
   const pathname = usePathname()
   const [user, setUser] = useState<User | null>(null)
-  const [stats, setStats] = useState<AppStats | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -44,13 +33,6 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
-
-    fetch('/api/gamification/stats')
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (d?.rank) setStats({ points: d.points, rank: d.rank, xpProgress: d.xpProgress })
-      })
-      .catch(() => {})
 
     return () => subscription.unsubscribe()
   }, [])
@@ -97,30 +79,8 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
         </nav>
 
         <div className="app-top-right">
-          {stats && (
-            <motion.div
-              className="app-top-xp"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.35, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <span style={{ color: stats.rank.color, fontWeight: 900, fontSize: '0.9rem' }}>
-                {stats.rank.icon}
-              </span>
-              <span className="app-top-xp-label">{stats.points.toLocaleString()} XP</span>
-            </motion.div>
-          )}
-
           <div className="app-top-user">
             {user && <UserDropdown user={user} />}
-            <Link
-              href="/settings"
-              className="app-top-settings-btn"
-              aria-label="Settings"
-              title="Settings"
-            >
-              <GearIcon />
-            </Link>
           </div>
 
           <button
@@ -145,15 +105,6 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
               {item.label}
             </Link>
           ))}
-          {stats && (
-            <div className="app-top-mobile-xp">
-              <span style={{ color: stats.rank.color, fontWeight: 900 }}>{stats.rank.icon}</span>
-              <span>{stats.rank.label}</span>
-              <span style={{ marginLeft: 'auto', color: 'var(--dark-muted)', fontSize: '0.75rem' }}>
-                {stats.points.toLocaleString()} XP
-              </span>
-            </div>
-          )}
         </nav>
       )}
     </motion.header>
@@ -197,11 +148,3 @@ function PanelIcon() {
   )
 }
 
-function GearIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  )
-}

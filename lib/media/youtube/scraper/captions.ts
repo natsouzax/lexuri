@@ -3,7 +3,6 @@ import { fetchCaptionsViaSupadata } from './sources/supadata'
 import { fetchCaptionsViaDataAPI } from './sources/data-api'
 import { fetchCaptionsViaProxy } from './sources/proxy'
 import { fetchCaptionsViaPage } from './sources/edge-page'
-import { fetchCaptionsViaYoutubei } from './sources/innertube'
 import { fetchCaptionsPublic } from './sources/transcript-lib'
 import type { TranscriptSegment } from '../types'
 
@@ -40,12 +39,6 @@ const SOURCES: CaptionSource[] = [
     enabled: () => true,
     disabledReason: '',
     fetch: fetchCaptionsViaPage,
-  },
-  {
-    name: 'youtubei',
-    enabled: () => true,
-    disabledReason: '',
-    fetch: fetchCaptionsViaYoutubei,
   },
   {
     name: 'transcript-lib',

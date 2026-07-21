@@ -1,7 +1,0 @@
-name = "youtube-transcript-proxy"
-main = "youtube-transcript-proxy.js"
-compatibility_date = "2024-09-23"
-
-# YOUTUBE_COOKIES is a secret — set with:
-#   wrangler secret put YOUTUBE_COOKIES
-# Leave blank here; unset = no cookies (still works for most public videos)

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { normalizeFlashcard } from '@/lib/types'
 import type { Flashcard } from '@/lib/types'
-import { awardXP } from '@/lib/xp'
 
 export interface WordDef {
   word: string
@@ -133,7 +132,6 @@ export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashca
           body: JSON.stringify({ cards: [card] }),
         })
         setSavedWords((prev) => new Set(prev).add(word))
-        awardXP('word_looked_up')
         if (saved) onWordSaved?.(saved)
       }
     } catch {

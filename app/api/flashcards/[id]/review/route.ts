@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { loadFlashcards, updateFlashcard, getAdminClient } from '@/lib/supabase'
+import { loadFlashcards, updateFlashcard } from '@/lib/supabase'
 import { createClient } from '@/lib/supabase-server'
 import { flashcardToSRSCard, updateCard } from '@/lib/srs'
-import { awardReviewPoints } from '@/lib/gamification'
-import { trackServer } from '@/lib/analytics'
 
 export async function PUT(
   request: Request,
@@ -15,11 +13,7 @@ export async function PUT(
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
-    const body = (await request.json()) as {
-      quality: number
-      response_time_sec?: number
-      event_id?: string
-    }
+    const body = (await request.json()) as { quality: number }
 
     const cards = await loadFlashcards(user.id)
     const stored = cards.find((c) => c.id === id)
@@ -36,27 +30,7 @@ export async function PUT(
       last_reviewed: updated.last_reviewed?.toISOString() ?? null,
     }, user.id)
 
-    const admin = getAdminClient()
-
-    // Award points (server-calculated, idempotent via event_id)
-    const eventId = body.event_id ?? `review:${id}:${Date.now()}`
-    const gamResult = await awardReviewPoints(admin, user.id, {
-      quality:         body.quality,
-      responseTimeSec: body.response_time_sec,
-    }, eventId).catch(() => null)
-
-    // Emit analytics event
-    await trackServer(admin, user.id, 'flashcard_review', {
-      card_id:          id,
-      quality:          body.quality,
-      response_time_sec: body.response_time_sec ?? null,
-      interval:         updated.interval,
-    })
-
-    return NextResponse.json({
-      ...saved,
-      gamification: gamResult ?? null,
-    })
+    return NextResponse.json(saved)
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
