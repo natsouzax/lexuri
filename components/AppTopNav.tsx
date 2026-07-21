@@ -16,14 +16,13 @@ interface AppStats {
 }
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Home', icon: <HomeIcon /> },
-  { href: '/feed', label: 'Feed', icon: <FeedIcon /> },
-  { href: '/reports', label: 'Progress', icon: <ProgressIcon /> },
+  { href: '/dashboard', label: 'Overview', icon: <HomeIcon /> },
+  { href: '/feed', label: 'Lessons', icon: <FeedIcon /> },
+  { href: '/review', label: 'Review', icon: <ProgressIcon /> },
 ]
 
 const MOBILE_EXTRA_ITEMS = [
-  { href: '/flashcards', label: 'Library' },
-  { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/flashcards', label: 'My Cards' },
   { href: '/settings', label: 'Settings' },
 ]
 

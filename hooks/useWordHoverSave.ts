@@ -33,12 +33,14 @@ const HOVER_DELAY_MS = 80
 const HIDE_DELAY_MS = 150
 
 // Shared tap-to-translate + click-to-save interaction: hover a word to
-// preview its translation, click it to save as a flashcard immediately
-// (reusing whatever the hover already fetched). Used by every video/lyrics
-// caption surface in the app (YoutubeSyncPlayer, SyncedLyricsList) so the
-// touch/hover behavior is identical everywhere.
+// preview its translation, click it to save as a flashcard immediately.
+// Hover uses /api/llm/translate (translation only, minimal tokens — as
+// close to instant as an AI call can be); click uses /api/llm/define (full
+// definition + example, needed for the flashcard) only when actually
+// saving, so the hover itself never waits on the slower call.
 export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashcard) => void) {
-  const wordCacheRef = useRef(new Map<string, WordDef>())
+  const translationCacheRef = useRef(new Map<string, string>())
+  const defCacheRef = useRef(new Map<string, WordDef>())
   const [tooltip, setTooltip] = useState<WordTooltipState | null>(null)
   const [savedWords, setSavedWords] = useState<Set<string>>(new Set())
   const [savingWord, setSavingWord] = useState<string | null>(null)
@@ -48,20 +50,35 @@ export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashca
   // Reset per "surface" (e.g. a new video or a new song) so cached
   // translations/saved checkmarks don't leak across unrelated content.
   useEffect(() => {
-    wordCacheRef.current = new Map()
+    translationCacheRef.current = new Map()
+    defCacheRef.current = new Map()
     setSavedWords(new Set())
     setTooltip(null)
   }, [resetKey])
 
+  const fetchTranslation = useCallback(async (word: string, context: string): Promise<string> => {
+    const cachedDef = defCacheRef.current.get(word)
+    if (cachedDef) return cachedDef.translation
+    const cached = translationCacheRef.current.get(word)
+    if (cached) return cached
+    const { translation } = await apiFetch<{ translation: string }>('/api/llm/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word, context }),
+    })
+    translationCacheRef.current.set(word, translation)
+    return translation
+  }, [])
+
   const fetchWordDef = useCallback(async (word: string, context: string): Promise<WordDef> => {
-    const cached = wordCacheRef.current.get(word)
+    const cached = defCacheRef.current.get(word)
     if (cached) return cached
     const def = await apiFetch<WordDef>('/api/llm/define', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word, context }),
     })
-    wordCacheRef.current.set(word, def)
+    defCacheRef.current.set(word, def)
     return def
   }, [])
 
@@ -70,18 +87,25 @@ export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashca
     clearTimeout(hoverTimerRef.current)
     if (savedWords.has(word)) return
     hoverTimerRef.current = setTimeout(async () => {
-      const cached = wordCacheRef.current.get(word)
-      setTooltip({ word, x: rect.left + rect.width / 2, y: rect.top, loading: !cached, def: cached })
-      if (!cached) {
+      const cachedDef = defCacheRef.current.get(word)
+      const cachedTranslation = cachedDef?.translation ?? translationCacheRef.current.get(word)
+      setTooltip({
+        word,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        loading: !cachedTranslation,
+        def: cachedTranslation ? ({ translation: cachedTranslation } as WordDef) : undefined,
+      })
+      if (!cachedTranslation) {
         try {
-          const def = await fetchWordDef(word, context)
-          setTooltip((t) => (t?.word === word ? { ...t, loading: false, def } : t))
+          const translation = await fetchTranslation(word, context)
+          setTooltip((t) => (t?.word === word ? { ...t, loading: false, def: { translation } as WordDef } : t))
         } catch {
           setTooltip((t) => (t?.word === word ? { ...t, loading: false, error: true } : t))
         }
       }
     }, HOVER_DELAY_MS)
-  }, [savedWords, fetchWordDef])
+  }, [savedWords, fetchTranslation])
 
   const onLeave = useCallback(() => {
     clearTimeout(hoverTimerRef.current)

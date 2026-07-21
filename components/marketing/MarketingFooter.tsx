@@ -9,7 +9,7 @@ import { EASE_OUT } from '@/lib/easing'
 const PRODUCT_LINKS = [
   { href: '/features',  label: 'Features'  },
   { href: '/feed',      label: 'Lessons'   },
-  { href: '/youtube',   label: 'Open App'  },
+  { href: '/feed',      label: 'Open App'  },
 ]
 
 const COMPANY_LINKS = [

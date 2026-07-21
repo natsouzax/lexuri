@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const PROTECTED_PREFIXES = [
-  '/youtube',
   '/music',
   '/feed',
   '/flashcards',
@@ -13,6 +12,7 @@ const PROTECTED_PREFIXES = [
   '/dashboard',
   '/onboarding',
   '/placement',
+  '/level',
 ]
 
 const AUTH_PAGES = ['/login', '/register']
@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && AUTH_PAGES.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/feed'
     return NextResponse.redirect(url)
   }
 

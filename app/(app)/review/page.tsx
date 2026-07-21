@@ -164,7 +164,7 @@ function ReviewCard({ card, index, total, onRate, submitting }: ReviewCardProps)
             transition: feedback ? 'box-shadow 200ms ease, border-color 200ms ease' : undefined,
             outline: feedback ? `2px solid ${feedbackBorder[feedback]}` : '2px solid transparent',
           }}
-          onClick={() => { if (!revealed) { playTap(); setRevealed(true) } }}
+          onClick={() => { if (!revealed) { playTap(); setRevealed(true); playAudio() } }}
         >
           {celebrate && <ConfettiBurst count={20} />}
           <div className={`flashcard-inner${revealed ? ' flipped' : ''}`}>

@@ -6,13 +6,16 @@ interface Props {
   tooltip: WordTooltipState | null
   onMouseEnter: () => void
   onMouseLeave: () => void
-  /** Video captions: just the translation, no room/time to read more while the video keeps playing. */
+  /** Video captions: skip the "click to save" hint, no room while the video keeps playing. */
   compact?: boolean
 }
 
 // Shared floating translation preview — reuses the same tooltip visuals as
 // ChunkHighlighter's chunk tooltip so hover-translate looks identical
-// everywhere it appears (video captions, lyrics lines).
+// everywhere it appears (video captions, lyrics lines). Only ever carries
+// the translation (fetched via the fast /api/llm/translate endpoint) — the
+// full definition/example are fetched separately, only when the word is
+// actually clicked to be saved as a flashcard.
 export default function WordHoverTooltip({ tooltip, onMouseEnter, onMouseLeave, compact }: Props) {
   if (!tooltip) return null
   return (
@@ -25,18 +28,15 @@ export default function WordHoverTooltip({ tooltip, onMouseEnter, onMouseLeave, 
       <span className="word-tooltip-label">{tooltip.word}</span>
       {tooltip.loading && <span style={{ color: 'rgba(255,250,240,0.65)', fontSize: '0.8rem' }}>…</span>}
       {tooltip.error && <span style={{ color: 'rgba(255,250,240,0.65)', fontSize: '0.8rem' }}>Couldn&apos;t translate</span>}
-      {tooltip.def && (
-        compact ? (
+      {tooltip.def?.translation && (
+        <>
           <strong className="chunk-tooltip-translation">{tooltip.def.translation}</strong>
-        ) : (
-          <>
-            <strong className="chunk-tooltip-translation">{tooltip.def.translation}</strong>
-            <span className="chunk-tooltip-meaning">{tooltip.def.definition}</span>
+          {!compact && (
             <span className="chunk-tooltip-example" style={{ marginTop: 2, opacity: 0.8, fontStyle: 'normal' }}>
               Click the word to save as a flashcard
             </span>
-          </>
-        )
+          )}
+        </>
       )}
     </div>
   )

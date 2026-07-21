@@ -24,9 +24,15 @@ const ALL_ITEMS = FEED_ITEMS.filter((item) => item.featured === true)
 const LEVELS = ['All', 'A1', 'A2', 'B1', 'B2', 'C1'] as const
 type LevelFilter = (typeof LEVELS)[number]
 
+// Vibe/theme filter — reuses each lesson's own tags (pop, conversational,
+// nostalgia, slang, philosophy, science...) instead of inventing a new
+// taxonomy on top.
+const ALL_VIBES = Array.from(new Set(ALL_ITEMS.flatMap((item) => item.tags))).sort()
+
 export default function FeedPage() {
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
+  const [vibeFilter, setVibeFilter] = useState<string | null>(null)
   const [cardCount, setCardCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
 
@@ -53,7 +59,9 @@ export default function FeedPage() {
   }
 
   const filtered = ALL_ITEMS.filter(
-    (item) => levelFilter === 'All' || item.level === levelFilter,
+    (item) =>
+      (levelFilter === 'All' || item.level === levelFilter) &&
+      (!vibeFilter || item.tags.includes(vibeFilter)),
   )
 
   return (
@@ -101,6 +109,31 @@ export default function FeedPage() {
               {l}
             </button>
           ))}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Vibe:</span>
+          {ALL_VIBES.map((v) => {
+            const active = vibeFilter === v
+            return (
+              <button
+                key={v}
+                onClick={() => setVibeFilter(active ? null : v)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: 999,
+                  border: `1.5px solid ${active ? 'var(--moss)' : 'var(--line)'}`,
+                  background: active ? 'var(--moss)' : 'transparent',
+                  color: active ? '#fff' : 'var(--muted)',
+                  fontWeight: active ? 700 : 400,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {v}
+              </button>
+            )
+          })}
         </div>
       </div>
 

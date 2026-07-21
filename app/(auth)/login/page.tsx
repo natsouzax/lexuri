@@ -17,7 +17,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter()
   const params = useSearchParams()
-  const next = params.get('next') ?? '/dashboard'
+  const next = params.get('next') ?? '/feed'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -52,20 +52,8 @@ function LoginForm() {
       localStorage.removeItem('lexuri_remember_email')
     }
 
-    // Check if user has completed onboarding
-    const { data: onboarding } = await supabase
-      .from('onboarding')
-      .select('user_id')
-      .eq('user_id', signInData.user!.id)
-      .maybeSingle()
-
     playSuccess()
-
-    if (!onboarding) {
-      router.push('/onboarding')
-    } else {
-      router.push(next)
-    }
+    router.push(next)
     router.refresh()
   }
 

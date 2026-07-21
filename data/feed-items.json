@@ -9,7 +9,8 @@
     "level": "A1",
     "tags": ["pop", "simple vocabulary", "positive mood"],
     "preview": "One of the most positive songs in modern pop. The vocabulary is super simple and repetitive — perfect for absolute beginners learning everyday feelings.",
-    "featured": true
+    "featured": true,
+    "vibe": "Upbeat"
   },
   {
     "id": "music-somewhere-rainbow",
@@ -20,7 +21,8 @@
     "duration": "3:49",
     "level": "A2",
     "tags": ["classic", "dreams", "slow tempo"],
-    "preview": "The iconic ukulele version. Slow tempo, clear pronunciation and poetic imagery — great for A2 learners who want to work on vowel sounds."
+    "preview": "The iconic ukulele version. Slow tempo, clear pronunciation and poetic imagery — great for A2 learners who want to work on vowel sounds.",
+    "vibe": "Emotional"
   },
   {
     "id": "music-shake-it-off",
@@ -32,7 +34,7 @@
     "level": "A2",
     "tags": ["pop", "phrasal verbs", "informal"],
     "preview": "Catchy and full of informal English. 'Shake it off', 'play along', 'break it down' — great for learning common phrasal verbs in context.",
-    "featured": true
+    "vibe": "Energetic"
   },
   {
     "id": "music-roar",
@@ -43,7 +45,8 @@
     "duration": "3:43",
     "level": "A2",
     "tags": ["pop", "empowerment", "idioms"],
-    "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself."
+    "preview": "Empowerment anthem with clear, strong lyrics. Introduces common English metaphors and idioms about strength and standing up for yourself.",
+    "vibe": "Motivational"
   },
   {
     "id": "music-hall-of-fame",
@@ -55,7 +58,8 @@
     "level": "B1",
     "tags": ["pop", "motivation", "collocations"],
     "preview": "Inspiring lyrics about achieving your dreams. Great collocations: 'make a difference', 'touch the sky', 'go the extra mile' — practical B1 vocabulary.",
-    "featured": true
+    "featured": true,
+    "vibe": "Motivational"
   },
   {
     "id": "music-someone-like-you",
@@ -66,7 +70,8 @@
     "duration": "4:45",
     "level": "B1",
     "tags": ["ballad", "emotional", "grammar patterns"],
-    "preview": "Adele's clear British pronunciation and emotional lyrics make this a classic for learners. Notice past tenses, conditionals and formulaic expressions."
+    "preview": "Adele's clear British pronunciation and emotional lyrics make this a classic for learners. Notice past tenses, conditionals and formulaic expressions.",
+    "vibe": "Emotional"
   },
   {
     "id": "music-rolling-in-the-deep",
@@ -77,7 +82,8 @@
     "duration": "3:48",
     "level": "B1",
     "tags": ["pop", "emotional", "idioms", "collocations"],
-    "preview": "Powerful and emotionally charged. Packed with idiomatic expressions like 'rolling in the deep', 'turning tables' and vivid imagery of heartbreak — excellent B1 listening and vocabulary practice."
+    "preview": "Powerful and emotionally charged. Packed with idiomatic expressions like 'rolling in the deep', 'turning tables' and vivid imagery of heartbreak — excellent B1 listening and vocabulary practice.",
+    "vibe": "Emotional"
   },
   {
     "id": "music-fix-you",
@@ -89,7 +95,8 @@
     "level": "B1",
     "tags": ["ballad", "emotional", "vocabulary"],
     "preview": "Deeply emotional and slowly paced. Rich in vocabulary about loss and hope — 'stuck in reverse', 'tethered to', 'tears stream'. Good for B1 reading comprehension.",
-    "featured": true
+    "featured": true,
+    "vibe": "Emotional"
   },
   {
     "id": "music-believer",
@@ -100,7 +107,9 @@
     "duration": "3:24",
     "level": "B1",
     "tags": ["rock", "resilience", "emotional vocabulary"],
-    "preview": "High-energy rock anthem about overcoming pain. Introduces strong emotional vocabulary and idiomatic expressions in a memorable, rhythmic context."
+    "preview": "High-energy rock anthem about overcoming pain. Introduces strong emotional vocabulary and idiomatic expressions in a memorable, rhythmic context.",
+    "featured": true,
+    "vibe": "Energetic"
   },
   {
     "id": "music-stressed-out",
@@ -135,7 +144,9 @@
     "duration": "6:53",
     "level": "B2",
     "tags": ["philosophy", "abstract", "academic vocabulary", "science"],
-    "preview": "Kurzgesagt asks: if the universe is indifferent, does anything matter? Rich in abstract nouns, conditional reasoning and hedging language ('it seems', 'it might be'). A concise B2 dose of philosophical English."
+    "preview": "Kurzgesagt asks: if the universe is indifferent, does anything matter? Rich in abstract nouns, conditional reasoning and hedging language ('it seems', 'it might be'). A concise B2 dose of philosophical English.",
+    "featured": true,
+    "vibe": "Philosophical"
   },
   {
     "id": "music-hello-adele",
@@ -146,7 +157,8 @@
     "duration": "4:55",
     "level": "B2",
     "tags": ["ballad", "emotional", "past tense", "regret"],
-    "preview": "Adele's signature rich vocabulary and emotional delivery shine here. The lyrics are full of past tense structures, conditional regret ('I must have called a thousand times') and advanced emotional vocabulary."
+    "preview": "Adele's signature rich vocabulary and emotional delivery shine here. The lyrics are full of past tense structures, conditional regret ('I must have called a thousand times') and advanced emotional vocabulary.",
+    "vibe": "Emotional"
   },
   {
     "id": "music-californication",
@@ -157,7 +169,9 @@
     "duration": "5:21",
     "level": "B2",
     "tags": ["rock", "American culture", "advanced vocabulary", "figurative language"],
-    "preview": "A critique of Hollywood culture packed with cultural references and advanced vocabulary. Challenging and rewarding for B2 learners interested in American idioms and figurative language."
+    "preview": "A critique of Hollywood culture packed with cultural references and advanced vocabulary. Challenging and rewarding for B2 learners interested in American idioms and figurative language.",
+    "featured": true,
+    "vibe": "Philosophical"
   },
   {
     "id": "music-hotel-california",
@@ -168,7 +182,8 @@
     "duration": "6:30",
     "level": "B2",
     "tags": ["classic rock", "metaphor", "storytelling", "American culture"],
-    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge."
+    "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge.",
+    "vibe": "Philosophical"
   },
   {
     "id": "video-veritasium-parallel",
@@ -191,7 +206,9 @@
     "duration": "4:24",
     "level": "B1",
     "tags": ["rock", "storytelling", "emotions", "phrasal verbs"],
-    "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace."
+    "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace.",
+    "featured": true,
+    "vibe": "Emotional"
   },
   {
     "id": "music-scar-tissue",
@@ -235,7 +252,9 @@
     "duration": "5:55",
     "level": "B1",
     "tags": ["rock", "80s", "romantic", "descriptive vocabulary"],
-    "preview": "Axl Rose's iconic rock ballad paints a vivid portrait with descriptive vocabulary and a clear verse-chorus structure. The emotional delivery and consistent rhyme scheme help B1 learners build listening stamina."
+    "preview": "Axl Rose's iconic rock ballad paints a vivid portrait with descriptive vocabulary and a clear verse-chorus structure. The emotional delivery and consistent rhyme scheme help B1 learners build listening stamina.",
+    "featured": true,
+    "vibe": "Energetic"
   },
   {
     "id": "music-let-it-be",

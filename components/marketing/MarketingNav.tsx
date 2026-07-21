@@ -70,7 +70,7 @@ export default function MarketingNav() {
             transition={{ delay: 0.45, duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
           >
             <Link
-              href="/youtube"
+              href="/feed"
               className="btn-mkt-primary mkt-nav-cta"
               style={{ padding: '8px 20px', fontSize: '0.82rem' }}
             >
@@ -152,7 +152,7 @@ export default function MarketingNav() {
               transition={{ delay: NAV_LINKS.length * 0.055, duration: 0.28 }}
             >
               <Link
-                href="/youtube"
+                href="/feed"
                 className="btn-mkt-primary"
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => setOpen(false)}

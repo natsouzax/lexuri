@@ -53,6 +53,11 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
   const [savedChunks, setSavedChunks]       = useState<Set<string>>(new Set())
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
   const [error, setError]                   = useState('')
+  const [typeFilter, setTypeFilter]         = useState<string | null>(null)
+  const [cardsExpanded, setCardsExpanded]   = useState(false)
+  const [chunkMapOpen, setChunkMapOpen]     = useState(true)
+  const [resyncing, setResyncing]           = useState(false)
+  const [resyncMsg, setResyncMsg]           = useState('')
 
   useEffect(() => { setSaved(isItemSaved(id)) }, [id])
 
@@ -77,6 +82,25 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
       setLoading(false)
     }
   }, [item, id])
+
+  // Só funciona rodando `npm run dev` local — raspa o YouTube de novo com o
+  // IP residencial de quem está rodando e regrava o arquivo da lição.
+  async function handleResync() {
+    setResyncing(true)
+    setResyncMsg('')
+    try {
+      const res = await apiFetch<{ segments: number; chunks: number }>('/api/admin/resync-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedItemId: id }),
+      })
+      setResyncMsg(`✅ Atualizado — ${res.segments} falas, ${res.chunks} chunks. Recarregue a página.`)
+    } catch (e) {
+      setResyncMsg(`❌ ${String(e)}`)
+    } finally {
+      setResyncing(false)
+    }
+  }
 
   useEffect(() => {
     if (!initialLesson) loadLesson()
@@ -121,8 +145,9 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
   }
 
   const levelColor  = getLevelColor(item.level)
-  const highChunks  = lesson?.chunks.filter((c) => c.importance === 'high') ?? []
-  const otherChunks = lesson?.chunks.filter((c) => c.importance !== 'high') ?? []
+  const visibleChunks = (lesson?.chunks ?? []).filter((c) => !typeFilter || c.type === typeFilter)
+  const highChunks  = visibleChunks.filter((c) => c.importance === 'high')
+  const otherChunks = visibleChunks.filter((c) => c.importance !== 'high')
 
   return (
     <>
@@ -157,10 +182,24 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
         {item.tags.map((tag) => (
           <span key={tag} style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'var(--sage)', color: 'var(--moss)' }}>{tag}</span>
         ))}
-        <button onClick={handleToggleSave} style={{ marginLeft: 'auto', border: `1.5px solid ${saved ? 'var(--clay)' : 'var(--line)'}`, borderRadius: 999, padding: '6px 16px', background: saved ? 'rgba(200,111,74,0.1)' : '#fff', color: saved ? 'var(--clay)' : 'var(--muted)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={handleResync}
+            disabled={resyncing}
+            title="Raspa o YouTube de novo com o IP local e regrava o arquivo da lição — só funciona rodando npm run dev"
+            style={{ marginLeft: 'auto', border: '1.5px solid var(--line)', borderRadius: 999, padding: '6px 16px', background: '#fff', color: 'var(--muted)', fontWeight: 700, fontSize: '0.82rem', cursor: resyncing ? 'default' : 'pointer', opacity: resyncing ? 0.6 : 1 }}
+          >
+            {resyncing ? <><span className="spinner" /> Sincronizando…</> : '🔄 Sync with YouTube (local)'}
+          </button>
+        )}
+        <button onClick={handleToggleSave} style={{ marginLeft: process.env.NODE_ENV === 'development' ? undefined : 'auto', border: `1.5px solid ${saved ? 'var(--clay)' : 'var(--line)'}`, borderRadius: 999, padding: '6px 16px', background: saved ? 'rgba(200,111,74,0.1)' : '#fff', color: saved ? 'var(--clay)' : 'var(--muted)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>
           {saved ? 'Saved' : 'Save'}
         </button>
       </div>
+
+      {resyncMsg && (
+        <div className="alert-info" style={{ marginBottom: 16 }}>{resyncMsg}</div>
+      )}
 
       {loading && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 0', color: 'var(--muted)' }}>
@@ -209,27 +248,58 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
                 Generated Flashcards
                 <Link href="/review" style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', textDecoration: 'none' }}>Go to Review</Link>
               </div>
-              {generatedCards.map((card) => <GeneratedLearningCard key={card.id} card={card} />)}
+              {(cardsExpanded ? generatedCards : generatedCards.slice(0, 1)).map((card) => (
+                <GeneratedLearningCard key={card.id} card={card} />
+              ))}
+              {generatedCards.length > 1 && (
+                <button
+                  onClick={() => setCardsExpanded((v) => !v)}
+                  style={{
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: 'var(--moss)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px 0 16px',
+                  }}
+                >
+                  {cardsExpanded ? '▲ Collapse' : `▼ Show ${generatedCards.length - 1} more`}
+                </button>
+              )}
             </>
           )}
 
           {lesson.chunks.length > 0 && (
             <>
               <div className="panel" style={{ marginBottom: 16 }}>
-                <span className="mini-label">AI chunk map ready</span>
+                <span className="mini-label">👆 Tap any highlighted word below</span>
                 <p className="panel-copy">
-                  Lexuri found {lesson.chunks.length} natural expressions. Save the high-importance chunks first.
+                  AI found {lesson.chunks.length} natural expressions in the text. Tap any word — highlighted
+                  or not — to see its translation and save it as a flashcard.
                 </p>
               </div>
-              <div className="section-title">Chunk Map</div>
-              <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-                <ChunkHighlighter
-                  text={lesson.original_text}
-                  chunks={lesson.chunks}
-                  selectedChunk={selectedChunk}
-                  onChunkClick={setSelectedChunk}
-                />
+              <div className="section-title">
+                Chunk Map
+                <button
+                  onClick={() => setChunkMapOpen((v) => !v)}
+                  style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  {chunkMapOpen ? '▲ Collapse' : '▼ Expand'}
+                </button>
               </div>
+              {chunkMapOpen && (
+                <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
+                  <ChunkHighlighter
+                    text={lesson.original_text}
+                    chunks={visibleChunks}
+                    selectedChunk={selectedChunk}
+                    onChunkClick={setSelectedChunk}
+                    videoId={lesson.video_id}
+                    onWordSaved={handleWordSaved}
+                  />
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
                 {[
@@ -243,9 +313,36 @@ export default function LessonView({ feedItemId: propId, initialLesson = null }:
                   { type: 'conversational',  label: 'Conversational',  color: '#607D8B' },
                 ]
                   .filter(({ type }) => lesson.chunks.some((c) => c.type === type))
-                  .map(({ label, color }) => (
-                    <span key={label} style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: color + '22', color }}>{label}</span>
-                  ))}
+                  .map(({ type, label, color }) => {
+                    const active = typeFilter === type
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => setTypeFilter(active ? null : type)}
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '3px 10px',
+                          borderRadius: 20,
+                          border: `1.5px solid ${active ? color : 'transparent'}`,
+                          background: active ? color : color + '22',
+                          color: active ? '#fff' : color,
+                          cursor: 'pointer',
+                          transition: 'all 120ms ease',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                {typeFilter && (
+                  <button
+                    onClick={() => setTypeFilter(null)}
+                    style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, border: '1.5px solid var(--line)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' }}
+                  >
+                    ✕ Clear filter
+                  </button>
+                )}
               </div>
 
               {highChunks.length > 0 && (

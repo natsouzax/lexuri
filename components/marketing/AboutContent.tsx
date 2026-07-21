@@ -215,7 +215,7 @@ export default function AboutContent() {
             </p>
             <div className="mkt-btn-group" style={{ justifyContent: 'center' }}>
               <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/youtube" className="btn-mkt-primary">Open the app →</Link>
+                <Link href="/feed" className="btn-mkt-primary">Open the app →</Link>
               </motion.div>
               <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link href="/features" className="btn-mkt-ghost">See all features</Link>

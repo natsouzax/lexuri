@@ -65,3 +65,6 @@ stripe_backup_code (1).txt
 !.dev.vars.example
 
 !.env.example
+
+.vercel
+.env*

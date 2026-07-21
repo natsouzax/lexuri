@@ -34,6 +34,25 @@ interface YTPlayer {
 const WORD_RE = /[A-Za-z]+(?:'[A-Za-z]+)?/g
 const IMPORTANCE_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 }
 
+interface ChunkTooltipState {
+  chunk: ChunkItem
+  x: number
+  y: number
+}
+
+function formatChunkType(type: string) {
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function speakChunkText(t: string, e: React.MouseEvent) {
+  e.stopPropagation()
+  if (!window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(t)
+  u.lang = 'en-US'
+  window.speechSynthesis.speak(u)
+}
+
 function normalizeWord(word: string): string {
   return word.replace(/[^A-Za-z']/g, '').toLowerCase().replace(/^'+|'+$/g, '')
 }
@@ -156,12 +175,31 @@ export default function YoutubeSyncPlayer({
   const [activeSegIdx, setActiveSegIdx] = useState(-1)
   const [showCaptions, setShowCaptions] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [chunkTooltip, setChunkTooltip] = useState<ChunkTooltipState | null>(null)
+  const chunkHideTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const captionDelayRef  = useRef(0)
   const updateActiveRef  = useRef<(t: number) => void>(() => {})
 
   // Hover-to-translate + click-to-save-flashcard, shared with SyncedLyricsList
   const { tooltip, savedWords, savingWord, onHover, onLeave, onWordClick, cancelHide, hideNow } =
     useWordHoverSave(videoId, onWordSaved)
+
+  // New lesson — the manual A/V delay calibration was for the PREVIOUS video's
+  // caption offset quirks, don't carry it over.
+  useEffect(() => {
+    setCaptionDelay(0)
+    setActiveSegIdx(-1)
+  }, [videoId])
+
+  // The caption line advances on its own while the video plays — if a chunk/word
+  // is being hovered when that happens, its DOM node gets replaced without ever
+  // firing a real mouseleave, so the tooltip would otherwise stay stuck on screen
+  // showing stale content. Clear both whenever the active line changes.
+  useEffect(() => {
+    clearTimeout(chunkHideTimerRef.current)
+    setChunkTooltip(null)
+    hideNow()
+  }, [activeSegIdx, hideNow])
 
   // Pre-compute each segment's start offset in the full transcript (segments joined by '\n').
   // Adding 1 per segment for the single-char separator, same as join('\n').
@@ -226,7 +264,12 @@ export default function YoutubeSyncPlayer({
     }
 
     return cleanup
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    // Re-run whenever the lesson changes — without this, navigating between
+    // lessons client-side (no full page reload) kept the OLD video loaded in
+    // the player while the captions/chunks below already updated to the new
+    // lesson, making every "next" lesson look completely out of sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoId])
 
   function syncAnchor() {
     if (!playerRef.current) return
@@ -319,7 +362,14 @@ export default function YoutubeSyncPlayer({
           <span
             key={i}
             onClick={() => onChunkSelect?.(c)}
-            title={c.contextual_translation}
+            onMouseEnter={(e) => {
+              clearTimeout(chunkHideTimerRef.current)
+              const rect = e.currentTarget.getBoundingClientRect()
+              setChunkTooltip({ chunk: c, x: rect.left + rect.width / 2, y: rect.top })
+            }}
+            onMouseLeave={() => {
+              chunkHideTimerRef.current = setTimeout(() => setChunkTooltip(null), 160)
+            }}
             style={{
               cursor: 'pointer',
               pointerEvents: 'auto',
@@ -383,11 +433,38 @@ export default function YoutubeSyncPlayer({
               )}
             </button>
           </div>
+
+          {/* Tooltips render INSIDE the fullscreen container — the browser's Fullscreen API only paints
+              descendants of the fullscreened element, so anything outside it (even position: fixed) goes invisible. */}
+          <WordHoverTooltip tooltip={tooltip} onMouseEnter={cancelHide} onMouseLeave={hideNow} compact />
+
+          {chunkTooltip && (
+            <div
+              className="chunk-tooltip-fixed"
+              style={{ left: chunkTooltip.x, top: chunkTooltip.y - 10 }}
+              onMouseEnter={() => clearTimeout(chunkHideTimerRef.current)}
+              onMouseLeave={() => setChunkTooltip(null)}
+            >
+              <div className="chunk-tooltip-header">
+                <span className="chunk-type-badge" style={{ color: chunkTooltip.chunk.color }}>
+                  {formatChunkType(chunkTooltip.chunk.type)}
+                </span>
+                <button
+                  className="chunk-speak-btn"
+                  onClick={(e) => speakChunkText(chunkTooltip.chunk.text, e)}
+                  aria-label="Listen"
+                >
+                  🔊
+                </button>
+              </div>
+              <span className="chunk-tooltip-meaning">{chunkTooltip.chunk.contextual_translation}</span>
+              {chunkTooltip.chunk.why_it_matters && (
+                <span className="chunk-tooltip-example">{chunkTooltip.chunk.why_it_matters}</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Word translation tooltip — compact (translation only) so it doesn't compete with the playing video; click the word to save */}
-      <WordHoverTooltip tooltip={tooltip} onMouseEnter={cancelHide} onMouseLeave={hideNow} compact />
 
       {/* Controls row */}
       <div className="yt-controls-row">

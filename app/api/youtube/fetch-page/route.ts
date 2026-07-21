@@ -85,17 +85,24 @@ export async function GET(request: Request): Promise<Response> {
   const isASR   = best.kind === 'asr' || (!enHuman && !!enAsr)
 
   // ── 3. Fetch caption data (json3 format) ─────────────────────────────────────
+  // YouTube's timedtext endpoint stopped answering GET with a body reliably
+  // (PoToken anti-bot gating) — POST without a body is what works today.
+  // Keep GET as a fallback in case that changes again.
   let segments: SegmentOut[]
   try {
-    const captRes = await fetch(`${best.baseUrl}&fmt=json3`, {
-      headers: pageHeaders,
-      signal: AbortSignal.timeout(10000),
-    })
-    if (!captRes.ok) {
-      return Response.json({ error: `Caption fetch ${captRes.status}` }, { status: captRes.status })
+    const captionUrl = `${best.baseUrl}&fmt=json3`
+    let captText = ''
+    for (const method of ['POST', 'GET'] as const) {
+      const res = await fetch(captionUrl, { method, headers: pageHeaders, signal: AbortSignal.timeout(10000) })
+      if (!res.ok) continue
+      const text = await res.text()
+      if (text) { captText = text; break }
+    }
+    if (!captText) {
+      return Response.json({ error: 'Caption data empty (PoToken block?)' }, { status: 502 })
     }
 
-    const captData = await captRes.json() as {
+    const captData = JSON.parse(captText) as {
       events?: Array<{ tStartMs?: number; dDurationMs?: number; segs?: Array<{ utf8: string }> }>
     }
 

@@ -33,21 +33,23 @@ export async function POST(request: Request) {
 
     const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
+      max_tokens: 150,
       messages: [
         {
           role: 'system',
-          content: `You are an English vocabulary assistant for ${nativeLang} speakers. Return ONLY valid JSON. No markdown fences. No extra text.`,
+          content: `You are an English vocabulary assistant for ${nativeLang} speakers. Return ONLY valid JSON, as short as possible. No markdown fences. No extra text.`,
         },
         {
           role: 'user',
           content: `Define the English word or phrase "${word}"${context ? ` as used in this lyric: "${context}"` : ''}.
 
-Return exactly this JSON:
+Return exactly this JSON, keeping every field as short as possible (definition ≤ 8 words, example ≤ 10 words):
 {
   "word": "${word}",
   "partOfSpeech": "noun|verb|adjective|adverb|phrase|idiom|expression|other",
-  "definition": "clear, simple definition in English",
-  "example": "a new example sentence using this word",
+  "definition": "short, simple definition in English",
+  "example": "a short new example sentence using this word",
   "translation": "natural translation in ${nativeLang}"
 }`,
         },

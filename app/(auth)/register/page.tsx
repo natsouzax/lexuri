@@ -93,7 +93,7 @@ export default function RegisterPage() {
         { id: signUpData.user.id, full_name: fullName.trim(), email_verified: true },
         { onConflict: 'id', ignoreDuplicates: true },
       )
-      router.push('/onboarding')
+      router.push('/level')
       router.refresh()
       return
     }

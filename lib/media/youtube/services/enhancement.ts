@@ -1,18 +1,42 @@
 import { getOpenAIClient } from '@/lib/openai'
 import type { TranscriptSegment } from '../types'
 
-const SEGMENT_REVIEW_PROMPT =
-  'You are a subtitle editor. The text below is auto-generated captions: no punctuation, awkward line breaks, possible artifacts.\n\n' +
-  'Do these tasks in one pass:\n' +
-  '1. Add proper punctuation (. ! ? , ;) and capitalise the first word of each sentence.\n' +
-  '2. Re-break lines so each ends at a natural boundary — complete sentence, clause, or comma pause. Never break mid-phrase.\n' +
-  '3. Merge fragments that were split mid-phrase (e.g. "It was a car" + "accident" → "It was a car accident.").\n' +
-  '4. Remove non-speech artifacts: lines that contain ONLY sounds like [Music], [Applause], gasps (uh, um, ah, mm, hmm), or inaudible markers.\n\n' +
-  'Output ONLY the final lines, one per line, no numbering, no explanation.\n' +
-  'Do NOT change, add, or remove meaningful words — only fix formatting and remove artifacts.'
+const REMOVE_MARKER = '[REMOVE]'
 
-// Single-pass AI cleanup: adds punctuation, fixes broken line boundaries, removes gasps.
-// Timing is re-distributed proportionally by character length within each batch window.
+const SEGMENT_REVIEW_PROMPT =
+  'You are a subtitle editor. Below are NUMBERED auto-generated caption lines: no punctuation, possible artifacts.\n\n' +
+  'For EACH numbered line, output a line with the SAME NUMBER:\n' +
+  '1. Add proper punctuation (. ! ? , ;) and capitalise the first word.\n' +
+  '2. If the line contains ONLY non-speech artifacts (Music, Applause, gasps like uh/um/ah/mm/hmm, inaudible markers), ' +
+  `output "N. ${REMOVE_MARKER}" instead.\n\n` +
+  'CRITICAL: Output EXACTLY the same number of lines as the input, in the same order, one output line per input line. ' +
+  'Never merge two lines into one, never split one line into two, never reorder, never drop a line — every input ' +
+  'number must appear exactly once in the output.\n' +
+  'Do NOT change, add, or remove meaningful words — only fix punctuation/capitalisation, or mark artifacts for removal.'
+
+function parseNumberedLines(raw: string, expected: number): string[] | null {
+  const map = new Map<number, string>()
+  for (const line of raw.split('\n')) {
+    const m = line.match(/^\s*(\d+)\.\s?(.*)$/)
+    if (!m) continue
+    map.set(parseInt(m[1], 10), m[2].trim())
+  }
+  if (map.size !== expected) return null
+  const out: string[] = []
+  for (let i = 1; i <= expected; i++) {
+    const v = map.get(i)
+    if (v === undefined) return null
+    out.push(v)
+  }
+  return out
+}
+
+// AI cleanup pass: fixes punctuation/capitalisation and flags non-speech
+// artifacts for removal. Timing is NEVER recomputed here — every output line
+// keeps its ORIGINAL segment's real start/duration (from the actual caption
+// track). Redistributing time by character-count proportion (the previous
+// approach) is a rough approximation that drifts more the longer the batch
+// runs — the exact bug behind the "growing delay" reports.
 export async function reviewAndCleanSegments(segments: TranscriptSegment[]): Promise<TranscriptSegment[]> {
   if (!segments.length) return segments
 
@@ -27,35 +51,30 @@ export async function reviewAndCleanSegments(segments: TranscriptSegment[]): Pro
 
   for (let i = 0; i < segments.length; i += BATCH) {
     const batch = segments.slice(i, i + BATCH)
-    const batchStart = batch[0].start
-    const batchDuration = batch.reduce((s, seg) => s + seg.duration, 0)
-    const inputText = batch.map(s => s.text.trim()).join('\n')
+    const inputText = batch.map((s, idx) => `${idx + 1}. ${s.text.trim()}`).join('\n')
 
     try {
       const response = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4o-mini',
         temperature: 0,
-        max_tokens: 2000,
+        max_tokens: 2500,
         messages: [
           { role: 'system', content: SEGMENT_REVIEW_PROMPT },
           { role: 'user', content: inputText },
         ],
       })
 
-      const lines = (response.choices[0].message.content ?? '')
-        .split('\n')
-        .map(l => l.trim())
-        .filter(Boolean)
+      const lines = parseNumberedLines(response.choices[0].message.content ?? '', batch.length)
 
-      if (!lines.length) { result.push(...batch); continue }
+      if (!lines) {
+        // AI didn't return a clean 1:1 mapping — keep originals rather than risk timing drift.
+        result.push(...batch)
+        continue
+      }
 
-      // Re-distribute timing proportionally by character length within the batch window
-      const totalChars = Math.max(1, lines.reduce((s, l) => s + l.length, 0))
-      let cursor = batchStart
-      for (const line of lines) {
-        const duration = Math.max(0.4, (line.length / totalChars) * batchDuration)
-        result.push({ text: line, start: cursor, duration })
-        cursor += duration
+      for (let j = 0; j < batch.length; j++) {
+        if (lines[j] === REMOVE_MARKER || !lines[j]) continue
+        result.push({ ...batch[j], text: lines[j] })
       }
     } catch {
       result.push(...batch)

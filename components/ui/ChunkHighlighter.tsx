@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import type { ChunkItem } from '@/lib/types'
-import { tokenizeText } from '@/lib/word-translations'
+import type { ChunkItem, Flashcard } from '@/lib/types'
+import { useWordHoverSave } from '@/hooks/useWordHoverSave'
+import WordHoverTooltip from '@/components/WordHoverTooltip'
 
 interface Segment {
   text: string
@@ -10,6 +11,11 @@ interface Segment {
 }
 
 const IMPORTANCE_ORDER = { high: 0, medium: 1, low: 2 }
+const WORD_RE = /[A-Za-z]+(?:'[A-Za-z]+)?/g
+
+function normalizeWord(word: string): string {
+  return word.replace(/[^A-Za-z']/g, '').toLowerCase().replace(/^'+|'+$/g, '')
+}
 
 function buildSegments(text: string, chunks: ChunkItem[]): Segment[] {
   const sorted = [...chunks].sort((a, b) => {
@@ -39,9 +45,12 @@ function formatType(type: string) {
   return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-type TooltipState =
-  | { kind: 'chunk'; chunk: ChunkItem; nativeTranslation?: string; x: number; y: number }
-  | { kind: 'word';  word: string;  translation: string;           x: number; y: number }
+interface ChunkTooltipState {
+  chunk: ChunkItem
+  nativeTranslation?: string
+  x: number
+  y: number
+}
 
 interface Props {
   text: string
@@ -52,6 +61,10 @@ interface Props {
   lang?: string | null
   /** chunk.text → native-language translation string */
   nativeTranslations?: Record<string, string>
+  /** Video/lesson id — resets the word-hover cache when it changes. */
+  videoId?: string
+  /** Called right after a plain word is saved as a flashcard from a hover-click. */
+  onWordSaved?: (card: Flashcard) => void
 }
 
 export default function ChunkHighlighter({
@@ -61,33 +74,33 @@ export default function ChunkHighlighter({
   onChunkClick,
   lang,
   nativeTranslations,
+  videoId,
+  onWordSaved,
 }: Props) {
   const segments = buildSegments(text, chunks)
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const showTranslation = lang && lang !== 'en'
+  const [chunkTooltip, setChunkTooltip] = useState<ChunkTooltipState | null>(null)
+  const hideChunkTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  function scheduleHide() {
-    hideTimer.current = setTimeout(() => setTooltip(null), 160)
+  // Same hover-translate + click-to-save-flashcard interaction as the video
+  // captions (YoutubeSyncPlayer) — shared hook so the behavior and the
+  // tooltip look identical everywhere text is shown.
+  const { tooltip: wordTooltip, savedWords, savingWord, onHover, onLeave, onWordClick, cancelHide, hideNow } =
+    useWordHoverSave(videoId ?? text.slice(0, 40), onWordSaved)
+
+  function scheduleHideChunk() {
+    hideChunkTimer.current = setTimeout(() => setChunkTooltip(null), 160)
   }
-  function cancelHide() { clearTimeout(hideTimer.current) }
+  function cancelHideChunk() { clearTimeout(hideChunkTimer.current) }
 
   function showChunkTooltip(chunk: ChunkItem, e: React.MouseEvent<HTMLElement>) {
-    clearTimeout(hideTimer.current)
+    clearTimeout(hideChunkTimer.current)
     const rect = e.currentTarget.getBoundingClientRect()
-    setTooltip({
-      kind: 'chunk',
+    setChunkTooltip({
       chunk,
       nativeTranslation: lang ? nativeTranslations?.[chunk.text] : undefined,
       x: rect.left + rect.width / 2,
       y: rect.top,
     })
-  }
-
-  function showWordTooltip(word: string, translation: string, e: React.MouseEvent<HTMLElement>) {
-    clearTimeout(hideTimer.current)
-    const rect = e.currentTarget.getBoundingClientRect()
-    setTooltip({ kind: 'word', word, translation, x: rect.left + rect.width / 2, y: rect.top })
   }
 
   function speakText(t: string, e: React.MouseEvent) {
@@ -99,28 +112,42 @@ export default function ChunkHighlighter({
     window.speechSynthesis.speak(u)
   }
 
-  // Renders a plain-text segment with word/phrase hover translations (light-bg variant)
-  function renderWords(raw: string, segIdx: number) {
-    if (!showTranslation) return <span key={segIdx}>{raw}</span>
-    const tokens = tokenizeText(raw, lang!)
-    return (
-      <span key={segIdx}>
-        {tokens.map((tok, j) => {
-          if (tok.kind === 'plain') return <span key={j}>{tok.content}</span>
-          const cssClass = tok.kind === 'phrase' ? 'phrase-mark-light' : 'word-mark-light'
-          return (
-            <span
-              key={j}
-              className={cssClass}
-              onMouseEnter={(e) => showWordTooltip(tok.content, tok.translation, e)}
-              onMouseLeave={scheduleHide}
-            >
-              {tok.content}
-            </span>
-          )
-        })}
-      </span>
-    )
+  // Plain-text segment: every word is hoverable/clickable, same as captions.
+  function renderPlainWords(raw: string, segIdx: number) {
+    const parts: React.ReactNode[] = []
+    let lastIdx = 0
+    let wc = 0
+    const regex = new RegExp(WORD_RE.source, 'g')
+    let match: RegExpExecArray | null
+    while ((match = regex.exec(raw)) !== null) {
+      if (match.index > lastIdx) {
+        parts.push(<span key={`${segIdx}-g${wc}`}>{raw.slice(lastIdx, match.index)}</span>)
+      }
+      const word = match[0]
+      const norm = normalizeWord(word)
+      const isSaved = savedWords.has(norm)
+      const isSaving = savingWord === norm
+      parts.push(
+        <span
+          key={`${segIdx}-w${wc++}`}
+          className="word-mark-light"
+          onMouseEnter={(e) => onHover(norm, raw, e.currentTarget.getBoundingClientRect())}
+          onMouseLeave={onLeave}
+          onClick={() => !isSaved && !isSaving && onWordClick(norm, raw)}
+          style={{
+            cursor: isSaved ? 'default' : 'pointer',
+            background: isSaved ? 'rgba(120,190,120,0.5)' : undefined,
+            fontWeight: isSaved ? 700 : undefined,
+            opacity: isSaving ? 0.5 : 1,
+          }}
+        >
+          {word}{isSaved ? ' ✓' : ''}
+        </span>,
+      )
+      lastIdx = match.index + word.length
+    }
+    if (lastIdx < raw.length) parts.push(<span key={`${segIdx}-tail`}>{raw.slice(lastIdx)}</span>)
+    return <span key={segIdx}>{parts}</span>
   }
 
   return (
@@ -132,7 +159,7 @@ export default function ChunkHighlighter({
               key={i}
               onClick={() => onChunkClick?.(seg.chunk!)}
               onMouseEnter={(e) => showChunkTooltip(seg.chunk!, e)}
-              onMouseLeave={scheduleHide}
+              onMouseLeave={scheduleHideChunk}
               style={{
                 backgroundColor:
                   selectedChunk?.text === seg.chunk.text
@@ -149,48 +176,41 @@ export default function ChunkHighlighter({
               {seg.text}
             </span>
           ) : (
-            renderWords(seg.text, i)
+            renderPlainWords(seg.text, i)
           ),
         )}
       </div>
 
-      {tooltip && (
+      {chunkTooltip && (
         <div
-          className={`chunk-tooltip-fixed${tooltip.kind === 'word' ? ' word-tooltip' : ''}`}
-          style={{ left: tooltip.x, top: tooltip.y - 10 }}
-          onMouseEnter={cancelHide}
-          onMouseLeave={() => setTooltip(null)}
+          className="chunk-tooltip-fixed"
+          style={{ left: chunkTooltip.x, top: chunkTooltip.y - 10 }}
+          onMouseEnter={cancelHideChunk}
+          onMouseLeave={() => setChunkTooltip(null)}
         >
-          {tooltip.kind === 'chunk' ? (
-            <>
-              <div className="chunk-tooltip-header">
-                <span className="chunk-type-badge" style={{ color: tooltip.chunk.color }}>
-                  {formatType(tooltip.chunk.type)}
-                </span>
-                <button
-                  className="chunk-speak-btn"
-                  onClick={(e) => speakText(tooltip.chunk.text, e)}
-                  aria-label="Listen"
-                >
-                  🔊
-                </button>
-              </div>
-              {tooltip.nativeTranslation && (
-                <strong className="chunk-tooltip-translation">{tooltip.nativeTranslation}</strong>
-              )}
-              <span className="chunk-tooltip-meaning">{tooltip.chunk.contextual_translation}</span>
-              {tooltip.chunk.why_it_matters && (
-                <span className="chunk-tooltip-example">{tooltip.chunk.why_it_matters}</span>
-              )}
-            </>
-          ) : (
-            <>
-              <span className="word-tooltip-label">{tooltip.word}</span>
-              <strong className="chunk-tooltip-translation">{tooltip.translation}</strong>
-            </>
+          <div className="chunk-tooltip-header">
+            <span className="chunk-type-badge" style={{ color: chunkTooltip.chunk.color }}>
+              {formatType(chunkTooltip.chunk.type)}
+            </span>
+            <button
+              className="chunk-speak-btn"
+              onClick={(e) => speakText(chunkTooltip.chunk.text, e)}
+              aria-label="Listen"
+            >
+              🔊
+            </button>
+          </div>
+          {chunkTooltip.nativeTranslation && (
+            <strong className="chunk-tooltip-translation">{chunkTooltip.nativeTranslation}</strong>
+          )}
+          <span className="chunk-tooltip-meaning">{chunkTooltip.chunk.contextual_translation}</span>
+          {chunkTooltip.chunk.why_it_matters && (
+            <span className="chunk-tooltip-example">{chunkTooltip.chunk.why_it_matters}</span>
           )}
         </div>
       )}
+
+      <WordHoverTooltip tooltip={wordTooltip} onMouseEnter={cancelHide} onMouseLeave={hideNow} />
     </>
   )
 }

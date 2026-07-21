@@ -13,7 +13,7 @@ import DailyMissions from '@/components/ui/DailyMissions'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { playSelect, playTap } from '@/lib/sfx'
 import { learningLoop } from '@/lib/product'
-import { getThumbnail } from '@/lib/feed'
+import { FEED_ITEMS, getThumbnail } from '@/lib/feed'
 import type { FeedItem } from '@/lib/feed'
 import type { Rank, XPProgressInfo, Mission } from '@/lib/gamification'
 import type { Flashcard } from '@/lib/types'
@@ -107,6 +107,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setSavedIds(getSavedItemIds())
+    // Só as lições curadas/prontas (mesmo conjunto do /feed) — nunca
+    // recomenda algo que ainda não tem transcript/chunks gerados.
+    setFeedItems(FEED_ITEMS.filter((item) => item.featured === true))
   }, [])
 
   useEffect(() => {
@@ -133,7 +136,6 @@ export default function DashboardPage() {
           }
         })
         .catch(() => null),
-      apiFetch<FeedItem[]>('/api/feed/items').then(setFeedItems).catch(() => null),
     ]).finally(() => setLoading(false))
   }, [])
 
