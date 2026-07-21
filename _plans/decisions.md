@@ -69,6 +69,7 @@
 **Motivo:** O projeto Supabase ("Lexuri") pode ser compartilhado com o app principal. Candidatas a drop futuro (decisão do Natan): subscriptions, plans, coupons, weekly_usage, user_points, points_events, badges, notifications, email_preferences, analytics_events, songs, spotify_tokens, youtube_transcript_cache, feed_lessons, feed_lesson_chunks.
 **Aplicar:** `npm run db:migrate` (push bloqueado pra execução automática).
 
-### Deploy: Cloudflare only
-**Decisão:** Removidos vercel.json, railway.json, .vercel/. Fica wrangler + OpenNext.
-**Motivo:** Um alvo só; consistente com os outros projetos Lexuri.
+### Deploy: Vercel (revisado em 2026-07-21)
+**Decisão:** Voltamos pra Vercel — projeto `lexuri-validacao` já existente (lexuri-validacao.vercel.app), env vars de produção já configuradas. Removida a camada Cloudflare (wrangler, OpenNext). `npm run deploy` = `vercel --prod`.
+**Motivo:** A produção já rodava lá; Vercel roda Next.js nativo (sem OpenNext, que já deu problema no Windows). A padronização em Cloudflare foi decisão minha revertida pelo Natan — validar rápido > consolidar infra.
+**Nota:** `railway.json` e o cron do `vercel.json` (e-mail diário, feature removida) seguem fora.

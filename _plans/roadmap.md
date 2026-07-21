@@ -20,7 +20,7 @@
 ## Pendente pra lançar o teste
 
 - [ ] Aplicar migration 0024 no Supabase (`npm run db:migrate`)
-- [ ] Deploy Cloudflare (`npm run deploy`) + redirect URLs no Supabase
+- [ ] Deploy Vercel (`npm run deploy`) + conferir redirect URLs no Supabase (lexuri-validacao.vercel.app)
 - [ ] Testar o fluxo completo com 1 usuário real (registro → música → D1 → D2 → D3)
 - [ ] Regenerar lições quebradas se quiser recuperá-las: believer, sweet-child, californication (scripts/)
 
