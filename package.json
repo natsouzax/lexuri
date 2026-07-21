@@ -12,7 +12,8 @@
     "db:migrate": "supabase db push",
     "db:status": "supabase migration list",
     "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "resync:batch3": "node --env-file=.env.local --import=tsx scripts/resync-batch3.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

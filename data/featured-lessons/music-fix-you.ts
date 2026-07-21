@@ -1,487 +1,153 @@
-// Fonte: generic (getTranscriptFast) — timing 100% original do vídeo, sem repair por IA — 2026-07-18
-// Segments reordenados cronologicamente — 2026-07-21
+// Letra reconstruída (auto-caption do YouTube estava poluída) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
   "feed_item_id": "music-fix-you",
   "video_id": "SIelMFCVJLI",
-  "transcript": "[music]\n[music]\n>> When you try your best [music], but you\ndon't succeed.\nWhen you get what you want, but not\n[music]\nwhat you need.\nWhen you feel so tired, but you can't\nsleep.\nStuck in reverse [music].\n>> [music]\n>> And the tears come streaming down your\nface [music].\nWhen you lose something you can't\nreplace [music].\nWhen you love someone [music], but it\ngoes to waste.\nCould it be worse?\n>> [music]\n>> Lights will [music]\nguide\nyou home >> [music].\n>> And ignite\n>> [music]\n>> your bones.\nAnd I will try to fix you.\n>> [music]\n[music]\n[music]\n>> And high up above [music and singing], or\ndown below.\nWhen you >> [music]\n>> too loved to let it go.\n>> [music]\n>> But if you never try, you'll never know.\nJust [music]\nwhat you're worth.\n>> [music]\n>> Lights will [music]\nguide\nyou home and ignite.\n>> [music]\n>> your bones.\nAnd >> [music]\n>> I will try\nto fix you >> [music].\n[music]\n[music]\n[music]\n[music]\n[music]\n[music]\n[music]\n>> Tears stream down your\nface >> [music]\n>> When you\nlose something >> [singing]\n>> you can't.\nTears [music]\nstream\ndown your [singing]\nface >> [music].\n>> Tears [music]\nstream\ndown your face.\nI promise you I'll learn >> [music].\n>> Tears stream\ndown [music]\nyour face.\n>> [music]\n>> Lights will guide >> [music].\n>> you home.\nAnd ignite >> [music].\n>> your bones.\nAnd I will [singing].\nN.\nTry to [music]\nfix you.",
+  "transcript": "When you try your best, but you don't succeed.\nWhen you get what you want, but not what you need.\nWhen you feel so tired, but you can't sleep.\nStuck in reverse.\nAnd the tears come streaming down your face.\nWhen you lose something you can't replace.\nWhen you love someone, but it goes to waste.\nCould it be worse?\nLights will guide you home.\nAnd ignite your bones.\nAnd I will try to fix you.\nAnd high up above, or down below.\nWhen you're too in love to let it go.\nBut if you never try, you'll never know.\nJust what you're worth.\nLights will guide you home.\nAnd ignite your bones.\nAnd I will try to fix you.\nTears stream down your face.\nWhen you lose something you cannot replace.\nTears stream down your face.\nTears stream down your face.\nI promise you I'll learn from my mistakes.\nTears stream down your face.\nLights will guide you home.\nAnd ignite your bones.\nAnd I will try to fix you.",
   "segments": [
     {
-      "text": "[music]",
-      "start": 3.929,
-      "duration": 2.02,
-      "synthetic": false
+      "text": "When you try your best, but you don't succeed.",
+      "start": 14.5,
+      "duration": 7.100000000000001
     },
     {
-      "text": "[music]",
-      "start": 8.515,
-      "duration": 2.0199999999999996,
-      "synthetic": false
+      "text": "When you get what you want, but not what you need.",
+      "start": 21.6,
+      "duration": 7
     },
     {
-      "text": ">> When you try your best [music], but you",
-      "start": 14.48,
-      "duration": 5.84,
-      "synthetic": false
+      "text": "When you feel so tired, but you can't sleep.",
+      "start": 28.6,
+      "duration": 4.299999999999997
     },
     {
-      "text": "don't succeed.",
-      "start": 16.88,
-      "duration": 3.4400000000000013,
-      "synthetic": false
+      "text": "Stuck in reverse.",
+      "start": 32.9,
+      "duration": 9.700000000000003
     },
     {
-      "text": "When you get what you want, but not",
-      "start": 21.56,
-      "duration": 6.280000000000001,
-      "synthetic": false
+      "text": "And the tears come streaming down your face.",
+      "start": 42.6,
+      "duration": 7.100000000000001
     },
     {
-      "text": "[music]",
-      "start": 24.235,
-      "duration": 1.2016666666666667,
-      "synthetic": false
+      "text": "When you lose something you can't replace.",
+      "start": 49.7,
+      "duration": 7
     },
     {
-      "text": "what you need.",
-      "start": 25.436666666666667,
-      "duration": 2.4033333333333333,
-      "synthetic": false
-    },
-    {
-      "text": "When you feel so tired, but you can't",
-      "start": 28.56,
-      "duration": 6.16,
-      "synthetic": false
-    },
-    {
-      "text": "sleep.",
-      "start": 31.72,
-      "duration": 1.2241935483870974,
-      "synthetic": false
-    },
-    {
-      "text": "Stuck in reverse [music].",
-      "start": 32.9441935483871,
-      "duration": 5.100806451612905,
-      "synthetic": false
-    },
-    {
-      "text": ">> [music]",
-      "start": 41.265,
-      "duration": 1.297058823529412,
-      "synthetic": false
-    },
-    {
-      "text": ">> And the tears come streaming down your",
-      "start": 42.56205882352941,
-      "duration": 5.31794117647059,
-      "synthetic": false
-    },
-    {
-      "text": "face [music].",
-      "start": 45.84,
-      "duration": 2.039999999999999,
-      "synthetic": false
-    },
-    {
-      "text": "When you lose something you can't",
-      "start": 49.72,
-      "duration": 5.355000000000004,
-      "synthetic": false
-    },
-    {
-      "text": "replace [music].",
-      "start": 52.8,
-      "duration": 2.2749999999999986,
-      "synthetic": false
-    },
-    {
-      "text": "When you love someone [music], but it",
-      "start": 56.72,
-      "duration": 5.560000000000002,
-      "synthetic": false
-    },
-    {
-      "text": "goes to waste.",
-      "start": 59.2,
-      "duration": 3.0799999999999983,
-      "synthetic": false
+      "text": "When you love someone, but it goes to waste.",
+      "start": 56.7,
+      "duration": 6.399999999999999
     },
     {
       "text": "Could it be worse?",
-      "start": 63.08,
-      "duration": 3.519999999999996,
-      "synthetic": false
+      "start": 63.1,
+      "duration": 10.100000000000001
     },
     {
-      "text": ">> [music]",
-      "start": 67.465,
-      "duration": 2.019999999999996,
-      "synthetic": false
-    },
-    {
-      "text": ">> Lights will [music]",
+      "text": "Lights will guide you home.",
       "start": 73.2,
-      "duration": 3.259259259259259,
-      "synthetic": false
+      "duration": 7.099999999999994
     },
     {
-      "text": "guide",
-      "start": 76.45925925925926,
-      "duration": 0.7407407407407407,
-      "synthetic": false
-    },
-    {
-      "text": "you home >> [music].",
-      "start": 77.72,
-      "duration": 6.359999999999999,
-      "synthetic": false
-    },
-    {
-      "text": ">> And ignite",
-      "start": 80.32,
-      "duration": 3.760000000000005,
-      "synthetic": false
-    },
-    {
-      "text": ">> [music]",
-      "start": 84.495,
-      "duration": 1.5604166666666686,
-      "synthetic": false
-    },
-    {
-      "text": ">> your bones.",
-      "start": 86.05541666666667,
-      "duration": 2.184583333333336,
-      "synthetic": false
+      "text": "And ignite your bones.",
+      "start": 80.3,
+      "duration": 6.799999999999997
     },
     {
       "text": "And I will try to fix you.",
-      "start": 87.08,
-      "duration": 4.674999999999997,
-      "synthetic": false
+      "start": 87.1,
+      "duration": 12
     },
     {
-      "text": ">> [music]",
-      "start": 89.735,
-      "duration": 2.019999999999996,
-      "synthetic": false
+      "text": "And high up above, or down below.",
+      "start": 106.2,
+      "duration": 7
     },
     {
-      "text": "[music]",
-      "start": 96.941,
-      "duration": 2.019999999999996,
-      "synthetic": false
+      "text": "When you're too in love to let it go.",
+      "start": 113.2,
+      "duration": 6.8999999999999915
     },
     {
-      "text": "[music]",
-      "start": 102.836,
-      "duration": 2.019999999999996,
-      "synthetic": false
+      "text": "But if you never try, you'll never know.",
+      "start": 120.1,
+      "duration": 6.300000000000011
     },
     {
-      "text": ">> And high up above [music and singing], or",
-      "start": 106.24,
-      "duration": 5.320000000000007,
-      "synthetic": false
+      "text": "Just what you're worth.",
+      "start": 126.4,
+      "duration": 10.199999999999989
     },
     {
-      "text": "down below.",
-      "start": 108.44,
-      "duration": 3.1200000000000045,
-      "synthetic": false
-    },
-    {
-      "text": "When you >> [music]",
-      "start": 113.24,
-      "duration": 5.200000000000003,
-      "synthetic": false
-    },
-    {
-      "text": ">> too loved to let it go.",
-      "start": 114.04,
-      "duration": 4.400000000000006,
-      "synthetic": false
-    },
-    {
-      "text": ">> [music]",
-      "start": 119.866,
-      "duration": 5.534000000000006,
-      "synthetic": false
-    },
-    {
-      "text": ">> But if you never try, you'll never know.",
-      "start": 120.12,
-      "duration": 5.280000000000001,
-      "synthetic": false
-    },
-    {
-      "text": "Just [music]",
-      "start": 126.36,
-      "duration": 1.4239999999999953,
-      "synthetic": false
-    },
-    {
-      "text": "what you're worth.",
-      "start": 127.78399999999999,
-      "duration": 2.1359999999999926,
-      "synthetic": false
-    },
-    {
-      "text": ">> [music]",
-      "start": 133.621,
-      "duration": 2.0200000000000102,
-      "synthetic": false
-    },
-    {
-      "text": ">> Lights will [music]",
+      "text": "Lights will guide you home.",
       "start": 136.6,
-      "duration": 3.226666666666673,
-      "synthetic": false
+      "duration": 4.599999999999994
     },
     {
-      "text": "guide",
-      "start": 139.82666666666665,
-      "duration": 0.7333333333333347,
-      "synthetic": false
-    },
-    {
-      "text": "you home and ignite.",
+      "text": "And ignite your bones.",
       "start": 141.2,
-      "duration": 6.2309999999999945,
-      "synthetic": false
+      "duration": 10.900000000000006
     },
     {
-      "text": ">> [music]",
-      "start": 145.411,
-      "duration": 2.0200000000000102,
-      "synthetic": false
+      "text": "And I will try to fix you.",
+      "start": 152.1,
+      "duration": 12
     },
     {
-      "text": ">> your bones.",
-      "start": 148.48,
-      "duration": 2.980000000000004,
-      "synthetic": false
+      "text": "Tears stream down your face.",
+      "start": 212.2,
+      "duration": 6.700000000000017
     },
     {
-      "text": "And >> [music]",
-      "start": 151.45999999999998,
-      "duration": 2.980000000000004,
-      "synthetic": false
+      "text": "When you lose something you cannot replace.",
+      "start": 218.9,
+      "duration": 7.099999999999994
     },
     {
-      "text": ">> I will try",
-      "start": 152.08,
-      "duration": 2.3600000000000136,
-      "synthetic": false
+      "text": "Tears stream down your face.",
+      "start": 226,
+      "duration": 12
     },
     {
-      "text": "to fix you >> [music].",
-      "start": 155.08,
-      "duration": 2.830999999999989,
-      "synthetic": false
+      "text": "Tears stream down your face.",
+      "start": 239.6,
+      "duration": 5.900000000000006
     },
     {
-      "text": "[music]",
-      "start": 161.131,
-      "duration": 2.0200000000000102,
-      "synthetic": false
+      "text": "I promise you I'll learn from my mistakes.",
+      "start": 245.5,
+      "duration": 7.900000000000006
     },
     {
-      "text": "[music]",
-      "start": 165.716,
-      "duration": 2.0200000000000102,
-      "synthetic": false
+      "text": "Tears stream down your face.",
+      "start": 253.4,
+      "duration": 12
     },
     {
-      "text": "[music]",
-      "start": 176.851,
-      "duration": 2.0200000000000102,
-      "synthetic": false
+      "text": "Lights will guide you home.",
+      "start": 267,
+      "duration": 6.899999999999977
     },
     {
-      "text": "[music]",
-      "start": 182.092,
-      "duration": 2.0200000000000102,
-      "synthetic": false
+      "text": "And ignite your bones.",
+      "start": 273.9,
+      "duration": 7
     },
     {
-      "text": "[music]",
-      "start": 187.987,
-      "duration": 2.0200000000000102,
-      "synthetic": false
-    },
-    {
-      "text": "[music]",
-      "start": 199.122,
-      "duration": 2.0200000000000102,
-      "synthetic": false
-    },
-    {
-      "text": "[music]",
-      "start": 208.947,
-      "duration": 2.0200000000000102,
-      "synthetic": false
-    },
-    {
-      "text": ">> Tears stream down your",
-      "start": 212.24,
-      "duration": 5.22199999999998,
-      "synthetic": false
-    },
-    {
-      "text": "face >> [music]",
-      "start": 216.48,
-      "duration": 2.4559615384615574,
-      "synthetic": false
-    },
-    {
-      "text": ">> When you",
-      "start": 218.93596153846156,
-      "duration": 1.8010384615384756,
-      "synthetic": false
-    },
-    {
-      "text": "lose something >> [singing]",
-      "start": 219.76,
-      "duration": 2.5109999999999992,
-      "synthetic": false
-    },
-    {
-      "text": ">> you can't.",
-      "start": 222.271,
-      "duration": 1.2089999999999996,
-      "synthetic": false
-    },
-    {
-      "text": "Tears [music]",
-      "start": 225.96,
-      "duration": 4.789473684210507,
-      "synthetic": false
-    },
-    {
-      "text": "down your [singing]",
-      "start": 228.84,
-      "duration": 3.4536571428571397,
-      "synthetic": false
-    },
-    {
-      "text": "stream",
-      "start": 230.74947368421053,
-      "duration": 2.2105263157894646,
-      "synthetic": false
-    },
-    {
-      "text": "face >> [music].",
-      "start": 232.29365714285714,
-      "duration": 2.9083428571428547,
-      "synthetic": false
-    },
-    {
-      "text": ">> Tears [music]",
-      "start": 239.64,
-      "duration": 4.276363636363654,
-      "synthetic": false
-    },
-    {
-      "text": "down your face.",
-      "start": 242.56,
-      "duration": 5.687000000000012,
-      "synthetic": false
-    },
-    {
-      "text": "stream",
-      "start": 243.91636363636363,
-      "duration": 1.60363636363637,
-      "synthetic": false
-    },
-    {
-      "text": "I promise you I'll learn >> [music].",
-      "start": 245.52,
-      "duration": 4.747000000000014,
-      "synthetic": false
-    },
-    {
-      "text": ">> Tears stream",
-      "start": 253.36,
-      "duration": 6.9599999999999795,
-      "synthetic": false
-    },
-    {
-      "text": "down [music]",
-      "start": 256.2,
-      "duration": 2.2472727272727298,
-      "synthetic": false
-    },
-    {
-      "text": "your face.",
-      "start": 258.4472727272727,
-      "duration": 1.8727272727272748,
-      "synthetic": false
-    },
-    {
-      "text": ">> [music]",
-      "start": 265.932,
-      "duration": 5.187999999999988,
-      "synthetic": false
-    },
-    {
-      "text": ">> Lights will guide >> [music].",
-      "start": 267.04,
-      "duration": 6.839999999999975,
-      "synthetic": false
-    },
-    {
-      "text": ">> you home.",
-      "start": 271.6,
-      "duration": 6.1229999999999905,
-      "synthetic": false
-    },
-    {
-      "text": "And ignite >> [music].",
-      "start": 273.88,
-      "duration": 6.680000000000007,
-      "synthetic": false
-    },
-    {
-      "text": ">> your bones.",
-      "start": 278.48,
-      "duration": 2.4159999999999857,
-      "synthetic": false
-    },
-    {
-      "text": "And I will [singing].",
-      "start": 280.896,
-      "duration": 3.623999999999978,
-      "synthetic": false
-    },
-    {
-      "text": "N.",
-      "start": 282.32,
-      "duration": 0.4966666666666649,
-      "synthetic": false
-    },
-    {
-      "text": "Try to [music]",
-      "start": 282.81666666666666,
-      "duration": 3.476666666666655,
-      "synthetic": false
-    },
-    {
-      "text": "fix you.",
-      "start": 286.2933333333333,
-      "duration": 1.9866666666666597,
-      "synthetic": false
+      "text": "And I will try to fix you.",
+      "start": 280.9,
+      "duration": 3
     }
   ],
   "chunks": [
     {
       "text": "try your best",
       "type": "collocation",
-      "start": 28,
-      "end": 41,
+      "start": 9,
+      "end": 22,
       "literal_translation": "tentar seu melhor",
       "contextual_translation": "fazer o seu melhor",
       "importance": "high",
@@ -492,30 +158,30 @@ const data: StaticLesson = {
       "flashcard_suggestion": true,
       "learner_level": "B1",
       "why_it_matters": "To put in maximum effort in an attempt to succeed.",
-      "example_sentence": "I always try my best in exams."
+      "example_sentence": "She always tries her best in every competition."
     },
     {
       "text": "get what you want",
       "type": "collocation",
-      "start": 83,
-      "end": 100,
-      "literal_translation": "obter o que você quer",
-      "contextual_translation": "conseguir o que você quer",
-      "importance": "high",
+      "start": 56,
+      "end": 73,
+      "literal_translation": "conseguir o que você quer",
+      "contextual_translation": "conseguir o que deseja",
+      "importance": "medium",
       "frequency_score": 7,
       "confidence": 0.9,
       "color": "#4A90E2",
       "clickable": true,
       "flashcard_suggestion": true,
       "learner_level": "B1",
-      "why_it_matters": "To achieve or obtain what you desire.",
-      "example_sentence": "It's not always easy to get what you want."
+      "why_it_matters": "To obtain or achieve what you desire.",
+      "example_sentence": "He always seems to get what he wants."
     },
     {
       "text": "feel so tired",
       "type": "collocation",
-      "start": 142,
-      "end": 155,
+      "start": 107,
+      "end": 120,
       "literal_translation": "sentir-se tão cansado",
       "contextual_translation": "sentir-se muito cansado",
       "importance": "medium",
@@ -526,98 +192,64 @@ const data: StaticLesson = {
       "flashcard_suggestion": true,
       "learner_level": "A2",
       "why_it_matters": "To experience a strong sense of fatigue.",
-      "example_sentence": "After the long hike, I feel so tired."
+      "example_sentence": "After the long hike, I felt so tired."
     },
     {
-      "text": "stuck in reverse",
-      "type": "idiomatic",
-      "start": 178,
-      "end": 194,
-      "literal_translation": "preso em marcha à ré",
-      "contextual_translation": "preso no passado",
-      "importance": "high",
-      "frequency_score": 5,
-      "confidence": 0.9,
-      "color": "#FF6B6B",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B2",
-      "why_it_matters": "To feel unable to move forward or progress.",
-      "example_sentence": "I feel stuck in reverse with my career."
-    },
-    {
-      "text": "love someone",
+      "text": "can't sleep",
       "type": "collocation",
-      "start": 331,
-      "end": 343,
-      "literal_translation": "amar alguém",
-      "contextual_translation": "amar alguém",
-      "importance": "high",
-      "frequency_score": 9,
-      "confidence": 0.95,
-      "color": "#4A90E2",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "A1",
-      "why_it_matters": "To have a deep affection for someone.",
-      "example_sentence": "It's important to love someone for who they are."
-    },
-    {
-      "text": "goes to waste",
-      "type": "idiomatic",
-      "start": 360,
-      "end": 373,
-      "literal_translation": "vai para o lixo",
-      "contextual_translation": "é desperdiçado",
-      "importance": "high",
-      "frequency_score": 7,
-      "confidence": 0.9,
-      "color": "#FF6B6B",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "To be unused or not utilized effectively.",
-      "example_sentence": "All that food went to waste after the party."
-    },
-    {
-      "text": "try to fix you",
-      "type": "collocation",
-      "start": 506,
-      "end": 520,
-      "literal_translation": "tentar consertar você",
-      "contextual_translation": "tentar te ajudar",
+      "start": 130,
+      "end": 141,
+      "literal_translation": "não pode dormir",
+      "contextual_translation": "não consegue dormir",
       "importance": "high",
       "frequency_score": 8,
       "confidence": 0.95,
       "color": "#4A90E2",
       "clickable": true,
       "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "To attempt to help or heal someone emotionally or physically.",
-      "example_sentence": "I'll always try to fix you when you're down."
+      "learner_level": "A2",
+      "why_it_matters": "To be unable to fall asleep.",
+      "example_sentence": "I can't sleep when it's too noisy."
     },
     {
-      "text": "high up above",
-      "type": "collocation",
-      "start": 556,
-      "end": 569,
-      "literal_translation": "alto lá em cima",
-      "contextual_translation": "bem acima",
+      "text": "come streaming down",
+      "type": "phrasal_verb",
+      "start": 175,
+      "end": 194,
+      "literal_translation": "vir correndo para baixo",
+      "contextual_translation": "cair em fluxo",
       "importance": "medium",
-      "frequency_score": 6,
-      "confidence": 0.85,
+      "frequency_score": 5,
+      "confidence": 0.9,
+      "color": "#4CAF50",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B2",
+      "why_it_matters": "To flow downwards in a continuous stream.",
+      "example_sentence": "Tears came streaming down her face."
+    },
+    {
+      "text": "lose something you can't replace",
+      "type": "collocation",
+      "start": 215,
+      "end": 247,
+      "literal_translation": "perder algo que você não pode substituir",
+      "contextual_translation": "perder algo insubstituível",
+      "importance": "high",
+      "frequency_score": 7,
+      "confidence": 0.9,
       "color": "#4A90E2",
       "clickable": true,
       "flashcard_suggestion": true,
-      "learner_level": "A2",
-      "why_it_matters": "To describe something located at a great height.",
-      "example_sentence": "The eagle soared high up above the mountains."
+      "learner_level": "B2",
+      "why_it_matters": "To lose something that cannot be replaced.",
+      "example_sentence": "Losing a loved one is losing something you can't replace."
     },
     {
       "text": "let it go",
       "type": "phrasal_verb",
-      "start": 642,
-      "end": 651,
+      "start": 452,
+      "end": 461,
       "literal_translation": "deixar ir",
       "contextual_translation": "deixar para lá",
       "importance": "high",
@@ -627,50 +259,33 @@ const data: StaticLesson = {
       "clickable": true,
       "flashcard_suggestion": true,
       "learner_level": "B1",
-      "why_it_matters": "To stop holding onto something emotionally or physically.",
-      "example_sentence": "It's time to let it go and move on."
+      "why_it_matters": "To stop holding onto something emotionally.",
+      "example_sentence": "Sometimes you just have to let it go."
     },
     {
-      "text": "never try, you'll never know",
-      "type": "idiomatic",
-      "start": 678,
-      "end": 706,
-      "literal_translation": "nunca tentar, você nunca saberá",
-      "contextual_translation": "se não tentar, nunca saberá",
-      "importance": "high",
-      "frequency_score": 8,
-      "confidence": 0.95,
-      "color": "#FF6B6B",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B2",
-      "why_it_matters": "To emphasize the importance of taking action to discover outcomes.",
-      "example_sentence": "You should apply for the job; if you never try, you'll never know."
-    },
-    {
-      "text": "what you're worth",
+      "text": "never know",
       "type": "collocation",
-      "start": 721,
-      "end": 738,
-      "literal_translation": "o que você vale",
-      "contextual_translation": "o seu valor",
+      "start": 492,
+      "end": 502,
+      "literal_translation": "nunca saber",
+      "contextual_translation": "nunca saberá",
       "importance": "medium",
-      "frequency_score": 7,
-      "confidence": 0.9,
+      "frequency_score": 6,
+      "confidence": 0.85,
       "color": "#4A90E2",
       "clickable": true,
       "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "To understand one's own value or potential.",
-      "example_sentence": "Never underestimate what you're worth."
+      "learner_level": "A2",
+      "why_it_matters": "To remain unaware or uncertain.",
+      "example_sentence": "You never know what might happen next."
     },
     {
-      "text": "promise you I'll learn",
+      "text": "guide you home",
       "type": "collocation",
-      "start": 1131,
-      "end": 1153,
-      "literal_translation": "prometo que vou aprender",
-      "contextual_translation": "prometo que vou aprender",
+      "start": 325,
+      "end": 339,
+      "literal_translation": "guiar você para casa",
+      "contextual_translation": "levar você para casa",
       "importance": "medium",
       "frequency_score": 5,
       "confidence": 0.85,
@@ -678,11 +293,62 @@ const data: StaticLesson = {
       "clickable": true,
       "flashcard_suggestion": true,
       "learner_level": "B1",
-      "why_it_matters": "To assure someone that you will gain knowledge or skill.",
-      "example_sentence": "I promise you I'll learn from my mistakes."
+      "why_it_matters": "To lead someone back to a place of safety or comfort.",
+      "example_sentence": "The stars will guide you home on a clear night."
+    },
+    {
+      "text": "ignite your bones",
+      "type": "idiomatic",
+      "start": 345,
+      "end": 362,
+      "literal_translation": "acender seus ossos",
+      "contextual_translation": "dar vida a você",
+      "importance": "medium",
+      "frequency_score": 4,
+      "confidence": 0.8,
+      "color": "#FF6B6B",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "C1",
+      "why_it_matters": "To energize or invigorate someone.",
+      "example_sentence": "The music ignites your bones and makes you want to dance."
+    },
+    {
+      "text": "try to fix you",
+      "type": "collocation",
+      "start": 375,
+      "end": 389,
+      "literal_translation": "tentar consertar você",
+      "contextual_translation": "tentar ajudar você",
+      "importance": "high",
+      "frequency_score": 7,
+      "confidence": 0.9,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B1",
+      "why_it_matters": "To attempt to help or heal someone emotionally or physically.",
+      "example_sentence": "I'll try to fix you when you're feeling down."
+    },
+    {
+      "text": "learn from my mistakes",
+      "type": "collocation",
+      "start": 756,
+      "end": 778,
+      "literal_translation": "aprender com meus erros",
+      "contextual_translation": "aprender com meus erros",
+      "importance": "high",
+      "frequency_score": 8,
+      "confidence": 0.95,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B2",
+      "why_it_matters": "To gain knowledge or insight from past errors.",
+      "example_sentence": "I always try to learn from my mistakes."
     }
   ],
-  "generated_at": "2026-07-18T11:56:18.766Z"
+  "generated_at": "2026-07-21T22:47:51.363Z"
 }
 
 export default data
