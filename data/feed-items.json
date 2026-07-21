@@ -169,7 +169,8 @@
     ],
     "preview": "Kiedis narrates a personal story with vivid imagery and emotional depth. Slow verses and clear enunciation help learners follow complex storytelling in English at a comfortable pace.",
     "featured": true,
-    "vibe": "Emotional"
+    "vibe": "Emotional",
+    "maintenance": true
   },
   {
     "id": "music-stressed-out",

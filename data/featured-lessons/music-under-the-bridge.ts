@@ -1,266 +1,205 @@
-// Timestamps ajustados manualmente (delta -5s) — 2026-07-21
+// Sincronizado via lrclib.net (letra sincronizada real) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
   "feed_item_id": "music-under-the-bridge",
   "video_id": "GLvohMXgcBo",
-  "transcript": "[Music]\nSometimes I'll feel like I don't have a\npartner. Sometimes I pee\nlike my older friend is the city I live\nin, the City of Angels. Lonely as I am,\ntogether, losing ahead.\nShe sees my, she kisses you and a lineup\nme.\n[Music]\nLike I did then, take me to the place I\nlove. Get away! I don't ever wanna meet\nlike I did then. Take me to the place I\nlove.\nNikki got away.\n[Music] You\n[Music]\nIt's hard to believe there's nobody out there.\nHard to believe it, I'm all alone at\nleast. I have heard of it.\n[Music]\nTo give me crap.\nI don't ever wanna be like I did that\nman. Attempt to the plant, son!\nTake me away! I don't ever wanna be like\nI didn't Timothy to plan.\n[Music]\nNikki, you! [Music]\nHey!\n[Music]\nYou! [Music]\nAnd we're out.\nI could.\nYeah!\n[Music]\n[Applause]\n[Music]\n[Applause]\n[Music]\n[Music]\n[Music]\nYou!",
+  "transcript": "Sometimes I feel like I don't have a partner\nSometimes I feel like my only friend\nIs the city I live in, the city of angels\nLonely as I am, together we cry\nI drive on her streets 'cause she's my companion\nI walk through her hills 'cause she knows who I am\nShe sees my good deeds and she kisses me windy\nWell, I never worry, now that is a lie\nI don't ever want to feel like I did that day\nTake me to the place I love, take me all the way\nI don't ever want to feel like I did that day\nTake me to the place I love, take me all the way\nYeah, yeah, yeah\nIt's hard to believe that there's nobody out there\nIt's hard to believe that I'm all alone\nAt least I have her love, the city she loves me\nLonely as I am, together we cry\nAnd I don't ever want to feel like I did that day\nTake me to the place I love, take me all the way\nWell, I don't ever want to feel like I did that day\nTake me to the place I love, take me all the way\nYeah, yeah, yeah, yeah\nOh, no, no, no, yeah, yeah\nLove me, I said yeah, yeah\nOne time\n(Under the bridge downtown)\nIs where I drew some blood\n(Under the bridge downtown)\nI could not get enough\n(Under the bridge downtown)\nForgot about my love\n(Under the bridge downtown)\nI gave my life away, yeah\nYeah, yeah (Away)\nOh, no, no-no-no, yeah, yeah (Away)\nOh, no, I said, yeah, yeah (Away)\nWhere I'll stay",
   "segments": [
     {
-      "text": "[Music]",
-      "start": 0,
-      "duration": 30.79,
-      "synthetic": false
+      "text": "Sometimes I feel like I don't have a partner",
+      "start": 28.8,
+      "duration": 6.080000000000002
     },
     {
-      "text": "Sometimes I'll feel like I don't have a",
-      "start": 24.09,
-      "duration": 8.34,
-      "synthetic": false
+      "text": "Sometimes I feel like my only friend",
+      "start": 34.88,
+      "duration": 4.8799999999999955
     },
     {
-      "text": "partner. Sometimes I pee",
-      "start": 28.05,
-      "duration": 9.36,
-      "synthetic": false
+      "text": "Is the city I live in, the city of angels",
+      "start": 39.76,
+      "duration": 6.469999999999999
     },
     {
-      "text": "like my older friend is the city I live",
-      "start": 32.43,
-      "duration": 11.520000000000003,
-      "synthetic": false
+      "text": "Lonely as I am, together we cry",
+      "start": 46.23,
+      "duration": 11.580000000000005
     },
     {
-      "text": "in, the City of Angels. Lonely as I am,",
-      "start": 37.41,
-      "duration": 27.450000000000003,
-      "synthetic": false
+      "text": "I drive on her streets 'cause she's my companion",
+      "start": 57.81,
+      "duration": 5.640000000000001
     },
     {
-      "text": "together, losing ahead.",
-      "start": 43.95,
-      "duration": 29.510000000000005,
-      "synthetic": false
+      "text": "I walk through her hills 'cause she knows who I am",
+      "start": 63.45,
+      "duration": 5.859999999999999
     },
     {
-      "text": "She sees my, she kisses you and a lineup",
-      "start": 64.86,
-      "duration": 8.599999999999994,
-      "synthetic": false
+      "text": "She sees my good deeds and she kisses me windy",
+      "start": 69.31,
+      "duration": 6.170000000000002
     },
     {
-      "text": "me.",
-      "start": 74.59,
-      "duration": 2.0900000000000034,
-      "synthetic": false
+      "text": "Well, I never worry, now that is a lie",
+      "start": 75.48,
+      "duration": 11.230000000000004
     },
     {
-      "text": "[Music]",
-      "start": 79.32,
-      "duration": 10.218999999999994,
-      "synthetic": false
+      "text": "I don't ever want to feel like I did that day",
+      "start": 86.71,
+      "duration": 5.549999999999983
     },
     {
-      "text": "Like I did then, take me to the place I",
-      "start": 85.42,
-      "duration": 6.149000000000001,
-      "synthetic": false
+      "text": "Take me to the place I love, take me all the way",
+      "start": 92.26,
+      "duration": 5.530000000000001
     },
     {
-      "text": "love. Get away! I don't ever wanna meet",
-      "start": 89.539,
-      "duration": 11.310999999999993,
-      "synthetic": false
+      "text": "I don't ever want to feel like I did that day",
+      "start": 97.79,
+      "duration": 6.110000000000014
     },
     {
-      "text": "like I did then. Take me to the place I",
-      "start": 96.7,
-      "duration": 6.049999999999997,
-      "synthetic": false
+      "text": "Take me to the place I love, take me all the way",
+      "start": 103.9,
+      "duration": 5.280000000000001
     },
     {
-      "text": "love.",
-      "start": 100.85,
-      "duration": 5.560000000000002,
-      "synthetic": false
+      "text": "Yeah, yeah, yeah",
+      "start": 109.18,
+      "duration": 11.61999999999999
     },
     {
-      "text": "Nikki got away.",
-      "start": 102.75,
-      "duration": 5.950000000000003,
-      "synthetic": false
+      "text": "It's hard to believe that there's nobody out there",
+      "start": 120.8,
+      "duration": 5.939999999999998
     },
     {
-      "text": "[Music] You",
-      "start": 106.41,
-      "duration": 4.950000000000003,
-      "synthetic": false
+      "text": "It's hard to believe that I'm all alone",
+      "start": 126.74,
+      "duration": 5.470000000000013
     },
     {
-      "text": "[Music]",
-      "start": 111.73,
-      "duration": 3.0690000000000026,
-      "synthetic": false
+      "text": "At least I have her love, the city she loves me",
+      "start": 132.21,
+      "duration": 5.710000000000008
     },
     {
-      "text": "It's hard to believe there's nobody out there.",
-      "start": 116.25,
-      "duration": 11.669999999999987,
-      "synthetic": false
+      "text": "Lonely as I am, together we cry",
+      "start": 137.92,
+      "duration": 11.059999999999974
     },
     {
-      "text": "Hard to believe it, I'm all alone at",
-      "start": 121.67,
-      "duration": 10.459999999999994,
-      "synthetic": false
+      "text": "And I don't ever want to feel like I did that day",
+      "start": 148.98,
+      "duration": 5.719999999999999
     },
     {
-      "text": "least. I have heard of it.",
-      "start": 127.92,
-      "duration": 7.6299999999999955,
-      "synthetic": false
+      "text": "Take me to the place I love, take me all the way",
+      "start": 154.7,
+      "duration": 5.560000000000002
     },
     {
-      "text": "[Music]",
-      "start": 132.13,
-      "duration": 7.859000000000009,
-      "synthetic": false
+      "text": "Well, I don't ever want to feel like I did that day",
+      "start": 160.26,
+      "duration": 6
     },
     {
-      "text": "To give me crap.",
-      "start": 135.55,
-      "duration": 4.438999999999993,
-      "synthetic": false
+      "text": "Take me to the place I love, take me all the way",
+      "start": 166.26,
+      "duration": 6.400000000000006
     },
     {
-      "text": "I don't ever wanna be like I did that",
-      "start": 140.56,
-      "duration": 13.310000000000002,
-      "synthetic": false
+      "text": "Yeah, yeah, yeah, yeah",
+      "start": 172.66,
+      "duration": 4.590000000000003
     },
     {
-      "text": "man. Attempt to the plant, son!",
-      "start": 149.98,
-      "duration": 10.219999999999999,
-      "synthetic": false
+      "text": "Oh, no, no, no, yeah, yeah",
+      "start": 177.25,
+      "duration": 5.439999999999998
     },
     {
-      "text": "Take me away! I don't ever wanna be like",
-      "start": 153.87,
-      "duration": 9.27000000000001,
-      "synthetic": false
+      "text": "Love me, I said yeah, yeah",
+      "start": 182.69,
+      "duration": 7.140000000000015
     },
     {
-      "text": "I didn't Timothy to plan.",
-      "start": 160.2,
-      "duration": 5.0090000000000146,
-      "synthetic": false
+      "text": "One time",
+      "start": 189.83,
+      "duration": 4.089999999999975
     },
     {
-      "text": "[Music]",
-      "start": 163.14,
-      "duration": 5.3700000000000045,
-      "synthetic": false
+      "text": "(Under the bridge downtown)",
+      "start": 193.92,
+      "duration": 3.0100000000000193
     },
     {
-      "text": "Nikki, you! [Music]",
-      "start": 165.209,
-      "duration": 8.591000000000008,
-      "synthetic": false
+      "text": "Is where I drew some blood",
+      "start": 196.93,
+      "duration": 2.4499999999999886
     },
     {
-      "text": "Hey!",
-      "start": 175.269,
-      "duration": 8.300000000000011,
-      "synthetic": false
+      "text": "(Under the bridge downtown)",
+      "start": 199.38,
+      "duration": 3.25
     },
     {
-      "text": "[Music]",
-      "start": 176.57,
-      "duration": 7.810000000000002,
-      "synthetic": false
+      "text": "I could not get enough",
+      "start": 202.63,
+      "duration": 2.280000000000001
     },
     {
-      "text": "You! [Music]",
-      "start": 183.569,
-      "duration": 4.030000000000001,
-      "synthetic": false
+      "text": "(Under the bridge downtown)",
+      "start": 204.91,
+      "duration": 3.0200000000000102
     },
     {
-      "text": "And we're out.",
-      "start": 192.989,
-      "duration": 2.9010000000000105,
-      "synthetic": false
+      "text": "Forgot about my love",
+      "start": 207.93,
+      "duration": 2.509999999999991
     },
     {
-      "text": "I could.",
-      "start": 197.59,
-      "duration": 3.4099999999999966,
-      "synthetic": false
+      "text": "(Under the bridge downtown)",
+      "start": 210.44,
+      "duration": 2.740000000000009
     },
     {
-      "text": "Yeah!",
-      "start": 208.81,
-      "duration": 3,
-      "synthetic": false
+      "text": "I gave my life away, yeah",
+      "start": 213.18,
+      "duration": 5.930000000000007
     },
     {
-      "text": "[Music]",
-      "start": 217.35,
-      "duration": 9.560000000000002,
-      "synthetic": false
+      "text": "Yeah, yeah (Away)",
+      "start": 219.11,
+      "duration": 1.839999999999975
     },
     {
-      "text": "[Applause]",
-      "start": 218.72,
-      "duration": 10.580000000000013,
-      "synthetic": false
+      "text": "Oh, no, no-no-no, yeah, yeah (Away)",
+      "start": 220.95,
+      "duration": 5.420000000000016
     },
     {
-      "text": "[Music]",
-      "start": 226.91,
-      "duration": 5.4199999999999875,
-      "synthetic": false
+      "text": "Oh, no, I said, yeah, yeah (Away)",
+      "start": 226.37,
+      "duration": 6.909999999999997
     },
     {
-      "text": "[Applause]",
-      "start": 229.3,
-      "duration": 9.12899999999999,
-      "synthetic": false
-    },
-    {
-      "text": "[Music]",
-      "start": 232.33,
-      "duration": 6.0989999999999895,
-      "synthetic": false
-    },
-    {
-      "text": "[Music]",
-      "start": 241.76,
-      "duration": 3.1399999999999864,
-      "synthetic": false
-    },
-    {
-      "text": "[Music]",
-      "start": 248.76,
-      "duration": 14.670000000000016,
-      "synthetic": false
-    },
-    {
-      "text": "You!",
-      "start": 261.37,
-      "duration": 2.0600000000000023,
-      "synthetic": false
+      "text": "Where I'll stay",
+      "start": 233.28,
+      "duration": 3
     }
   ],
   "chunks": [
     {
       "text": "feel like",
       "type": "collocation",
-      "start": 23,
-      "end": 32,
+      "start": 12,
+      "end": 21,
       "literal_translation": "sentir como",
-      "contextual_translation": "sentir que",
+      "contextual_translation": "sentir como se",
       "importance": "high",
       "frequency_score": 8,
       "confidence": 0.95,
@@ -269,180 +208,214 @@ const data: StaticLesson = {
       "flashcard_suggestion": true,
       "learner_level": "B1",
       "why_it_matters": "To express a sensation or emotion similar to something else.",
-      "example_sentence": "I feel like I'm dreaming."
+      "example_sentence": "I feel like I'm floating on air."
     },
     {
       "text": "I don't have",
       "type": "grammar_pattern",
-      "start": 33,
-      "end": 45,
+      "start": 22,
+      "end": 34,
       "literal_translation": "eu não tenho",
       "contextual_translation": "eu não tenho",
-      "importance": "medium",
+      "importance": "high",
       "frequency_score": 9,
-      "confidence": 0.9,
+      "confidence": 0.98,
       "color": "#00BCD4",
       "clickable": true,
       "flashcard_suggestion": true,
-      "learner_level": "A2",
-      "why_it_matters": "To express possession or lack thereof.",
+      "learner_level": "A1",
+      "why_it_matters": "Basic negation pattern to express lack of possession.",
       "example_sentence": "I don't have any money."
     },
     {
-      "text": "City of Angels",
+      "text": "my only friend",
+      "type": "collocation",
+      "start": 67,
+      "end": 81,
+      "literal_translation": "meu único amigo",
+      "contextual_translation": "meu único amigo",
+      "importance": "medium",
+      "frequency_score": 6,
+      "confidence": 0.92,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "A2",
+      "why_it_matters": "To describe a singular, exclusive relationship.",
+      "example_sentence": "He's my only friend in the city."
+    },
+    {
+      "text": "I live in",
+      "type": "grammar_pattern",
+      "start": 94,
+      "end": 103,
+      "literal_translation": "eu moro em",
+      "contextual_translation": "eu moro em",
+      "importance": "high",
+      "frequency_score": 9,
+      "confidence": 0.97,
+      "color": "#00BCD4",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "A1",
+      "why_it_matters": "Basic pattern to express one's place of residence.",
+      "example_sentence": "I live in a small town."
+    },
+    {
+      "text": "Lonely as I am",
       "type": "idiomatic",
-      "start": 121,
-      "end": 135,
-      "literal_translation": "Cidade dos Anjos",
-      "contextual_translation": "Cidade dos Anjos (Los Angeles)",
+      "start": 124,
+      "end": 138,
+      "literal_translation": "solitário como eu sou",
+      "contextual_translation": "por mais solitário que eu seja",
       "importance": "medium",
       "frequency_score": 5,
-      "confidence": 0.85,
+      "confidence": 0.9,
       "color": "#FF6B6B",
       "clickable": true,
       "flashcard_suggestion": true,
       "learner_level": "B2",
-      "why_it_matters": "A nickname for Los Angeles, often used in cultural references.",
-      "example_sentence": "I visited the City of Angels last summer."
+      "why_it_matters": "Expresses a condition despite a state of being.",
+      "example_sentence": "Lonely as I am, I still find joy in small things."
     },
     {
-      "text": "Lonely as I am",
-      "type": "emotional",
-      "start": 137,
-      "end": 151,
-      "literal_translation": "Solitário como eu sou",
-      "contextual_translation": "Tão solitário quanto estou",
-      "importance": "high",
-      "frequency_score": 6,
-      "confidence": 0.9,
-      "color": "#E91E63",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B2",
-      "why_it_matters": "Expresses a deep sense of loneliness.",
-      "example_sentence": "Lonely as I am, I still find comfort in music."
-    },
-    {
-      "text": "Get away",
-      "type": "phrasal_verb",
-      "start": 276,
-      "end": 284,
-      "literal_translation": "sair",
-      "contextual_translation": "vá embora",
-      "importance": "high",
-      "frequency_score": 7,
-      "confidence": 0.95,
-      "color": "#4CAF50",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "To escape or leave a place.",
-      "example_sentence": "I need to get away from the city for a while."
-    },
-    {
-      "text": "wanna",
-      "type": "conversational",
-      "start": 299,
-      "end": 304,
-      "literal_translation": "querer",
-      "contextual_translation": "quero",
-      "importance": "high",
-      "frequency_score": 10,
-      "confidence": 0.95,
-      "color": "#607D8B",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "A1",
-      "why_it_matters": "Informal contraction of 'want to'.",
-      "example_sentence": "I wanna go to the beach."
-    },
-    {
-      "text": "hard to believe",
+      "text": "together we cry",
       "type": "collocation",
-      "start": 397,
-      "end": 412,
-      "literal_translation": "difícil de acreditar",
-      "contextual_translation": "difícil de acreditar",
-      "importance": "high",
-      "frequency_score": 8,
-      "confidence": 0.9,
+      "start": 140,
+      "end": 155,
+      "literal_translation": "juntos nós choramos",
+      "contextual_translation": "choramos juntos",
+      "importance": "medium",
+      "frequency_score": 6,
+      "confidence": 0.93,
       "color": "#4A90E2",
       "clickable": true,
       "flashcard_suggestion": true,
       "learner_level": "B1",
-      "why_it_matters": "Used to express skepticism or surprise.",
+      "why_it_matters": "Describes a shared emotional experience.",
+      "example_sentence": "In tough times, together we cry."
+    },
+    {
+      "text": "drive on",
+      "type": "phrasal_verb",
+      "start": 158,
+      "end": 166,
+      "literal_translation": "dirigir em",
+      "contextual_translation": "dirigir por",
+      "importance": "medium",
+      "frequency_score": 5,
+      "confidence": 0.88,
+      "color": "#4CAF50",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B1",
+      "why_it_matters": "To continue driving on a road or path.",
+      "example_sentence": "I drive on the highway every day."
+    },
+    {
+      "text": "never worry",
+      "type": "collocation",
+      "start": 311,
+      "end": 322,
+      "literal_translation": "nunca se preocupar",
+      "contextual_translation": "nunca se preocupar",
+      "importance": "medium",
+      "frequency_score": 7,
+      "confidence": 0.91,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "A2",
+      "why_it_matters": "Expresses a state of being free from anxiety.",
+      "example_sentence": "I never worry about small things."
+    },
+    {
+      "text": "I don't ever want to feel",
+      "type": "grammar_pattern",
+      "start": 342,
+      "end": 367,
+      "literal_translation": "eu nunca quero sentir",
+      "contextual_translation": "eu nunca quero sentir",
+      "importance": "high",
+      "frequency_score": 8,
+      "confidence": 0.96,
+      "color": "#00BCD4",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B1",
+      "why_it_matters": "Expresses a strong desire to avoid a feeling.",
+      "example_sentence": "I don't ever want to feel this sad again."
+    },
+    {
+      "text": "take me to the place I love",
+      "type": "collocation",
+      "start": 388,
+      "end": 415,
+      "literal_translation": "leve-me ao lugar que eu amo",
+      "contextual_translation": "leve-me ao lugar que eu amo",
+      "importance": "medium",
+      "frequency_score": 6,
+      "confidence": 0.89,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B1",
+      "why_it_matters": "Expresses a desire to return to a beloved place.",
+      "example_sentence": "Take me to the place I love, where I feel at home."
+    },
+    {
+      "text": "hard to believe",
+      "type": "collocation",
+      "start": 554,
+      "end": 569,
+      "literal_translation": "difícil de acreditar",
+      "contextual_translation": "difícil de acreditar",
+      "importance": "medium",
+      "frequency_score": 7,
+      "confidence": 0.94,
+      "color": "#4A90E2",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "B2",
+      "why_it_matters": "Expresses skepticism or disbelief.",
       "example_sentence": "It's hard to believe that he won the lottery."
     },
     {
-      "text": "all alone",
-      "type": "emotional",
-      "start": 463,
-      "end": 472,
-      "literal_translation": "completamente sozinho",
-      "contextual_translation": "totalmente sozinho",
-      "importance": "high",
-      "frequency_score": 6,
-      "confidence": 0.9,
-      "color": "#E91E63",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "Expresses a feeling of complete solitude.",
-      "example_sentence": "He felt all alone in the big city."
-    },
-    {
-      "text": "give me crap",
-      "type": "idiomatic",
-      "start": 514,
-      "end": 526,
-      "literal_translation": "dar-me porcaria",
-      "contextual_translation": "me encher o saco",
-      "importance": "medium",
-      "frequency_score": 5,
-      "confidence": 0.85,
-      "color": "#FF6B6B",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B2",
-      "why_it_matters": "To criticize or bother someone.",
-      "example_sentence": "Don't give me crap about being late."
-    },
-    {
-      "text": "take me away",
-      "type": "emotional",
-      "start": 598,
-      "end": 610,
-      "literal_translation": "leve-me embora",
-      "contextual_translation": "leve-me embora",
-      "importance": "high",
-      "frequency_score": 7,
-      "confidence": 0.9,
-      "color": "#E91E63",
-      "clickable": true,
-      "flashcard_suggestion": true,
-      "learner_level": "B1",
-      "why_it_matters": "Expresses a desire to escape from the current situation.",
-      "example_sentence": "Take me away from all this stress."
-    },
-    {
-      "text": "we're out",
+      "text": "at least",
       "type": "conversational",
-      "start": 723,
-      "end": 732,
-      "literal_translation": "nós estamos fora",
-      "contextual_translation": "estamos fora",
-      "importance": "medium",
-      "frequency_score": 6,
-      "confidence": 0.85,
+      "start": 640,
+      "end": 648,
+      "literal_translation": "pelo menos",
+      "contextual_translation": "pelo menos",
+      "importance": "high",
+      "frequency_score": 9,
+      "confidence": 0.97,
       "color": "#607D8B",
       "clickable": true,
       "flashcard_suggestion": true,
-      "learner_level": "B2",
-      "why_it_matters": "Used to indicate leaving or finishing something.",
-      "example_sentence": "Alright, we're out of here."
+      "learner_level": "A2",
+      "why_it_matters": "Used to introduce a positive aspect in a negative situation.",
+      "example_sentence": "At least we have each other."
+    },
+    {
+      "text": "gave my life away",
+      "type": "idiomatic",
+      "start": 1191,
+      "end": 1208,
+      "literal_translation": "dei minha vida",
+      "contextual_translation": "entreguei minha vida",
+      "importance": "medium",
+      "frequency_score": 5,
+      "confidence": 0.89,
+      "color": "#FF6B6B",
+      "clickable": true,
+      "flashcard_suggestion": true,
+      "learner_level": "C1",
+      "why_it_matters": "Expresses sacrificing one's life or dedicating oneself completely.",
+      "example_sentence": "He gave his life away to help others."
     }
   ],
-  "generated_at": "2026-07-21T22:34:41.159Z"
+  "generated_at": "2026-07-21T22:59:33.656Z"
 }
 
 export default data
