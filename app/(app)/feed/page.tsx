@@ -1,13 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Hero from '@/components/ui/Hero'
-import MetricCard from '@/components/ui/MetricCard'
+import Link from 'next/link'
 import FeedItemCard from '@/components/FeedItemCard'
-import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
-import { contentTabs } from '@/lib/product'
-import { FEED_ITEMS } from '@/lib/feed'
-import type { Flashcard } from '@/lib/types'
+import { STUDY_LEVELS, songsForLevel, nextReviewStep, type SongProgress, type StudyLevel } from '@/lib/mvp'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -16,171 +12,110 @@ async function apiFetch<T>(path: string): Promise<T> {
   return data as T
 }
 
-// Protótipo de validação: só as lições pré-prontas (transcript + chunks já
-// gerados, sem custo de scraping ao vivo) — o mesmo conjunto que tem
-// STATIC_LESSONS em data/featured-lessons/.
-const ALL_ITEMS = FEED_ITEMS.filter((item) => item.featured === true)
+const LEVEL_ORDER: StudyLevel[] = ['beginner', 'intermediate', 'advanced']
 
-const LEVELS = ['All', 'A1', 'A2', 'B1', 'B2', 'C1'] as const
-type LevelFilter = (typeof LEVELS)[number]
-
-// Vibe/theme filter — reuses each lesson's own tags (pop, conversational,
-// nostalgia, slang, philosophy, science...) instead of inventing a new
-// taxonomy on top.
-const ALL_VIBES = Array.from(new Set(ALL_ITEMS.flatMap((item) => item.tags))).sort()
+function progressBadge(p: SongProgress | undefined): { label: string; color: string } | null {
+  if (!p) return null
+  const step = nextReviewStep(p)
+  if (step === 'done') return { label: 'Concluída ✓', color: 'var(--moss)' }
+  return { label: `Revisão: Day ${step.day}`, color: 'var(--clay)' }
+}
 
 export default function FeedPage() {
-  const [savedIds, setSavedIds] = useState<string[]>([])
-  const [levelFilter, setLevelFilter] = useState<LevelFilter>('All')
-  const [vibeFilter, setVibeFilter] = useState<string | null>(null)
-  const [cardCount, setCardCount] = useState(0)
-  const [dueCount, setDueCount] = useState(0)
+  const [studyLevel, setStudyLevel] = useState<StudyLevel | null>(null)
+  const [progress, setProgress] = useState<SongProgress[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    setSavedIds(getSavedItemIds())
+    apiFetch<{ progress: SongProgress[]; study_level: StudyLevel | null }>('/api/progress')
+      .then((d) => {
+        setProgress(d.progress)
+        setStudyLevel(d.study_level)
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true))
   }, [])
 
-  useEffect(() => {
-    apiFetch<Flashcard[]>('/api/flashcards').then(async (cards) => {
-      setCardCount(cards.length)
-      const { getDueCards } = await import('@/lib/srs')
-      setDueCount(getDueCards(cards).length)
-    }).catch(() => {})
-  }, [])
+  const byId = new Map(progress.map((p) => [p.song_id, p]))
 
-  function handleToggleSave(id: string) {
-    if (savedIds.includes(id)) {
-      unsaveItem(id)
-      setSavedIds((prev) => prev.filter((s) => s !== id))
-    } else {
-      saveItem(id)
-      setSavedIds((prev) => [...prev, id])
-    }
-  }
+  // Nível do usuário primeiro; demais em seguida (poucas músicas, zero filtro).
+  const ordered = studyLevel
+    ? [studyLevel, ...LEVEL_ORDER.filter((l) => l !== studyLevel)]
+    : LEVEL_ORDER
 
-  const filtered = ALL_ITEMS.filter(
-    (item) =>
-      (levelFilter === 'All' || item.level === levelFilter) &&
-      (!vibeFilter || item.tags.includes(vibeFilter)),
-  )
+  // "Sua música da semana": a primeira do seu nível ainda não concluída.
+  const mySongs = studyLevel ? songsForLevel(studyLevel) : []
+  const weekly = mySongs.find((s) => {
+    const p = byId.get(s.id)
+    return !p || nextReviewStep(p) !== 'done'
+  })
 
   return (
     <>
-      <Hero
-        title="Learn"
-        subtitle="Discover content, then turn it into memory."
-        body="Pick a lesson, read the synced transcript, tap the chunks worth remembering, and let AI turn them into flashcards ready for review."
-      />
-
-      <div className="learn-tabs">
-        {contentTabs.map((tab) => (
-          <a key={tab.href} href={tab.href} className={`learn-tab${tab.href === '/feed' ? ' active' : ''}`}>
-            <strong>{tab.label}</strong>
-            <span>{tab.description}</span>
-          </a>
-        ))}
+      <div className="app-hero">
+        <h1 className="app-hero-title">Suas músicas</h1>
+        <p className="app-hero-subtitle">
+          Escolha uma música, ouça com a letra, toque no que não entender.
+        </p>
       </div>
 
-      <div className="metrics-row">
-        <MetricCard label="Curated lessons" value={ALL_ITEMS.length} />
-        <MetricCard label="Saved flashcards" value={cardCount} />
-        <MetricCard label="Reviews due" value={dueCount} />
-      </div>
-
-      <div className="section-title">Featured Lessons</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Level:</span>
-          {LEVELS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevelFilter(l)}
-              style={{
-                padding: '5px 14px',
-                borderRadius: 999,
-                border: `1.5px solid ${levelFilter === l ? 'var(--clay)' : 'var(--line)'}`,
-                background: levelFilter === l ? 'var(--clay)' : 'transparent',
-                color: levelFilter === l ? '#fff' : 'var(--muted)',
-                fontWeight: levelFilter === l ? 700 : 400,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-              }}
-            >
-              {l}
-            </button>
-          ))}
+      {loaded && !studyLevel && (
+        <div className="alert-info" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span>Diga seu nível de inglês pra gente te indicar a música certa.</span>
+          <Link href="/level" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 18px' }}>
+            Escolher nível
+          </Link>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)' }}>Vibe:</span>
-          {ALL_VIBES.map((v) => {
-            const active = vibeFilter === v
-            return (
-              <button
-                key={v}
-                onClick={() => setVibeFilter(active ? null : v)}
-                style={{
-                  padding: '5px 14px',
-                  borderRadius: 999,
-                  border: `1.5px solid ${active ? 'var(--moss)' : 'var(--line)'}`,
-                  background: active ? 'var(--moss)' : 'transparent',
-                  color: active ? '#fff' : 'var(--muted)',
-                  fontWeight: active ? 700 : 400,
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {v}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 20,
-          marginBottom: 32,
-        }}
-      >
-        {filtered.map((item) => (
-          <FeedItemCard
-            key={item.id}
-            item={item}
-            saved={savedIds.includes(item.id)}
-            onToggleSave={handleToggleSave}
-          />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="alert-info">No lessons match that level yet.</div>
       )}
 
-      {savedIds.length > 0 && (
+      {weekly && (
         <>
-          <div className="section-title">Saved Lessons</div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 20,
-              marginBottom: 32,
-            }}
-          >
-            {ALL_ITEMS.filter((item) => savedIds.includes(item.id)).map((item) => (
-              <FeedItemCard
-                key={item.id}
-                item={item}
-                saved={true}
-                onToggleSave={handleToggleSave}
-              />
-            ))}
+          <div className="section-title">🎧 Sua música da semana</div>
+          <div style={{ maxWidth: 420, marginBottom: 32 }}>
+            <FeedItemCard item={weekly} />
           </div>
         </>
       )}
+
+      {ordered.map((level) => {
+        const songs = songsForLevel(level)
+        if (songs.length === 0) return null
+        const info = STUDY_LEVELS[level]
+        return (
+          <div key={level}>
+            <div className="section-title">
+              {info.icon} {info.label}
+              {studyLevel === level && (
+                <span style={{ marginLeft: 8, fontSize: '0.66rem', fontWeight: 800, padding: '2px 10px', borderRadius: 999, background: 'var(--sage)', color: 'var(--moss)' }}>
+                  seu nível
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                gap: 16,
+                marginBottom: 32,
+              }}
+            >
+              {songs.map((item) => {
+                const badge = progressBadge(byId.get(item.id))
+                return (
+                  <div key={item.id} style={{ position: 'relative' }}>
+                    <FeedItemCard item={item} />
+                    {badge && (
+                      <span style={{ position: 'absolute', top: 10, right: 10, fontSize: '0.68rem', fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: '#fff', color: badge.color, border: `1.5px solid ${badge.color}`, pointerEvents: 'none' }}>
+                        {badge.label}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
     </>
   )
 }

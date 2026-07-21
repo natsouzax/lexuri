@@ -136,9 +136,6 @@ function LoginForm() {
           <div className="auth-field-group">
             <div className="auth-label-row">
               <label className="auth-label" htmlFor="password">Password</label>
-              <Link href="/forgot-password" className="auth-link auth-link-sm">
-                Forgot password?
-              </Link>
             </div>
             <div className="auth-input-wrap">
               <input

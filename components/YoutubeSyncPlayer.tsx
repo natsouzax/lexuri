@@ -182,7 +182,7 @@ export default function YoutubeSyncPlayer({
 
   // Hover-to-translate + click-to-save-flashcard, shared with SyncedLyricsList
   const { tooltip, savedWords, savingWord, onHover, onLeave, onWordClick, cancelHide, hideNow } =
-    useWordHoverSave(videoId, onWordSaved)
+    useWordHoverSave(videoId, onWordSaved, videoId)
 
   // New lesson — the manual A/V delay calibration was for the PREVIOUS video's
   // caption offset quirks, don't carry it over.

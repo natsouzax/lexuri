@@ -37,7 +37,11 @@ const HIDE_DELAY_MS = 150
 // close to instant as an AI call can be); click uses /api/llm/define (full
 // definition + example, needed for the flashcard) only when actually
 // saving, so the hover itself never waits on the slower call.
-export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashcard) => void) {
+export function useWordHoverSave(
+  resetKey: unknown,
+  onWordSaved?: (card: Flashcard) => void,
+  sourceVideo?: string | null,
+) {
   const translationCacheRef = useRef(new Map<string, string>())
   const defCacheRef = useRef(new Map<string, WordDef>())
   const [tooltip, setTooltip] = useState<WordTooltipState | null>(null)
@@ -124,7 +128,7 @@ export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashca
         translation: def.translation,
         explanation: `(${def.partOfSpeech}) ${def.definition}`,
         example: def.example,
-      })
+      }, sourceVideo ?? null)
       if (card) {
         const [saved] = await apiFetch<Flashcard[]>('/api/flashcards', {
           method: 'POST',
@@ -140,7 +144,7 @@ export function useWordHoverSave(resetKey: unknown, onWordSaved?: (card: Flashca
       setSavingWord(null)
       setTooltip(null)
     }
-  }, [savedWords, savingWord, fetchWordDef, onWordSaved])
+  }, [savedWords, savingWord, fetchWordDef, onWordSaved, sourceVideo])
 
   return { tooltip, savedWords, savingWord, onHover, onLeave, onWordClick, cancelHide, hideNow }
 }

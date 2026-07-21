@@ -4,11 +4,9 @@ import { getThumbnail, getLevelColor } from '@/lib/feed'
 
 interface Props {
   item: FeedItem
-  saved: boolean
-  onToggleSave: (id: string) => void
 }
 
-export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
+export default function FeedItemCard({ item }: Props) {
   const thumb = getThumbnail(item.youtube_id)
   const levelColor = getLevelColor(item.level)
 
@@ -63,18 +61,6 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
         >
           {item.duration}
         </span>
-        {/* Featured banner */}
-        {item.featured && !item.maintenance && (
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(90,20,180,0.88)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.06em' }}>
-            ★ FEATURED LESSON
-          </div>
-        )}
-        {/* Maintenance overlay strip */}
-        {item.maintenance && (
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(217,119,6,0.92)', color: '#fff', fontSize: '0.64rem', fontWeight: 800, padding: '4px 8px', textAlign: 'center', letterSpacing: '0.05em' }}>
-            ⚠ UNDER MAINTENANCE
-          </div>
-        )}
         {/* Level badge */}
         <span
           style={{
@@ -111,24 +97,6 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
             MUSIC
           </span>
         )}
-        {item.type === 'video' && (
-          <span
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              background: 'rgba(220,38,38,0.85)',
-              color: '#fff',
-              fontSize: '0.62rem',
-              fontWeight: 900,
-              padding: '2px 8px',
-              borderRadius: 999,
-              letterSpacing: '0.06em',
-            }}
-          >
-            ▶ VIDEO
-          </span>
-        )}
       </Link>
 
       {/* Body */}
@@ -160,41 +128,14 @@ export default function FeedItemCard({ item, saved, onToggleSave }: Props) {
           ))}
         </div>
 
-        {/* Maintenance warning */}
-        {item.maintenance && (
-          <div style={{ fontSize: '0.72rem', color: '#92400e', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 8, padding: '6px 10px', marginBottom: 10, fontWeight: 600 }}>
-            This lesson is under maintenance and may contain errors.
-          </div>
-        )}
-
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link
-            href={`/feed/${item.id}`}
-            className="btn-primary"
-            style={{ flex: 1, textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
-          >
-            Study
-          </Link>
-          <button
-            onClick={() => onToggleSave(item.id)}
-            style={{
-              border: `1.5px solid ${saved ? 'var(--clay)' : 'var(--line)'}`,
-              borderRadius: 999,
-              padding: '8px 14px',
-              background: saved ? 'rgba(200,111,74,0.1)' : '#fff',
-              color: saved ? 'var(--clay)' : 'var(--muted)',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 120ms ease',
-            }}
-            title={saved ? 'Remove from saved' : 'Save for later'}
-          >
-            {saved ? '★ Saved' : '☆ Save'}
-          </button>
-        </div>
+        <Link
+          href={`/feed/${item.id}`}
+          className="btn-primary"
+          style={{ textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
+        >
+          Estudar
+        </Link>
       </div>
     </div>
   )

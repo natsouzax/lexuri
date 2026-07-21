@@ -96,7 +96,11 @@ export interface ChunkAnalysis {
   chunks: ChunkItem[]
 }
 
-export function chunkToFlashcard(chunk: ChunkItem, originalText: string): Flashcard {
+export function chunkToFlashcard(
+  chunk: ChunkItem,
+  originalText: string,
+  sourceVideo?: string | null,
+): Flashcard {
   const lineStart = originalText.lastIndexOf('\n', chunk.start)
   const lineEnd = originalText.indexOf('\n', chunk.end)
   const sentenceContext = originalText
@@ -108,7 +112,7 @@ export function chunkToFlashcard(chunk: ChunkItem, originalText: string): Flashc
     translation: chunk.contextual_translation,
     explanation: `[${chunk.type}] ${chunk.why_it_matters}`,
     example: chunk.example_sentence ?? sentenceContext,
-  })!
+  }, sourceVideo ?? null)!
 }
 
 export function normalizeWord(word: string): string {
