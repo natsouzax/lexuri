@@ -261,10 +261,10 @@ export interface Mission {
   eventType: ActionEvent | 'flashcard_review'
 }
 
+// Missões diárias do MVP: refletem o loop real do app (ouvir música →
+// salvar palavras da letra → revisar). Sempre em inglês (imersão).
 export const DAILY_MISSIONS: Mission[] = [
-  { id: 'review_cards',   label: 'Review flashcards',  description: 'Complete 5 flashcard reviews',    icon: '↺', xpReward: 25, targetCount: 5, eventType: 'flashcard_review' },
-  { id: 'save_chunks',    label: 'Collect chunks',      description: 'Save 3 chunks from any content', icon: '◈', xpReward: 25, targetCount: 3, eventType: 'chunk_saved'      },
-  { id: 'study_video',    label: 'Watch & study',       description: 'Load a YouTube video for study', icon: '▶', xpReward: 30, targetCount: 1, eventType: 'video_studied'    },
-  { id: 'study_music',    label: 'Music Lab session',   description: 'Open a song in Music Lab',       icon: '♪', xpReward: 20, targetCount: 1, eventType: 'music_studied'    },
-  { id: 'analyze_chunks', label: 'Analyze language',    description: 'Run a language chunk analysis',  icon: '⚡', xpReward: 25, targetCount: 1, eventType: 'chunk_analyzed'   },
+  { id: 'listen_song',  label: 'Listen to a song', description: 'Open and play one song',        icon: '♪', xpReward: 20, targetCount: 1, eventType: 'music_studied'    },
+  { id: 'save_words',   label: 'Save 3 words',     description: 'Tap and save 3 words you like', icon: '◈', xpReward: 25, targetCount: 3, eventType: 'word_looked_up'   },
+  { id: 'review_cards', label: 'Review 5 cards',   description: 'Complete 5 flashcard reviews',  icon: '↺', xpReward: 25, targetCount: 5, eventType: 'flashcard_review' },
 ]
