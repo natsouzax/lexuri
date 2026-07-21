@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import AppTopNav from './AppTopNav'
 import Sidebar from './Sidebar'
+import FloatingTranslator from './FloatingTranslator'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -18,6 +19,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      <FloatingTranslator />
     </div>
   )
 }
