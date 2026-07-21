@@ -1,50 +1,38 @@
-# Roadmap — Lexuri
+# Roadmap — Lexuri Validação (MVP)
 
-> Atualizado em: 2026-06-20
-
----
-
-## Em Produção (MVP)
-
-- [x] YouTube Studio — transcrição + chunk detection + flashcards
-- [x] Music Lab — Genius lyrics + chunk analysis
-- [x] SRS Review — algoritmo SM-2
-- [x] Feed curado CEFR (19 itens seed)
-- [x] Gamificação — pontos, streak, badges, leaderboard
-- [x] Onboarding — idioma nativo, nível CEFR, objetivos
-- [x] Auth completo — login, cadastro, OAuth, reset, exclusão
-- [x] Settings — perfil, senha, sessões, billing
-- [x] Stripe — Checkout + Portal + Webhook
-- [x] E-mails transacionais (Resend + React Email)
-- [x] Offline mode (IndexedDB + Service Worker)
-- [x] Middleware de autenticação (fix: 2026-06-20)
-- [x] Páginas /terms e /privacy
+> Atualizado em: 2026-07-21 · Objetivo único: validar se aprender inglês com músicas gera engajamento e retenção.
 
 ---
 
-## Próximos (Pré-lançamento comercial)
+## Pronto (MVP)
 
-- [ ] Rate limiting por plano nas rotas de LLM
-- [ ] Redesign visual — `REDESIGN_PROMPT.md` (_docs/)
-- [ ] Consistência de UI — Leaderboard e Reports sem estilos inline
-- [ ] PWA completo — manifest, install prompt, Web Push API
-- [ ] Confirmar registro do Service Worker no layout root
-- [ ] AI Tier Split — ver [`ai-tier-split.md`](./ai-tier-split.md)
-- [ ] Export CSV/Anki (feature Pro listada, não implementada)
-- [ ] Dark mode
-- [ ] Suporte a mais idiomas (target language ≠ inglês)
+- [x] Landing de pesquisa (1 página, sem venda)
+- [x] Auth: login, registro, Google/GitHub OAuth
+- [x] /level — escolha de nível em 1 clique (grava study_level)
+- [x] Home por nível — "sua música da semana" + catálogo (13 músicas auditadas)
+- [x] Tela de música: player sincronizado + toque-pra-traduzir + expressões-chave
+- [x] Biblioteca de palavras (com origem por música)
+- [x] Ciclo de revisão: Day 1 leitura · Day 2 jogo da memória · Day 3 complete-a-letra
+- [x] Takeaways → glossário (só entra o que o usuário escreve)
+- [x] Música do usuário: 1 verso a cada 2 takeaways (IA com fallback)
+- [x] Estrutura pra brain mapping (profiles.brain_map jsonb, placeholder)
 
----
+## Pendente pra lançar o teste
 
-## Médio Prazo (>500 usuários ativos)
+- [ ] Aplicar migration 0024 no Supabase (`npm run db:migrate`)
+- [ ] Deploy Cloudflare (`npm run deploy`) + redirect URLs no Supabase
+- [ ] Testar o fluxo completo com 1 usuário real (registro → música → D1 → D2 → D3)
+- [ ] Regenerar lições quebradas se quiser recuperá-las: believer, sweet-child, californication (scripts/)
 
-- [ ] App Flutter (consumindo endpoints existentes)
-- [ ] Push notifications (FCM)
-- [ ] LMS Integration (UI frontend para o endpoint REST existente)
-- [ ] Quiz adaptativo por CEFR
+## Depois da validação (se a hipótese confirmar)
 
----
+- [ ] Gravação de voz + comparação de pronúncia (player já expõe currentTime/segmento)
+- [ ] Músicas do próprio usuário (pipeline dos scripts vira endpoint)
+- [ ] Brain mapping com lógica real
+- [ ] Notificação/e-mail de "sua revisão de hoje"
 
-## Descartado / Pausado
+## Fora de escopo (removido no pivô de 2026-07-21)
 
-- **`proxy.ts` standalone** — consolidado como `middleware.ts`
+Gamificação, Stripe/planos, Spotify, Music Lab dinâmico, placement tests,
+onboarding longo, analytics, notifications, e-mails, LMS, offline, marketing
+de venda. Ver `decisions.md`.
