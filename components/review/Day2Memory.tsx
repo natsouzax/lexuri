@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { playSuccess, playSoft, playFanfare } from '@/lib/sfx'
+import ConfettiBurst from '@/components/ui/ConfettiBurst'
 import type { Flashcard } from '@/lib/types'
 import { useLang } from '@/lib/i18n'
 
@@ -56,8 +58,10 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
       if (a.pairId === b.pairId && a.kind !== b.kind) {
         setMatched((prev) => new Set([...prev, a.key, b.key]))
         setFlipped([])
+        playSuccess()
       } else {
         setMisses((m) => m + 1)
+        playSoft()
         setTimeout(() => setFlipped([]), 900)
       }
     }
@@ -105,11 +109,12 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
       </div>
 
       {allMatched && (
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', position: 'relative' }}>
+          <ConfettiBurst />
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 12 }}>
             {t('act.allPairs')}
           </p>
-          <button className="btn-primary" onClick={onDone} disabled={finishing} style={{ padding: '10px 28px' }}>
+          <button className="btn-primary" onClick={() => { playFanfare(); onDone() }} disabled={finishing} style={{ padding: '10px 28px' }}>
             {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay2')}
           </button>
         </div>

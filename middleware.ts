@@ -6,6 +6,9 @@ const PROTECTED_PREFIXES = [
   '/flashcards',
   '/review',
   '/level',
+  '/dashboard',
+  '/leaderboard',
+  '/achievements',
 ]
 
 const AUTH_PAGES = ['/login', '/register']
@@ -47,7 +50,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && AUTH_PAGES.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone()
-    url.pathname = '/feed'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 

@@ -12,14 +12,13 @@ import { useLang, type DictKey } from '@/lib/i18n'
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const
 
-// Protótipo de validação: só o essencial pra quem nunca usou o produto —
-// Lições (o feed direcionado por nível) e Revisão (o loop de flashcards).
-// Sem gamificação/leaderboard/conquistas — reduz ruído pra quem está
-// testando pela primeira vez.
+// Navegação principal do app: Overview (dashboard com XP/streak/missões),
+// Songs (feed por nível), Review (ciclo D1/D2/D3 + SRS) e Library.
 const NAV_ITEMS: { href: string; labelKey: DictKey; Icon: () => React.ReactElement }[] = [
-  { href: '/feed',       labelKey: 'nav.songs',   Icon: LibraryIcon },
-  { href: '/review',     labelKey: 'nav.review',  Icon: ReviewIcon },
-  { href: '/flashcards', labelKey: 'nav.library', Icon: CardsIcon },
+  { href: '/dashboard',  labelKey: 'nav.overview', Icon: OverviewIcon },
+  { href: '/feed',       labelKey: 'nav.songs',    Icon: LibraryIcon },
+  { href: '/review',     labelKey: 'nav.review',   Icon: ReviewIcon },
+  { href: '/flashcards', labelKey: 'nav.library',  Icon: CardsIcon },
 ]
 
 export default function Sidebar() {
@@ -93,6 +92,17 @@ export default function Sidebar() {
   )
 }
 
+
+function OverviewIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  )
+}
 
 function LibraryIcon() {
   return (

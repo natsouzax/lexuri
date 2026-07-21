@@ -75,9 +75,14 @@ export default function ReviewPage() {
                       {t('review.doNow')}
                     </Link>
                   ) : (
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-                      {t('review.tomorrow')}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                        {t('review.tomorrow')}
+                      </span>
+                      <Link href={`/review/${p.song_id}?now=1`} style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--clay)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                        {t('runner.skipWait')}
+                      </Link>
+                    </div>
                   )}
                 </div>
               )

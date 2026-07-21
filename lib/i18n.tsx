@@ -76,6 +76,7 @@ const DICT = {
     'nav.songs': 'Songs',
     'nav.review': 'Review',
     'nav.library': 'Library',
+    'nav.overview': 'Overview',
     // level
     'level.title': "What's your English level?",
     'level.subtitle': "We'll open a real song that matches where you're at.",
@@ -215,6 +216,7 @@ const DICT = {
     'nav.songs': 'Músicas',
     'nav.review': 'Revisão',
     'nav.library': 'Biblioteca',
+    'nav.overview': 'Visão geral',
     'level.title': 'Qual é o seu nível de inglês?',
     'level.subtitle': 'Vamos abrir uma música de verdade, no nível certo pra você.',
     'level.beginner.desc': 'Sei algumas palavras, mas frases completas são difíceis.',
@@ -345,6 +347,7 @@ const DICT = {
     'nav.songs': 'Canciones',
     'nav.review': 'Repaso',
     'nav.library': 'Biblioteca',
+    'nav.overview': 'Resumen',
     'level.title': '¿Cuál es tu nivel de inglés?',
     'level.subtitle': 'Abriremos una canción de verdad, en el nivel correcto para ti.',
     'level.beginner.desc': 'Sé algunas palabras, pero las frases completas son difíciles.',

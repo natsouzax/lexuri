@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Day1Read from '@/components/review/Day1Read'
 import Day2Memory from '@/components/review/Day2Memory'
@@ -24,6 +24,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 export default function ReviewSongPage() {
   const { t } = useLang()
   const params = useParams<{ songId: string }>()
+  const searchParams = useSearchParams()
   const songId = params.songId
   const item = getFeedItem(songId)
 
@@ -33,7 +34,7 @@ export default function ReviewSongPage() {
   const [loaded, setLoaded] = useState(false)
   const [finishing, setFinishing] = useState(false)
   const [newVerses, setNewVerses] = useState<string[]>([])
-  const [skipWait, setSkipWait] = useState(false)
+  const [skipWait, setSkipWait] = useState(searchParams.get('now') === '1')
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {

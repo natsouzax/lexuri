@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getDueCards, type SRSCard } from '@/lib/srs'
+import { playSuccess, playSoft, playTap } from '@/lib/sfx'
 import { useLang } from '@/lib/i18n'
 import type { Flashcard } from '@/lib/types'
 
@@ -47,6 +48,7 @@ export default function SrsSession() {
 
   async function handleRate(quality: number) {
     if (!card || submitting) return
+    if (quality >= 4) playSuccess(); else playSoft()
     setSubmitting(true)
     setError('')
     try {
@@ -119,16 +121,17 @@ export default function SrsSession() {
           </div>
 
           {!revealed ? (
-            <button className="btn-primary" onClick={() => setRevealed(true)} style={{ padding: '10px 32px' }}>
-              {t('srs.show')}
+            <button className="btn-primary" onClick={() => { playTap(); setRevealed(true) }} style={{ padding: '10px 32px' }}>
+              Show answer
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {/* Termos de imersão — sempre em inglês, mesmo com UI traduzida */}
               {[
-                { q: 0, label: t('srs.again'), color: '#dc2626' },
-                { q: 2, label: t('srs.hard'),  color: '#f59e0b' },
-                { q: 4, label: t('srs.good'),  color: 'var(--moss)' },
-                { q: 5, label: t('srs.easy'),  color: '#4A90E2' },
+                { q: 0, label: 'Again', color: '#dc2626' },
+                { q: 2, label: 'Hard',  color: '#f59e0b' },
+                { q: 4, label: 'Good',  color: 'var(--moss)' },
+                { q: 5, label: 'Easy',  color: '#4A90E2' },
               ].map(({ q, label, color }) => (
                 <button
                   key={q}

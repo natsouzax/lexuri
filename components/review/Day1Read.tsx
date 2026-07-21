@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { playSoft, playFanfare } from '@/lib/sfx'
 import type { Flashcard } from '@/lib/types'
 import { useLang } from '@/lib/i18n'
 
@@ -28,7 +29,7 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
 
   // Pronúncia automática ao trocar de card.
   useEffect(() => {
-    if (card) playAudio(card.word)
+    if (card) { playSoft(); playAudio(card.word) }
   }, [card?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!card) return null
@@ -74,7 +75,7 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
         {!isLast ? (
           <button className="btn-primary" onClick={() => setIndex((i) => i + 1)}>{t('act.next')}</button>
         ) : (
-          <button className="btn-primary" onClick={onDone} disabled={finishing} style={{ padding: '10px 28px' }}>
+          <button className="btn-primary" onClick={() => { playFanfare(); onDone() }} disabled={finishing} style={{ padding: '10px 28px' }}>
             {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay1')}
           </button>
         )}

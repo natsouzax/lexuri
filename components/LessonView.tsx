@@ -9,6 +9,7 @@ import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
 import { getFeedItem, getLevelColor } from '@/lib/feed'
 import { chunkToFlashcard } from '@/lib/types'
+import { awardXP } from '@/lib/xp'
 import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
 import { useLang } from '@/lib/i18n'
 
@@ -82,6 +83,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ song_id: id, action: 'listened' }),
     }).catch(() => {})
+    awardXP('music_studied')
   }, [lesson, id])
 
   function handleWordSaved(card: Flashcard) {
@@ -101,6 +103,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
       setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
+      awardXP('chunk_saved')
     } catch (e) {
       setError(String(e))
     } finally {

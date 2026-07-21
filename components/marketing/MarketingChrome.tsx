@@ -9,8 +9,9 @@ export function MarketingHeader() {
   return (
     <nav className="mkt-nav">
       <div className="mkt-nav-inner">
-        <Link href="/" className="mkt-nav-logo">
-          Lexuri<span style={{ color: 'var(--clay-bright)' }}>.</span>
+        <Link href="/" className="mkt-nav-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
+          <span style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--clay)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', color: '#fff' }}>L</span>
+          <span>Lexuri<span style={{ color: 'var(--clay-bright)' }}>.</span></span>
         </Link>
         <div className="mkt-nav-links">
           <Link href="/login" className="mkt-nav-link">{t('landing.login')}</Link>
