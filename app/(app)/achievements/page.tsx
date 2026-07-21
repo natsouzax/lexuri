@@ -28,9 +28,9 @@ export default function AchievementsPage() {
   return (
     <>
       <Hero
-        title="Conquistas"
-        subtitle="Marcos da sua jornada de aprendizado."
-        body="Cada badge representa um hábito ou marco concreto. Continue revisando, criando e explorando para desbloqueá-los."
+        title="Achievements"
+        subtitle="Milestones on your learning journey."
+        body="Each badge marks a concrete habit or milestone. Keep reviewing, saving and exploring to unlock them."
       />
       <BadgesGallery
         unlockedIds={[]}

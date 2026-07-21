@@ -31,15 +31,15 @@ const BADGES: BadgeDef[] = [
   { id: 'save_50',    name: 'Chunk Master',      description: 'Save 50 chunks',             icon: '◈', category: 'creation',    condition: 'Save 50 chunks' },
   // Exploration
   { id: 'youtube_1',  name: 'YouTube Explorer',  description: 'Study your first YouTube video', icon: '▶', category: 'exploration', condition: 'Study a YouTube video' },
-  { id: 'music_1',    name: 'Music Lover',       description: 'Complete a Music Lab session',  icon: '♪', category: 'exploration', condition: 'Open a song in Music Lab' },
-  { id: 'music_5',    name: 'Audiophile',        description: 'Complete 5 Music Lab sessions', icon: '♪', category: 'exploration', condition: 'Complete 5 Music Lab sessions' },
+  { id: 'music_1',    name: 'Music Lover',       description: 'Listen to your first song',      icon: '♪', category: 'exploration', condition: 'Open one song' },
+  { id: 'music_5',    name: 'Audiophile',        description: 'Listen to 5 songs',             icon: '♪', category: 'exploration', condition: 'Open 5 songs' },
 ]
 
 const CATEGORY_LABELS: Record<string, string> = {
   streak:      'Streak',
-  review:      'Revisão',
-  creation:    'Criação',
-  exploration: 'Exploração',
+  review:      'Review',
+  creation:    'Creation',
+  exploration: 'Exploration',
 }
 
 interface Props {

@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLang, type Lang } from '@/lib/i18n'
 
 // Demo interativa da experiência central: a faixa "Happy" toca de fundo
 // (via YouTube, autoplay mudo + loop das primeiras linhas), a letra
 // sincroniza com o tempo real e os chunks são clicáveis — tocar revela a
-// tradução. Botão de som pra ligar/desligar o áudio.
+// tradução no idioma que a pessoa escolheu no popup. Botão de som.
 interface Line {
   at: number // segundo em que a linha entra (timestamp real de Happy)
   before: string
-  chunk?: { text: string; tr: string }
+  chunk?: string
   after: string
 }
 
@@ -19,11 +20,21 @@ const LOOP_START = 5
 const LOOP_END = 38
 
 const LINES: Line[] = [
-  { at: 5.5,  before: 'It might seem crazy what ', chunk: { text: "I'm 'bout to say", tr: 'o que vou dizer' }, after: '' },
-  { at: 13.0, before: 'Sunshine she’s here, you can ', chunk: { text: 'take a break', tr: 'fazer uma pausa' }, after: '' },
-  { at: 24.2, before: 'With the air like I don’t care, baby, ', chunk: { text: 'by the way', tr: 'a propósito' }, after: '' },
-  { at: 30.7, before: 'Clap along if you feel like a ', chunk: { text: 'room without a roof', tr: 'sala sem teto' }, after: '' },
+  { at: 5.5,  before: 'It might seem crazy what ', chunk: "I'm 'bout to say", after: '' },
+  { at: 13.0, before: 'Sunshine she’s here, you can ', chunk: 'take a break', after: '' },
+  { at: 24.2, before: 'With the air like I don’t care, baby, ', chunk: 'by the way', after: '' },
+  { at: 30.7, before: 'Clap along if you feel like a ', chunk: 'room without a roof', after: '' },
 ]
+
+// Tradução dos 4 chunks por idioma; fallback = glossa em inglês simples.
+const DEMO_TR: Partial<Record<Lang, string[]>> = {
+  en: ['what I will say', 'pause / rest', 'incidentally', 'a place with no limits'],
+  pt: ['o que vou dizer', 'fazer uma pausa', 'a propósito', 'sala sem teto'],
+  es: ['lo que voy a decir', 'tomar un descanso', 'por cierto', 'cuarto sin techo'],
+  fr: ['ce que je vais dire', 'faire une pause', 'au fait', 'pièce sans toit'],
+  de: ['was ich sagen will', 'eine Pause machen', 'übrigens', 'Raum ohne Dach'],
+  it: ['quello che dirò', 'fare una pausa', 'a proposito', 'stanza senza tetto'],
+}
 
 interface YTPlayer {
   getCurrentTime(): number
@@ -45,6 +56,8 @@ function ytWindow(): YTApi {
 }
 
 export default function HeroLyricsDemo() {
+  const { lang } = useLang()
+  const tr = DEMO_TR[lang] ?? DEMO_TR.en!
   const [active, setActive] = useState(0)
   const [revealed, setRevealed] = useState<number | null>(null)
   const [muted, setMuted] = useState(true)
@@ -176,7 +189,7 @@ export default function HeroLyricsDemo() {
                       transition: 'all 300ms ease',
                     }}
                   >
-                    {line.chunk.text}
+                    {line.chunk}
                   </button>
                 )}
                 {line.after}
@@ -205,7 +218,7 @@ export default function HeroLyricsDemo() {
                         padding: '3px 10px',
                       }}
                     >
-                      🌐 {line.chunk.tr}
+                      🌐 {tr[i]}
                     </span>
                   </motion.div>
                 )}

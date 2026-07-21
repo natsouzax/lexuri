@@ -128,7 +128,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedItemId: id }),
       })
-      setResyncMsg(`✅ Atualizado — ${res.segments} falas, ${res.chunks} chunks. Recarregue a página.`)
+      setResyncMsg(`✅ Updated — ${res.segments} lines, ${res.chunks} chunks. Reload the page.`)
     } catch (e) {
       setResyncMsg(`❌ ${String(e)}`)
     } finally {
@@ -158,10 +158,10 @@ export default function LessonView({ feedItemId: propId }: Props) {
           <button
             onClick={handleResync}
             disabled={resyncing}
-            title="Raspa o YouTube de novo com o IP local e regrava o arquivo da lição — só funciona rodando npm run dev"
+            title="Re-scrapes YouTube with the local IP and rewrites the lesson file — dev only (npm run dev)"
             style={{ marginLeft: 'auto', border: '1.5px solid var(--line)', borderRadius: 999, padding: '6px 16px', background: '#fff', color: 'var(--muted)', fontWeight: 700, fontSize: '0.82rem', cursor: resyncing ? 'default' : 'pointer', opacity: resyncing ? 0.6 : 1 }}
           >
-            {resyncing ? <><span className="spinner" /> Sincronizando…</> : '🔄 Sync (local)'}
+            {resyncing ? <><span className="spinner" /> Syncing…</> : '🔄 Sync (local)'}
           </button>
         )}
       </div>

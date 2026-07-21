@@ -46,12 +46,12 @@ export default function DueCardsHero({ dueCount, oldestAgo, loading }: Props) {
           <CheckIcon />
         </span>
         <div>
-          <div className="due-hero-title">Tudo em dia</div>
-          <div className="due-hero-sub">Volte amanhã ou crie novos flashcards.</div>
+          <div className="due-hero-title">All caught up</div>
+          <div className="due-hero-sub">Come back tomorrow or save new words.</div>
         </div>
         <motion.div style={{ marginLeft: 'auto' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
           <Link href="/feed" className="btn-secondary" style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>
-            Explorar lições →
+            Browse songs →
           </Link>
         </motion.div>
       </motion.div>
@@ -75,18 +75,18 @@ export default function DueCardsHero({ dueCount, oldestAgo, loading }: Props) {
 
       <div className="due-hero-body">
         <div className="due-hero-title">
-          {isUrgent ? 'Muitos cards aguardam revisão' : 'Para revisar hoje'}
+          {isUrgent ? 'Many cards are due' : 'Due for review today'}
         </div>
         {(oldestAgo ?? 0) > 0 && (
           <div className="due-hero-sub">
-            O mais antigo espera há {oldestAgo} {oldestAgo === 1 ? 'dia' : 'dias'}
+            The oldest has waited {oldestAgo} {oldestAgo === 1 ? 'day' : 'days'}
           </div>
         )}
       </div>
 
       <motion.div style={{ marginLeft: 'auto', flexShrink: 0 }} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
         <Link href="/review" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
-          Revisar agora →
+          Review now →
         </Link>
       </motion.div>
     </motion.div>

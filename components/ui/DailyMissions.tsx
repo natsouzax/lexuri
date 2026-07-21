@@ -18,7 +18,7 @@ export default function DailyMissions({ missions, loading }: Props) {
   if (loading) {
     return (
       <div className="panel daily-missions">
-        <span className="mini-label" style={{ marginBottom: 14, display: 'block' }}>Missões do dia</span>
+        <span className="mini-label" style={{ marginBottom: 14, display: 'block' }}>Daily missions</span>
         {[0, 1, 2].map((i) => (
           <div key={i} className="dm-skeleton" style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
@@ -33,7 +33,7 @@ export default function DailyMissions({ missions, loading }: Props) {
   return (
     <div className="panel daily-missions">
       <div className="dm-header">
-        <span className="mini-label">Missões do dia</span>
+        <span className="mini-label">Daily missions</span>
         {allDone && (
           <motion.span
             className="dm-complete-tag"
@@ -53,8 +53,8 @@ export default function DailyMissions({ missions, loading }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_OUT }}
         >
-          <span className="dm-all-done-title">Missões concluídas!</span>
-          <span className="dm-all-done-sub">Volte amanhã para novas missões.</span>
+          <span className="dm-all-done-title">Missions complete!</span>
+          <span className="dm-all-done-sub">Come back tomorrow for new ones.</span>
         </motion.div>
       ) : (
         <div className="dm-list">

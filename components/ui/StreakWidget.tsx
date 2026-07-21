@@ -56,7 +56,7 @@ export default function StreakWidget({ streak, bestStreak, hasFreezeAvailable, f
       {hasFreezeAvailable && !freezeUsedToday && (
         <div className="streak-freeze-hint">
           <SnowflakeIcon />
-          <span>Freeze disponível</span>
+          <span>Freeze available</span>
         </div>
       )}
     </div>
