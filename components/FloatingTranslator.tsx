@@ -25,7 +25,8 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 // Tradutor de socorro do app: bolinha flutuante → mini painel English→idioma
 // nativo. Aceita texto digitado OU seleção na tela; oferece ouvir (TTS) e
 // salvar na biblioteca (vira flashcard no SRS). UI em inglês (imersão).
-export default function FloatingTranslator() {
+// canSave=false na landing pública (sem login não dá pra salvar flashcard).
+export default function FloatingTranslator({ canSave = true }: { canSave?: boolean }) {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [translation, setTranslation] = useState('')
@@ -209,28 +210,30 @@ export default function FloatingTranslator() {
                 onClick={speak}
                 disabled={!input.trim()}
                 title="Listen"
-                style={{ flex: '0 0 auto', width: 40, height: 38, borderRadius: 10, border: '1.5px solid var(--line)', background: '#fff', cursor: 'pointer', fontSize: '1rem', opacity: input.trim() ? 1 : 0.4 }}
+                style={{ flex: canSave ? '0 0 auto' : 1, width: canSave ? 40 : undefined, height: 38, borderRadius: 10, border: '1.5px solid var(--line)', background: '#fff', cursor: 'pointer', fontSize: '1rem', opacity: input.trim() ? 1 : 0.4 }}
               >
-                🔊
+                🔊{canSave ? '' : ' Listen'}
               </button>
-              <button
-                onClick={save}
-                disabled={!input.trim() || saving || saved}
-                style={{
-                  flex: 1,
-                  height: 38,
-                  borderRadius: 10,
-                  border: 'none',
-                  cursor: input.trim() && !saved ? 'pointer' : 'default',
-                  background: saved ? 'var(--moss)' : 'var(--clay)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                  opacity: input.trim() ? 1 : 0.5,
-                }}
-              >
-                {saved ? 'Saved ✓' : saving ? <><span className="spinner" /> Saving…</> : '+ Save to library'}
-              </button>
+              {canSave && (
+                <button
+                  onClick={save}
+                  disabled={!input.trim() || saving || saved}
+                  style={{
+                    flex: 1,
+                    height: 38,
+                    borderRadius: 10,
+                    border: 'none',
+                    cursor: input.trim() && !saved ? 'pointer' : 'default',
+                    background: saved ? 'var(--moss)' : 'var(--clay)',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    opacity: input.trim() ? 1 : 0.5,
+                  }}
+                >
+                  {saved ? 'Saved ✓' : saving ? <><span className="spinner" /> Saving…</> : '+ Save to library'}
+                </button>
+              )}
             </div>
           </motion.div>
         )}

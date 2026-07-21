@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
-import { createClient } from '@/lib/supabase-server'
 import { errorMessage } from '@/lib/http'
 
-// Endpoint dedicado pro hover — só a tradução, texto puro (sem JSON, sem
-// risco de corte no meio da estrutura). /api/llm/define gera definição +
-// exemplo + tradução de uma vez (necessário pra salvar o flashcard), o que
-// sempre vai ser mais lento do que precisa ser só pra mostrar uma dica
-// rápida ao passar o mouse.
+// Endpoint dedicado pro hover — só a tradução, texto puro. Público (sem
+// login): também alimenta o tradutor flutuante na landing de marketing.
+// Limitado a trechos curtos (palavras/frases) pra evitar abuso/custo.
+const MAX_LEN = 200
+
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
     const body = (await request.json()) as { word: string; context?: string; native_lang?: string }
     const { word, context = '' } = body
 
     if (!word?.trim()) {
       return NextResponse.json({ error: 'Word is required.' }, { status: 400 })
+    }
+    if (word.length > MAX_LEN) {
+      return NextResponse.json({ error: 'Text too long.' }, { status: 400 })
     }
 
     // Idioma vem da escolha do popup (client); fallback Portuguese.
