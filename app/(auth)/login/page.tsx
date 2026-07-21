@@ -24,7 +24,6 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -57,21 +56,6 @@ function LoginForm() {
     router.refresh()
   }
 
-  async function handleOAuth(provider: 'google' | 'github') {
-    setOauthLoading(provider)
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    })
-    if (authError) {
-      setError(authError.message)
-      setOauthLoading(null)
-    }
-  }
-
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -83,38 +67,24 @@ function LoginForm() {
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Sign in to continue learning</p>
 
-        {/* OAuth */}
+        {/* OAuth — desativado no MVP de validação (setup externo pendente).
+            Botões visíveis mas inativos, com aviso; login por e-mail abaixo. */}
         <div className="auth-oauth-group">
-          <button
-            type="button"
-            className="auth-oauth-btn"
-            onClick={() => handleOAuth('google')}
-            disabled={!!oauthLoading}
-          >
-            {oauthLoading === 'google' ? (
-              <span className="auth-spinner" />
-            ) : (
-              <GoogleIcon />
-            )}
+          <button type="button" className="auth-oauth-btn" disabled title="Not available yet — use email below">
+            <GoogleIcon />
             Continue with Google
           </button>
-          <button
-            type="button"
-            className="auth-oauth-btn"
-            onClick={() => handleOAuth('github')}
-            disabled={!!oauthLoading}
-          >
-            {oauthLoading === 'github' ? (
-              <span className="auth-spinner" />
-            ) : (
-              <GitHubIcon />
-            )}
+          <button type="button" className="auth-oauth-btn" disabled title="Not available yet — use email below">
+            <GitHubIcon />
             Continue with GitHub
           </button>
         </div>
+        <p style={{ fontSize: '0.78rem', color: 'var(--auth-muted)', textAlign: 'center', margin: '8px 0 0' }}>
+          Google and GitHub sign-in aren&apos;t available yet — please use your email below.
+        </p>
 
         <div className="auth-divider">
-          <span>or continue with email</span>
+          <span>continue with email</span>
         </div>
 
         {/* Email/password form */}

@@ -56,7 +56,6 @@ export default function RegisterPage() {
   const [marketing, setMarketing] = useState(false)
 
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null)
   const [error, setError] = useState('')
 
   const strength = getPasswordStrength(password)
@@ -101,21 +100,6 @@ export default function RegisterPage() {
     router.push('/level')
   }
 
-  async function handleOAuth(provider: 'google' | 'github') {
-    setOauthLoading(provider)
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    })
-    if (authError) {
-      setError(authError.message)
-      setOauthLoading(null)
-    }
-  }
-
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -126,29 +110,22 @@ export default function RegisterPage() {
         <h1 className="auth-title">Create your account</h1>
         <p className="auth-subtitle">Start learning smarter today — it&apos;s free</p>
 
-        {/* OAuth */}
+        {/* OAuth — desativado no MVP de validação (setup externo pendente). */}
         <div className="auth-oauth-group">
-          <button
-            type="button"
-            className="auth-oauth-btn"
-            onClick={() => handleOAuth('google')}
-            disabled={!!oauthLoading}
-          >
-            {oauthLoading === 'google' ? <span className="auth-spinner" /> : <GoogleIcon />}
+          <button type="button" className="auth-oauth-btn" disabled title="Not available yet — use email below">
+            <GoogleIcon />
             Sign up with Google
           </button>
-          <button
-            type="button"
-            className="auth-oauth-btn"
-            onClick={() => handleOAuth('github')}
-            disabled={!!oauthLoading}
-          >
-            {oauthLoading === 'github' ? <span className="auth-spinner" /> : <GitHubIcon />}
+          <button type="button" className="auth-oauth-btn" disabled title="Not available yet — use email below">
+            <GitHubIcon />
             Sign up with GitHub
           </button>
         </div>
+        <p style={{ fontSize: '0.78rem', color: 'var(--auth-muted)', textAlign: 'center', margin: '8px 0 0' }}>
+          Google and GitHub sign-up aren&apos;t available yet — please use your email below.
+        </p>
 
-        <div className="auth-divider"><span>or register with email</span></div>
+        <div className="auth-divider"><span>register with email</span></div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-field-group">
