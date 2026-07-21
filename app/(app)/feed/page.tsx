@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import FeedItemCard from '@/components/FeedItemCard'
 import { STUDY_LEVELS, songsForLevel, nextReviewStep, type SongProgress, type StudyLevel } from '@/lib/mvp'
+import { useLang, type DictKey } from '@/lib/i18n'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -14,14 +15,18 @@ async function apiFetch<T>(path: string): Promise<T> {
 
 const LEVEL_ORDER: StudyLevel[] = ['beginner', 'intermediate', 'advanced']
 
-function progressBadge(p: SongProgress | undefined): { label: string; color: string } | null {
+function progressBadge(
+  p: SongProgress | undefined,
+  t: (k: DictKey) => string,
+): { label: string; color: string } | null {
   if (!p) return null
   const step = nextReviewStep(p)
-  if (step === 'done') return { label: 'Concluída ✓', color: 'var(--moss)' }
-  return { label: `Revisão: Day ${step.day}`, color: 'var(--clay)' }
+  if (step === 'done') return { label: t('home.done'), color: 'var(--moss)' }
+  return { label: `${t('home.reviewDay')} ${step.day}`, color: 'var(--clay)' }
 }
 
 export default function FeedPage() {
+  const { t } = useLang()
   const [studyLevel, setStudyLevel] = useState<StudyLevel | null>(null)
   const [progress, setProgress] = useState<SongProgress[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -53,24 +58,22 @@ export default function FeedPage() {
   return (
     <>
       <div className="app-hero">
-        <h1 className="app-hero-title">Suas músicas</h1>
-        <p className="app-hero-subtitle">
-          Escolha uma música, ouça com a letra, toque no que não entender.
-        </p>
+        <h1 className="app-hero-title">{t('home.title')}</h1>
+        <p className="app-hero-subtitle">{t('home.subtitle')}</p>
       </div>
 
       {loaded && !studyLevel && (
         <div className="alert-info" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <span>Diga seu nível de inglês pra gente te indicar a música certa.</span>
+          <span>{t('home.pickLevel')}</span>
           <Link href="/level" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 18px' }}>
-            Escolher nível
+            {t('home.pickLevelCta')}
           </Link>
         </div>
       )}
 
       {weekly && (
         <>
-          <div className="section-title">🎧 Sua música da semana</div>
+          <div className="section-title">{t('home.weekly')}</div>
           <div style={{ maxWidth: 420, marginBottom: 32 }}>
             <FeedItemCard item={weekly} />
           </div>
@@ -87,7 +90,7 @@ export default function FeedPage() {
               {info.icon} {info.label}
               {studyLevel === level && (
                 <span style={{ marginLeft: 8, fontSize: '0.66rem', fontWeight: 800, padding: '2px 10px', borderRadius: 999, background: 'var(--sage)', color: 'var(--moss)' }}>
-                  seu nível
+                  {t('home.yourLevel')}
                 </span>
               )}
             </div>
@@ -100,7 +103,7 @@ export default function FeedPage() {
               }}
             >
               {songs.map((item) => {
-                const badge = progressBadge(byId.get(item.id))
+                const badge = progressBadge(byId.get(item.id), t)
                 return (
                   <div key={item.id} style={{ position: 'relative' }}>
                     <FeedItemCard item={item} />

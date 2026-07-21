@@ -73,3 +73,15 @@
 **Decisão:** Voltamos pra Vercel — projeto `lexuri-validacao` já existente (lexuri-validacao.vercel.app), env vars de produção já configuradas. Removida a camada Cloudflare (wrangler, OpenNext). `npm run deploy` = `vercel --prod`.
 **Motivo:** A produção já rodava lá; Vercel roda Next.js nativo (sem OpenNext, que já deu problema no Windows). A padronização em Cloudflare foi decisão minha revertida pelo Natan — validar rápido > consolidar infra.
 **Nota:** `railway.json` e o cron do `vercel.json` (e-mail diário, feature removida) seguem fora.
+
+---
+
+## 2026-07-21 (tarde) — i18n e landing
+
+### Idioma: popup na primeira visita, inglês como padrão absoluto
+**Decisão:** `LanguageGate` (popup) pergunta a língua materna na primeira visita (EN/PT/ES). Antes da escolha, TODA a UI fica em inglês. A escolha vai pra localStorage (`lexuri_lang`) e guia a UI (`lib/i18n.tsx`) e o idioma-alvo das traduções de palavra (`native_lang` no body de /api/llm/translate e /define).
+**Motivo:** App de pesquisa internacional — inglês é neutro; a tabela `onboarding` (fonte antiga do idioma) morreu com o onboarding.
+
+### Erros de API legíveis
+**Decisão:** `lib/http.ts:errorMessage()` em todas as rotas — nunca mais "[object Object]".
+**Contexto:** O erro real era a migration 0024 não aplicada (song_progress inexistente), mascarado pela serialização ruim.

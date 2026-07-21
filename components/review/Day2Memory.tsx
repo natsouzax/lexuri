@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { Flashcard } from '@/lib/types'
+import { useLang } from '@/lib/i18n'
 
 interface Props {
   cards: Flashcard[]
@@ -29,6 +30,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 // Day 2: jogo da memória — parear palavra ↔ tradução das palavras salvas.
 export default function Day2Memory({ cards, onDone, finishing }: Props) {
+  const { t } = useLang()
   const tiles = useMemo<Tile[]>(() => {
     const pairs = shuffle(cards.filter((c) => c.translation)).slice(0, MAX_PAIRS)
     return shuffle(
@@ -64,7 +66,7 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 16 }}>
-        {matched.size / 2} de {tiles.length / 2} pares · {misses} erro{misses === 1 ? '' : 's'}
+        {matched.size / 2} {t('act.of')} {tiles.length / 2} {t('act.pairs')} · {misses} {t('act.mistakes')}
       </div>
 
       <div
@@ -105,10 +107,10 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
       {allMatched && (
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 12 }}>
-            Todos os pares encontrados! 🎉
+            {t('act.allPairs')}
           </p>
           <button className="btn-primary" onClick={onDone} disabled={finishing} style={{ padding: '10px 28px' }}>
-            {finishing ? <><span className="spinner" /> Salvando…</> : 'Concluir Day 2 ✓'}
+            {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay2')}
           </button>
         </div>
       )}

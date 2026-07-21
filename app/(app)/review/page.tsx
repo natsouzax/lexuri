@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getFeedItem } from '@/lib/feed'
 import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
+import { useLang, type DictKey } from '@/lib/i18n'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -15,6 +16,7 @@ async function apiFetch<T>(path: string): Promise<T> {
 // Visão geral do ciclo de revisão: pra cada música ouvida, mostra qual
 // Day está pendente (ou se o ciclo terminou).
 export default function ReviewPage() {
+  const { t } = useLang()
   const [progress, setProgress] = useState<SongProgress[]>([])
   const [loaded, setLoaded] = useState(false)
 
@@ -35,27 +37,25 @@ export default function ReviewPage() {
   return (
     <>
       <div className="app-hero">
-        <h1 className="app-hero-title">Revisão</h1>
-        <p className="app-hero-subtitle">
-          Três encontros curtos com cada música: leitura, memória e letra.
-        </p>
+        <h1 className="app-hero-title">{t('review.title')}</h1>
+        <p className="app-hero-subtitle">{t('review.subtitle')}</p>
       </div>
 
       {loaded && rows.length === 0 && (
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            Nenhuma revisão ainda.
+            {t('review.empty.title')}
           </p>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 24, lineHeight: 1.6 }}>
-            Ouça uma música e salve algumas palavras — a primeira revisão começa na hora.
+            {t('review.empty.body')}
           </p>
-          <Link href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>Escolher uma música</Link>
+          <Link href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('review.empty.cta')}</Link>
         </div>
       )}
 
       {pending.length > 0 && (
         <>
-          <div className="section-title">Pendentes</div>
+          <div className="section-title">{t('review.pending')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
             {pending.map(({ p, item, step }) => {
               if (step === 'done' || !item) return null
@@ -65,15 +65,15 @@ export default function ReviewPage() {
                   <span style={{ fontSize: '1.6rem' }}>{info.icon}</span>
                   <div style={{ flex: 1, minWidth: 180 }}>
                     <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900 }}>{item.title}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{info.title} — {info.desc}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t(`day${step.day}.title` as DictKey)} — {t(`day${step.day}.desc` as DictKey)}</div>
                   </div>
                   {step.available ? (
                     <Link href={`/review/${p.song_id}`} className="btn-primary" style={{ textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                      Fazer agora →
+                      {t('review.doNow')}
                     </Link>
                   ) : (
                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-                      Disponível amanhã 🌙
+                      {t('review.tomorrow')}
                     </span>
                   )}
                 </div>
@@ -85,7 +85,7 @@ export default function ReviewPage() {
 
       {completed.length > 0 && (
         <>
-          <div className="section-title">Ciclos completos</div>
+          <div className="section-title">{t('review.completed')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {completed.map(({ p, item }) => item && (
               <div key={p.song_id} className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: 0.8 }}>

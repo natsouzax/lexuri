@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useLang } from '@/lib/i18n'
 import type { FeedItem } from '@/lib/feed'
 import { getThumbnail, getLevelColor } from '@/lib/feed'
 
@@ -7,6 +10,7 @@ interface Props {
 }
 
 export default function FeedItemCard({ item }: Props) {
+  const { t } = useLang()
   const thumb = getThumbnail(item.youtube_id)
   const levelColor = getLevelColor(item.level)
 
@@ -134,7 +138,7 @@ export default function FeedItemCard({ item }: Props) {
           className="btn-primary"
           style={{ textAlign: 'center', textDecoration: 'none', fontSize: '0.8rem', padding: '8px 12px' }}
         >
-          Estudar
+          {t('home.study')}
         </Link>
       </div>
     </div>

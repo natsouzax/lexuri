@@ -7,14 +7,13 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
+import { useLang, type DictKey } from '@/lib/i18n'
 
-const NAV_ITEMS = [
-  { href: '/feed', label: 'Músicas', icon: <FeedIcon /> },
-  { href: '/review', label: 'Revisão', icon: <ProgressIcon /> },
-  { href: '/flashcards', label: 'Biblioteca', icon: <HomeIcon /> },
+const NAV_ITEMS: Array<{ href: string; labelKey: DictKey; icon: React.ReactNode }> = [
+  { href: '/feed', labelKey: 'nav.songs', icon: <FeedIcon /> },
+  { href: '/review', labelKey: 'nav.review', icon: <ProgressIcon /> },
+  { href: '/flashcards', labelKey: 'nav.library', icon: <HomeIcon /> },
 ]
-
-const MOBILE_EXTRA_ITEMS: Array<{ href: string; label: string }> = []
 
 interface Props {
   sidebarOpen: boolean
@@ -23,6 +22,7 @@ interface Props {
 
 export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
   const pathname = usePathname()
+  const { t } = useLang()
   const [user, setUser] = useState<User | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -72,7 +72,7 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
                 className={`app-top-link${pathname.startsWith(item.href) ? ' active' : ''}`}
               >
                 {item.icon}
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             </motion.div>
           ))}
@@ -96,13 +96,13 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
 
       {mobileMenuOpen && (
         <nav className="app-top-mobile-menu">
-          {[...NAV_ITEMS, ...MOBILE_EXTRA_ITEMS].map((item) => (
+          {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={`app-top-mobile-link${pathname.startsWith(item.href) ? ' active' : ''}`}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </nav>

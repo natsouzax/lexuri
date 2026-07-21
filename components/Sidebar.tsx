@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
+import { useLang, type DictKey } from '@/lib/i18n'
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const
 
@@ -15,14 +16,15 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as const
 // Lições (o feed direcionado por nível) e Revisão (o loop de flashcards).
 // Sem gamificação/leaderboard/conquistas — reduz ruído pra quem está
 // testando pela primeira vez.
-const NAV_ITEMS: { href: string; label: string; Icon: () => React.ReactElement }[] = [
-  { href: '/feed',       label: 'Músicas',    Icon: LibraryIcon },
-  { href: '/review',     label: 'Revisão',    Icon: ReviewIcon },
-  { href: '/flashcards', label: 'Biblioteca', Icon: CardsIcon },
+const NAV_ITEMS: { href: string; labelKey: DictKey; Icon: () => React.ReactElement }[] = [
+  { href: '/feed',       labelKey: 'nav.songs',   Icon: LibraryIcon },
+  { href: '/review',     labelKey: 'nav.review',  Icon: ReviewIcon },
+  { href: '/flashcards', labelKey: 'nav.library', Icon: CardsIcon },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { t } = useLang()
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function Sidebar() {
                     <span className="nav-icon">
                       <item.Icon />
                     </span>
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </Link>
                 </motion.div>
               )

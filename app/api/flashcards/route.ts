@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { loadFlashcards, upsertFlashcards } from '@/lib/supabase'
 import { createClient } from '@/lib/supabase-server'
 import type { Flashcard } from '@/lib/types'
+import { errorMessage } from '@/lib/http'
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   const supabase = await createClient()
@@ -17,7 +18,7 @@ export async function GET() {
     const cards = await loadFlashcards(userId)
     return NextResponse.json(cards)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }
 
@@ -30,6 +31,6 @@ export async function POST(request: Request) {
     const saved = await upsertFlashcards(body.cards, userId)
     return NextResponse.json(saved)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

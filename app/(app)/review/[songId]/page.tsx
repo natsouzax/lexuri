@@ -10,6 +10,7 @@ import { getFeedItem } from '@/lib/feed'
 import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
 import type { Flashcard, TranscriptSegment } from '@/lib/types'
 import type { LessonData } from '@/components/LessonView'
+import { useLang, type DictKey } from '@/lib/i18n'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -21,6 +22,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 // Runner do dia de revisão de uma música: decide qual Day está pendente
 // e roda a atividade correspondente.
 export default function ReviewSongPage() {
+  const { t } = useLang()
   const params = useParams<{ songId: string }>()
   const songId = params.songId
   const item = getFeedItem(songId)
@@ -93,8 +95,8 @@ export default function ReviewSongPage() {
   if (!item) {
     return (
       <div style={{ padding: 48 }}>
-        <div className="alert-error">Música não encontrada.</div>
-        <Link href="/review" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>← Revisão</Link>
+        <div className="alert-error">{t('lesson.notFound')}</div>
+        <Link href="/review" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>{t('runner.back')}</Link>
       </div>
     )
   }
@@ -103,7 +105,7 @@ export default function ReviewSongPage() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '48px 0', color: 'var(--muted)' }}>
         <span className="spinner" />
-        <span>Preparando sua revisão…</span>
+        <span>{t('runner.preparing')}</span>
       </div>
     )
   }
@@ -114,15 +116,15 @@ export default function ReviewSongPage() {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <Link href="/review" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>← Revisão</Link>
+        <Link href="/review" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>{t('runner.back')}</Link>
       </div>
 
       <div className="app-hero" style={{ textAlign: 'center', marginBottom: 24 }}>
         <h1 className="app-hero-title">
-          {step === 'done' ? `${item.title} — ciclo completo ✅` : DAY_INFO[step.day].title}
+          {step === 'done' ? `${item.title} — ${t('runner.cycleDone')}` : t(`day${step.day}.title` as DictKey)}
         </h1>
         <p className="app-hero-subtitle">
-          {step === 'done' ? 'Você fechou os três dias desta música.' : `${item.title} · ${item.artist ?? ''}`}
+          {step === 'done' ? t('runner.cycleDoneSub') : `${item.title} · ${item.artist ?? ''}`}
         </p>
       </div>
 
@@ -130,7 +132,7 @@ export default function ReviewSongPage() {
 
       {step === 'done' && newVerses.length === 0 && (
         <div style={{ textAlign: 'center' }}>
-          <Link href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>Próxima música →</Link>
+          <Link href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.nextSong')}</Link>
         </div>
       )}
 
@@ -138,24 +140,24 @@ export default function ReviewSongPage() {
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
           <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🌙</p>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            Essa revisão abre amanhã.
+            {t('runner.locked.title')}
           </p>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-            O intervalo de um dia é o que faz a memória fixar. Volte amanhã pro {DAY_INFO[step.day].title}.
+            {t('runner.locked.body')} {t(`day${step.day}.title` as DictKey)}.
           </p>
-          <Link href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>Voltar às músicas</Link>
+          <Link href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('runner.locked.back')}</Link>
         </div>
       )}
 
       {step !== 'done' && step.available && noCards && (
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            Você ainda não salvou palavras desta música.
+            {t('runner.noWords.title')}
           </p>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-            Volte pra música e toque nas palavras que quiser aprender — depois a revisão libera.
+            {t('runner.noWords.body')}
           </p>
-          <Link href={`/feed/${songId}`} className="btn-primary" style={{ textDecoration: 'none' }}>Abrir a música</Link>
+          <Link href={`/feed/${songId}`} className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.noWords.cta')}</Link>
         </div>
       )}
 

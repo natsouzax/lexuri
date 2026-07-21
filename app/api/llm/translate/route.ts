@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
 import { createClient } from '@/lib/supabase-server'
+import { errorMessage } from '@/lib/http'
 
 // Endpoint dedicado pro hover — só a tradução, texto puro (sem JSON, sem
 // risco de corte no meio da estrutura). /api/llm/define gera definição +
@@ -13,20 +14,15 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = (await request.json()) as { word: string; context?: string }
+    const body = (await request.json()) as { word: string; context?: string; native_lang?: string }
     const { word, context = '' } = body
 
     if (!word?.trim()) {
       return NextResponse.json({ error: 'Word is required.' }, { status: 400 })
     }
 
-    const { data: onboarding } = await supabase
-      .from('onboarding')
-      .select('native_language')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    const nativeLang = (onboarding?.native_language as string | null) ?? 'Portuguese'
+    // Idioma vem da escolha do popup (client); fallback Portuguese.
+    const nativeLang = body.native_lang?.trim() || 'Portuguese'
 
     const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini',
@@ -52,6 +48,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ translation })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

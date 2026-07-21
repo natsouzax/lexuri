@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { callLLM, safeJsonParse } from '@/lib/openai'
+import { errorMessage } from '@/lib/http'
 
 // GET: glossário (takeaways) + música do usuário (versos).
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({ takeaways: takeaways ?? [], verses: verses ?? [] })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }
 
@@ -79,6 +80,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ saved: clean.length, newVerses })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { Flashcard, TranscriptSegment } from '@/lib/types'
+import { useLang } from '@/lib/i18n'
 
 interface Props {
   cards: Flashcard[]
@@ -66,6 +67,7 @@ function buildGaps(cards: Flashcard[], segments: TranscriptSegment[]): Gap[] {
 
 // Day 3: completar trechos da letra + escrever os takeaways da semana.
 export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing, newVerses }: Props) {
+  const { t } = useLang()
   const gaps = useMemo(() => buildGaps(cards, segments), [cards, segments])
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [phase, setPhase] = useState<'gaps' | 'takeaways' | 'done'>(gaps.length > 0 ? 'gaps' : 'takeaways')
@@ -79,7 +81,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
   async function handleSubmit() {
     const texts = [t1, t2].map((t) => t.trim()).filter(Boolean)
     if (texts.length === 0) {
-      setError('Escreva pelo menos um aprendizado — é ele que entra no seu glossário.')
+      setError(t('act.takeawayError'))
       return
     }
     setError('')
@@ -95,14 +97,14 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
     return (
       <div style={{ maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.3rem', marginBottom: 8 }}>
-          Ciclo completo! 🎉
+          {t('act.done.title')}
         </p>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 20 }}>
-          Seus aprendizados entraram no glossário.
+          {t('act.done.body')}
         </p>
         {newVerses.length > 0 && (
           <div className="panel" style={{ marginBottom: 20, textAlign: 'center' }}>
-            <span className="mini-label">🎼 Um verso novo na sua música</span>
+            <span className="mini-label">{t('act.done.verse')}</span>
             {newVerses.map((v, i) => (
               <p key={i} style={{ fontFamily: 'Fraunces, Georgia, serif', fontStyle: 'italic', fontSize: '1.05rem', lineHeight: 1.7, whiteSpace: 'pre-line', margin: '10px 0 0' }}>
                 {v}
@@ -111,8 +113,8 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
           </div>
         )}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/flashcards" className="btn-secondary" style={{ textDecoration: 'none' }}>Ver glossário</a>
-          <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>Próxima música →</a>
+          <a href="/flashcards" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('act.done.glossary')}</a>
+          <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.nextSong')}</a>
         </div>
       </div>
     )
@@ -123,28 +125,27 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
         {gaps.length > 0 && (
           <div style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 16 }}>
-            Você acertou {correctCount} de {gaps.length} trechos.
+            {t('act.gotRight', { n: correctCount, total: gaps.length })}
           </div>
         )}
         <div className="panel" style={{ marginBottom: 16 }}>
-          <span className="mini-label">✍️ Antes de terminar</span>
+          <span className="mini-label">{t('act.beforeFinish')}</span>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', margin: '8px 0 4px' }}>
-            Quais foram duas palavras ou aprendizados que mais marcaram você hoje?
+            {t('act.takeawayQuestion')}
           </p>
           <p className="panel-copy" style={{ marginBottom: 14 }}>
-            Só o que você escrever aqui entra no seu glossário — e a cada dois
-            aprendizados, um verso da sua música pessoal nasce.
+            {t('act.takeawayHint')}
           </p>
           <input
             className="input-field"
-            placeholder="1º aprendizado (ex.: “by the way” = a propósito)"
+            placeholder={t('act.takeaway1')}
             value={t1}
             onChange={(e) => setT1(e.target.value)}
             style={{ marginBottom: 10, width: '100%' }}
           />
           <input
             className="input-field"
-            placeholder="2º aprendizado"
+            placeholder={t('act.takeaway2')}
             value={t2}
             onChange={(e) => setT2(e.target.value)}
             style={{ width: '100%' }}
@@ -153,7 +154,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
         {error && <div className="alert-error">{error}</div>}
         <div style={{ textAlign: 'center' }}>
           <button className="btn-primary" onClick={handleSubmit} disabled={finishing} style={{ padding: '10px 28px' }}>
-            {finishing ? <><span className="spinner" /> Salvando…</> : 'Concluir Day 3 ✓'}
+            {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay3')}
           </button>
         </div>
       </div>
@@ -163,7 +164,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 16 }}>
-        Complete os trechos da música
+        {t('act.fillTitle')}
       </div>
 
       {gaps.map((gap, i) => {
@@ -205,7 +206,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
             </div>
             {chosen !== undefined && chosen.toLowerCase() !== gap.answer.toLowerCase() && (
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '8px 0 0' }}>
-                Resposta certa: <strong>{gap.answer}</strong>
+                {t('act.correctAnswer')} <strong>{gap.answer}</strong>
               </p>
             )}
           </div>
@@ -215,7 +216,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
       {allAnswered && (
         <div style={{ textAlign: 'center', marginTop: 8 }}>
           <button className="btn-primary" onClick={() => setPhase('takeaways')} style={{ padding: '10px 28px' }}>
-            Continuar →
+            {t('act.continue')}
           </button>
         </div>
       )}

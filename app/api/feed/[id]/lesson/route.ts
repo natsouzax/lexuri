@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { getFeedItem } from '@/lib/feed'
 import { getStaticLesson } from '@/data/featured-lessons'
+import { errorMessage } from '@/lib/http'
 
 // MVP de validação: só lições estáticas pré-geradas — zero DB/AI em runtime.
 export async function GET(
@@ -30,6 +31,6 @@ export async function GET(
       chunks: staticLesson.chunks,
     })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

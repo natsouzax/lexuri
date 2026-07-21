@@ -8,6 +8,7 @@ import ChunkCard from '@/components/ui/ChunkCard'
 import { getFeedItem, getLevelColor } from '@/lib/feed'
 import { chunkToFlashcard } from '@/lib/types'
 import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
+import { useLang } from '@/lib/i18n'
 
 export interface LessonData {
   video_id: string
@@ -35,6 +36,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 export default function LessonView({ feedItemId: propId }: Props) {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const { t } = useLang()
   const id = propId ?? params.id
   const item = getFeedItem(id)
 
@@ -130,8 +132,8 @@ export default function LessonView({ feedItemId: propId }: Props) {
   if (!item) {
     return (
       <div style={{ padding: 48 }}>
-        <div className="alert-error">Música não encontrada.</div>
-        <Link href="/feed" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>← Voltar</Link>
+        <div className="alert-error">{t('lesson.notFound')}</div>
+        <Link href="/feed" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>{t('lesson.back')}</Link>
       </div>
     )
   }
@@ -142,7 +144,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <Link href="/feed" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>← Músicas</Link>
+        <Link href="/feed" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>{t('lesson.back')}</Link>
         <span style={{ fontSize: '0.72rem', fontWeight: 900, padding: '2px 10px', borderRadius: 999, background: levelColor, color: '#fff' }}>{item.level}</span>
         <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{item.duration}</span>
         {process.env.NODE_ENV === 'development' && (
@@ -167,26 +169,22 @@ export default function LessonView({ feedItemId: propId }: Props) {
       {loading && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 0', color: 'var(--muted)' }}>
           <span className="spinner" />
-          <span>Carregando a música…</span>
+          <span>{t('lesson.loading')}</span>
         </div>
       )}
 
       {loadError && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="alert-error">Não foi possível carregar esta música.</div>
-          <button className="btn-secondary" onClick={loadLesson}>Tentar de novo</button>
+          <div className="alert-error">{t('lesson.loadError')}</div>
+          <button className="btn-secondary" onClick={loadLesson}>{t('lesson.retry')}</button>
         </div>
       )}
 
       {lesson && (
         <>
           <div className="panel" style={{ marginBottom: 16 }}>
-            <span className="mini-label">👆 Como funciona</span>
-            <p className="panel-copy">
-              Dê play e acompanhe a letra. Toque em qualquer palavra pra ver a
-              tradução — tocou, salvou na sua biblioteca. As expressões
-              destacadas são as mais valiosas da música.
-            </p>
+            <span className="mini-label">{t('lesson.how.label')}</span>
+            <p className="panel-copy">{t('lesson.how.body')}</p>
           </div>
 
           <YoutubeSyncPlayer
@@ -202,7 +200,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
 
           {highChunks.length > 0 && (
             <>
-              <div className="section-title">Expressões-chave desta música</div>
+              <div className="section-title">{t('lesson.keyExpressions')}</div>
               <div className="three-col" style={{ marginBottom: 24 }}>
                 {highChunks.map((chunk) => (
                   <ChunkCard
@@ -222,20 +220,17 @@ export default function LessonView({ feedItemId: propId }: Props) {
           <div className="panel" style={{ textAlign: 'center', marginBottom: 32 }}>
             <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 6 }}>
               {savedCount > 0
-                ? `${savedCount} palavra${savedCount === 1 ? '' : 's'} na sua biblioteca 🎉`
-                : 'Salve algumas palavras antes de continuar'}
+                ? `${savedCount} ${savedCount === 1 ? t('lesson.savedOne') : t('lesson.savedCount')}`
+                : t('lesson.saveSome')}
             </p>
-            <p className="panel-copy" style={{ marginBottom: 16 }}>
-              Terminou de ouvir? A primeira revisão é agora — uma leitura rápida
-              do que você salvou.
-            </p>
+            <p className="panel-copy" style={{ marginBottom: 16 }}>{t('lesson.finishHint')}</p>
             <button
               className="btn-primary"
               onClick={handleFinish}
               disabled={finishing}
               style={{ padding: '12px 32px' }}
             >
-              {finishing ? <><span className="spinner" /> Indo…</> : 'Começar revisão (Day 1) →'}
+              {finishing ? <><span className="spinner" /> {t('lesson.going')}</> : t('lesson.finishCta')}
             </button>
           </div>
         </>

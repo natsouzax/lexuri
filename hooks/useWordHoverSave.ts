@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { normalizeFlashcard } from '@/lib/types'
+import { getNativeLangName } from '@/lib/i18n'
 import type { Flashcard } from '@/lib/types'
 
 export interface WordDef {
@@ -67,7 +68,7 @@ export function useWordHoverSave(
     const { translation } = await apiFetch<{ translation: string }>('/api/llm/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word, context }),
+      body: JSON.stringify({ word, context, native_lang: getNativeLangName() }),
     })
     translationCacheRef.current.set(word, translation)
     return translation
@@ -79,7 +80,7 @@ export function useWordHoverSave(
     const def = await apiFetch<WordDef>('/api/llm/define', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word, context }),
+      body: JSON.stringify({ word, context, native_lang: getNativeLangName() }),
     })
     defCacheRef.current.set(word, def)
     return def

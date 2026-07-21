@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { errorMessage } from '@/lib/http'
 
 // GET: progresso de todas as músicas do usuário + nível de estudo.
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
       study_level: profile?.study_level ?? null,
     })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }
 
@@ -53,6 +54,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

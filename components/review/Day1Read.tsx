@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Flashcard } from '@/lib/types'
+import { useLang } from '@/lib/i18n'
 
 interface Props {
   cards: Flashcard[]
@@ -11,6 +12,7 @@ interface Props {
 
 // Day 1: releitura calma das palavras salvas — só leitura, sem teste.
 export default function Day1Read({ cards, onDone, finishing }: Props) {
+  const { t } = useLang()
   const [index, setIndex] = useState(0)
   const card = cards[index]
   const isLast = index >= cards.length - 1
@@ -29,7 +31,7 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
   return (
     <div style={{ maxWidth: 480, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 12 }}>
-        {index + 1} de {cards.length}
+        {index + 1} {t('act.of')} {cards.length}
       </div>
 
       <div className="panel" style={{ textAlign: 'center', padding: '32px 24px', marginBottom: 16 }}>
@@ -62,13 +64,13 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
 
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         {index > 0 && (
-          <button className="btn-secondary" onClick={() => setIndex((i) => i - 1)}>← Anterior</button>
+          <button className="btn-secondary" onClick={() => setIndex((i) => i - 1)}>{t('act.prev')}</button>
         )}
         {!isLast ? (
-          <button className="btn-primary" onClick={() => setIndex((i) => i + 1)}>Próxima →</button>
+          <button className="btn-primary" onClick={() => setIndex((i) => i + 1)}>{t('act.next')}</button>
         ) : (
           <button className="btn-primary" onClick={onDone} disabled={finishing} style={{ padding: '10px 28px' }}>
-            {finishing ? <><span className="spinner" /> Salvando…</> : 'Concluir Day 1 ✓'}
+            {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay1')}
           </button>
         )}
       </div>
