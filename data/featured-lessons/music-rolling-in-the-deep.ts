@@ -1,4 +1,4 @@
-// Auto-generated (legenda real do YouTube, texto verificado) — 2026-07-18
+// Timestamps ajustados manualmente (delta +0.75s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,142 +8,142 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "There's a fire starting in my heart, reaching a fever pitch; it's bringing me out the dark.",
-      "start": 0.201,
+      "start": 0.951,
       "duration": 11.744421052631576
     },
     {
       "text": "Finally, I can see you crystal clear.",
-      "start": 11.945421052631577,
+      "start": 12.695,
       "duration": 4.775204164256795
     },
     {
       "text": "Go ahead and sell me out, and I'll lay your shit bare.",
-      "start": 16.720625216888372,
+      "start": 17.471,
       "duration": 6.969216888374782
     },
     {
       "text": "See how I'll leave with every piece of you.",
-      "start": 23.689842105263153,
+      "start": 24.44,
       "duration": 5.549561596298438
     },
     {
       "text": "Don't underestimate the things that I will do.",
-      "start": 29.239403701561592,
+      "start": 29.989,
       "duration": 5.936740312319259
     },
     {
       "text": "There's a fire starting in my heart, reaching a fever pitch, and it's bringing me out the dark.",
-      "start": 35.17614401388085,
+      "start": 35.926,
       "duration": 12.26065934065934
     },
     {
       "text": "The scars of your love remind me of us; they keep me thinking that we almost had it all.",
-      "start": 47.43680335454019,
+      "start": 48.187,
       "duration": 11.357242336610756
     },
     {
       "text": "The scars of your love, they leave me breathless.",
-      "start": 58.79404569115094,
+      "start": 59.544,
       "duration": 6.323919028340081
     },
     {
       "text": "I can't help feeling we could've had it all, rolling in the deep.",
-      "start": 65.11796471949103,
+      "start": 65.868,
       "duration": 8.388872180451127
     },
     {
       "text": "You had my heart inside of your hands, and you played it to the beat.",
-      "start": 73.50683689994216,
+      "start": 74.257,
       "duration": 8.905110468478888
     },
     {
       "text": "Baby, I have no story to be told, but I've heard one on you.",
-      "start": 82.41194736842104,
+      "start": 83.162,
       "duration": 7.743574320416426
     },
     {
       "text": "Now I'm gonna make your head burn.",
-      "start": 90.15552168883747,
+      "start": 90.906,
       "duration": 4.388025448235974
     },
     {
       "text": "Think of me in the depths of your despair; make a home down there, as mine sure won't be shared.",
-      "start": 94.54354713707345,
+      "start": 95.294,
       "duration": 12.38971891266628
     },
     {
       "text": "The scars of your love remind me of us; they keep me thinking that we almost had it all.",
-      "start": 106.93326604973973,
+      "start": 107.683,
       "duration": 11.357242336610756
     },
     {
       "text": "The scars of your love, they leave me breathless.",
-      "start": 118.29050838635048,
+      "start": 119.041,
       "duration": 6.323919028340081
     },
     {
       "text": "I can't help feeling we could've had it all, rolling in the deep.",
-      "start": 124.61442741469057,
+      "start": 125.364,
       "duration": 8.388872180451127
     },
     {
       "text": "You had my heart inside of your hands, and you played it to the beat.",
-      "start": 133.0032995951417,
+      "start": 133.753,
       "duration": 8.905110468478888
     },
     {
       "text": "We could've had it all, rolling in the deep.",
-      "start": 141.90841006362058,
+      "start": 142.658,
       "duration": 5.678621168305378
     },
     {
       "text": "You had my heart inside of your hand, but you played it with a beating.",
-      "start": 147.58703123192595,
+      "start": 148.337,
       "duration": 9.163229612492769
     },
     {
       "text": "Throw your soul through every open door; count your blessings to find what you look for.",
-      "start": 156.7502608444187,
+      "start": 157.5,
       "duration": 11.357242336610756
     },
     {
       "text": "Turn my sorrow into treasured gold.",
-      "start": 168.10750318102947,
+      "start": 168.858,
       "duration": 4.517085020242915
     },
     {
       "text": "You pay me back in kind and reap just what you've sown.",
-      "start": 172.6245882012724,
+      "start": 173.375,
       "duration": 7.098276460381722
     },
     {
       "text": "We could've had it all; we could've had it all.",
-      "start": 179.7228646616541,
+      "start": 180.473,
       "duration": 6.065799884326199
     },
     {
       "text": "It all, it all, it all.",
-      "start": 185.7886645459803,
+      "start": 186.539,
       "duration": 2.9683701561596294
     },
     {
       "text": "We could've had it all, rolling in the deep.",
-      "start": 188.75703470213995,
+      "start": 189.507,
       "duration": 5.678621168305378
     },
     {
       "text": "You had my heart inside of your hands, and you played it to the beat.",
-      "start": 194.43565587044532,
+      "start": 195.186,
       "duration": 8.905110468478888
     },
     {
       "text": "Could've had it all, rolling in the deep.",
-      "start": 203.3407663389242,
+      "start": 204.091,
       "duration": 5.291442452284557
     },
     {
       "text": "You had my heart inside of your hands, but you played it, you played it, you played it; you played it to the beat.",
-      "start": 208.63220879120877,
+      "start": 209.382,
       "duration": 14.712791208791208
     }
   ],
@@ -455,7 +455,7 @@ const data: StaticLesson = {
       "example_sentence": "He reaped just what he had sown with his actions."
     }
   ],
-  "generated_at": "2026-07-18T10:26:13.466Z"
+  "generated_at": "2026-07-21T22:34:40.965Z"
 }
 
 export default data

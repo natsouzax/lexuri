@@ -1,4 +1,4 @@
-// Sincronizado via lrclib.net (a legenda original vinha em blocos gigantes, ruim) — 2026-07-18
+// Timestamps ajustados manualmente (delta +1s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,192 +8,192 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 14.44,
+      "start": 15.44,
       "duration": 6.76
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 21.2,
+      "start": 22.2,
       "duration": 4.620000000000001
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 25.82,
+      "start": 26.82,
       "duration": 5.710000000000001
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 31.53,
+      "start": 32.53,
       "duration": 2.4499999999999957
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 33.98,
+      "start": 34.98,
       "duration": 3.200000000000003
     },
     {
       "text": "Somewhere over the rainbow",
-      "start": 37.18,
+      "start": 38.18,
       "duration": 6.280000000000001
     },
     {
       "text": "Way up high",
-      "start": 43.46,
+      "start": 44.46,
       "duration": 5.039999999999999
     },
     {
       "text": "And the dreams that you dream of",
-      "start": 48.5,
+      "start": 49.5,
       "duration": 5.539999999999999
     },
     {
       "text": "Once in a lullaby",
-      "start": 54.04,
+      "start": 55.04,
       "duration": 8.630000000000003
     },
     {
       "text": "Somewhere over the rainbow",
-      "start": 62.67,
+      "start": 63.67,
       "duration": 7
     },
     {
       "text": "Blue birds fly",
-      "start": 69.67,
+      "start": 70.67,
       "duration": 4.079999999999998
     },
     {
       "text": "And the dreams that you dream of",
-      "start": 73.75,
+      "start": 74.75,
       "duration": 5.980000000000004
     },
     {
       "text": "Dreams really do come true, ooh",
-      "start": 79.73,
+      "start": 80.73,
       "duration": 7.819999999999993
     },
     {
       "text": "Someday I'll wish upon a star",
-      "start": 87.55,
+      "start": 88.55,
       "duration": 3.200000000000003
     },
     {
       "text": "Wake up where the clouds are far behind me",
-      "start": 90.75,
+      "start": 91.75,
       "duration": 8.060000000000002
     },
     {
       "text": "Where trouble melts like lemon drops",
-      "start": 98.81,
+      "start": 99.81,
       "duration": 3.3499999999999943
     },
     {
       "text": "High above the chimney top",
-      "start": 102.16,
+      "start": 103.16,
       "duration": 2.0200000000000102
     },
     {
       "text": "That's where you'll find me, oh",
-      "start": 104.18,
+      "start": 105.18,
       "duration": 5.939999999999998
     },
     {
       "text": "Oh somewhere over the rainbow",
-      "start": 110.12,
+      "start": 111.12,
       "duration": 6.969999999999999
     },
     {
       "text": "Blue birds fly",
-      "start": 117.09,
+      "start": 118.09,
       "duration": 4.359999999999999
     },
     {
       "text": "And the dreams that you dare to",
-      "start": 121.45,
+      "start": 122.45,
       "duration": 5.259999999999991
     },
     {
       "text": "Oh why, oh why can't I?",
-      "start": 126.71,
+      "start": 127.71,
       "duration": 4.320000000000007
     },
     {
       "text": "Ouhouhouhouhouh",
-      "start": 131.03,
+      "start": 132.03,
       "duration": 2.9799999999999898
     },
     {
       "text": "Ouhouhouhouh",
-      "start": 134.01,
+      "start": 135.01,
       "duration": 1.3700000000000045
     },
     {
       "text": "Someday I'll wish upon a star",
-      "start": 135.38,
+      "start": 136.38,
       "duration": 3.1200000000000045
     },
     {
       "text": "Wake up where the clouds are far behind me",
-      "start": 138.5,
+      "start": 139.5,
       "duration": 8.090000000000003
     },
     {
       "text": "Where trouble melts like lemon drops",
-      "start": 146.59,
+      "start": 147.59,
       "duration": 3.1999999999999886
     },
     {
       "text": "High above the chimney top",
-      "start": 149.79,
+      "start": 150.79,
       "duration": 2.030000000000001
     },
     {
       "text": "That's where you'll find me",
-      "start": 151.82,
+      "start": 152.82,
       "duration": 5.420000000000016
     },
     {
       "text": "Somewhere over the rainbow way up high",
-      "start": 157.24,
+      "start": 158.24,
       "duration": 12
     },
     {
       "text": "And the dreams that you dare to, why",
-      "start": 169.38,
+      "start": 170.38,
       "duration": 6.5800000000000125
     },
     {
       "text": "Oh why, can't I?",
-      "start": 175.96,
+      "start": 176.96,
       "duration": 7.689999999999998
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 183.65,
+      "start": 184.65,
       "duration": 2.960000000000008
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 186.61,
+      "start": 187.61,
       "duration": 3.3799999999999955
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 189.99,
+      "start": 190.99,
       "duration": 2.6399999999999864
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 192.63,
+      "start": 193.63,
       "duration": 1.25
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 193.88,
+      "start": 194.88,
       "duration": 4.170000000000016
     },
     {
       "text": "Oooooh ooooooh ooooooh",
-      "start": 198.05,
+      "start": 199.05,
       "duration": 3
     }
   ],
@@ -369,7 +369,7 @@ const data: StaticLesson = {
       "example_sentence": "Why can't I join the team?"
     }
   ],
-  "generated_at": "2026-07-18T00:33:33.121Z"
+  "generated_at": "2026-07-21T22:34:40.902Z"
 }
 
 export default data

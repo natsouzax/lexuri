@@ -1,4 +1,4 @@
-// Fonte: generic (getTranscriptFast) — timing 100% original do vídeo, sem repair por IA — 2026-07-18
+// Timestamps ajustados manualmente (delta -5s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,247 +8,247 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "[Music]",
-      "start": 2.26,
+      "start": 0,
       "duration": 30.79,
       "synthetic": false
     },
     {
       "text": "Sometimes I'll feel like I don't have a",
-      "start": 29.09,
+      "start": 24.09,
       "duration": 8.34,
       "synthetic": false
     },
     {
       "text": "partner. Sometimes I pee",
-      "start": 33.05,
+      "start": 28.05,
       "duration": 9.36,
       "synthetic": false
     },
     {
       "text": "like my older friend is the city I live",
-      "start": 37.43,
+      "start": 32.43,
       "duration": 11.520000000000003,
       "synthetic": false
     },
     {
       "text": "in, the City of Angels. Lonely as I am,",
-      "start": 42.41,
+      "start": 37.41,
       "duration": 27.450000000000003,
       "synthetic": false
     },
     {
       "text": "together, losing ahead.",
-      "start": 48.95,
+      "start": 43.95,
       "duration": 29.510000000000005,
       "synthetic": false
     },
     {
       "text": "She sees my, she kisses you and a lineup",
-      "start": 69.86,
+      "start": 64.86,
       "duration": 8.599999999999994,
       "synthetic": false
     },
     {
       "text": "me.",
-      "start": 79.59,
+      "start": 74.59,
       "duration": 2.0900000000000034,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 84.32,
+      "start": 79.32,
       "duration": 10.218999999999994,
       "synthetic": false
     },
     {
       "text": "Like I did then, take me to the place I",
-      "start": 90.42,
+      "start": 85.42,
       "duration": 6.149000000000001,
       "synthetic": false
     },
     {
       "text": "love. Get away! I don't ever wanna meet",
-      "start": 94.539,
+      "start": 89.539,
       "duration": 11.310999999999993,
       "synthetic": false
     },
     {
       "text": "like I did then. Take me to the place I",
-      "start": 101.7,
+      "start": 96.7,
       "duration": 6.049999999999997,
       "synthetic": false
     },
     {
       "text": "love.",
-      "start": 105.85,
+      "start": 100.85,
       "duration": 5.560000000000002,
       "synthetic": false
     },
     {
       "text": "Nikki got away.",
-      "start": 107.75,
+      "start": 102.75,
       "duration": 5.950000000000003,
       "synthetic": false
     },
     {
       "text": "[Music] You",
-      "start": 111.41,
+      "start": 106.41,
       "duration": 4.950000000000003,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 116.73,
+      "start": 111.73,
       "duration": 3.0690000000000026,
       "synthetic": false
     },
     {
       "text": "It's hard to believe there's nobody out there.",
-      "start": 121.25,
+      "start": 116.25,
       "duration": 11.669999999999987,
       "synthetic": false
     },
     {
       "text": "Hard to believe it, I'm all alone at",
-      "start": 126.67,
+      "start": 121.67,
       "duration": 10.459999999999994,
       "synthetic": false
     },
     {
       "text": "least. I have heard of it.",
-      "start": 132.92,
+      "start": 127.92,
       "duration": 7.6299999999999955,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 137.13,
+      "start": 132.13,
       "duration": 7.859000000000009,
       "synthetic": false
     },
     {
       "text": "To give me crap.",
-      "start": 140.55,
+      "start": 135.55,
       "duration": 4.438999999999993,
       "synthetic": false
     },
     {
       "text": "I don't ever wanna be like I did that",
-      "start": 145.56,
+      "start": 140.56,
       "duration": 13.310000000000002,
       "synthetic": false
     },
     {
       "text": "man. Attempt to the plant, son!",
-      "start": 154.98,
+      "start": 149.98,
       "duration": 10.219999999999999,
       "synthetic": false
     },
     {
       "text": "Take me away! I don't ever wanna be like",
-      "start": 158.87,
+      "start": 153.87,
       "duration": 9.27000000000001,
       "synthetic": false
     },
     {
       "text": "I didn't Timothy to plan.",
-      "start": 165.2,
+      "start": 160.2,
       "duration": 5.0090000000000146,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 168.14,
+      "start": 163.14,
       "duration": 5.3700000000000045,
       "synthetic": false
     },
     {
       "text": "Nikki, you! [Music]",
-      "start": 170.209,
+      "start": 165.209,
       "duration": 8.591000000000008,
       "synthetic": false
     },
     {
       "text": "Hey!",
-      "start": 180.269,
+      "start": 175.269,
       "duration": 8.300000000000011,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 181.57,
+      "start": 176.57,
       "duration": 7.810000000000002,
       "synthetic": false
     },
     {
       "text": "You! [Music]",
-      "start": 188.569,
+      "start": 183.569,
       "duration": 4.030000000000001,
       "synthetic": false
     },
     {
       "text": "And we're out.",
-      "start": 197.989,
+      "start": 192.989,
       "duration": 2.9010000000000105,
       "synthetic": false
     },
     {
       "text": "I could.",
-      "start": 202.59,
+      "start": 197.59,
       "duration": 3.4099999999999966,
       "synthetic": false
     },
     {
       "text": "Yeah!",
-      "start": 213.81,
+      "start": 208.81,
       "duration": 3,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 222.35,
+      "start": 217.35,
       "duration": 9.560000000000002,
       "synthetic": false
     },
     {
       "text": "[Applause]",
-      "start": 223.72,
+      "start": 218.72,
       "duration": 10.580000000000013,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 231.91,
+      "start": 226.91,
       "duration": 5.4199999999999875,
       "synthetic": false
     },
     {
       "text": "[Applause]",
-      "start": 234.3,
+      "start": 229.3,
       "duration": 9.12899999999999,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 237.33,
+      "start": 232.33,
       "duration": 6.0989999999999895,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 246.76,
+      "start": 241.76,
       "duration": 3.1399999999999864,
       "synthetic": false
     },
     {
       "text": "[Music]",
-      "start": 253.76,
+      "start": 248.76,
       "duration": 14.670000000000016,
       "synthetic": false
     },
     {
       "text": "You!",
-      "start": 266.37,
+      "start": 261.37,
       "duration": 2.0600000000000023,
       "synthetic": false
     }
@@ -442,7 +442,7 @@ const data: StaticLesson = {
       "example_sentence": "Alright, we're out of here."
     }
   ],
-  "generated_at": "2026-07-18T12:01:35.395Z"
+  "generated_at": "2026-07-21T22:34:41.159Z"
 }
 
 export default data

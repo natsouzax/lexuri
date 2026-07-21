@@ -1,4 +1,4 @@
-// Sincronizado via lrclib.net (a legenda original vinha em blocos gigantes, ruim) — 2026-07-17
+// Timestamps ajustados manualmente (delta +81s) — 2026-07-21
 import type { StaticLesson } from '@/lib/featured-lesson'
 
 const data: StaticLesson = {
@@ -8,242 +8,242 @@ const data: StaticLesson = {
   "segments": [
     {
       "text": "Hello, it's me",
-      "start": 18.2,
+      "start": 99.2,
       "duration": 5.34
     },
     {
       "text": "I was wondering if after all these years you'd like to meet",
-      "start": 23.54,
+      "start": 104.54,
       "duration": 6.18
     },
     {
       "text": "To go over everything",
-      "start": 29.72,
+      "start": 110.72,
       "duration": 5.560000000000002
     },
     {
       "text": "They say that time's supposed to heal ya, but I ain't done much healing",
-      "start": 35.28,
+      "start": 116.28,
       "duration": 7.1299999999999955
     },
     {
       "text": "Hello, can you hear me?",
-      "start": 42.41,
+      "start": 123.41,
       "duration": 5.6200000000000045
     },
     {
       "text": "I'm in California dreaming about who we used to be",
-      "start": 48.03,
+      "start": 129.03,
       "duration": 5.789999999999999
     },
     {
       "text": "When we were younger and free",
-      "start": 53.82,
+      "start": 134.82,
       "duration": 6.109999999999999
     },
     {
       "text": "I've forgotten how it felt before the world fell at our feet",
-      "start": 59.93,
+      "start": 140.93,
       "duration": 6.080000000000005
     },
     {
       "text": "There's such a difference between us",
-      "start": 66.01,
+      "start": 147.01,
       "duration": 6.529999999999987
     },
     {
       "text": "And a million miles",
-      "start": 72.53999999999999,
+      "start": 153.54,
       "duration": 6.440000000000012
     },
     {
       "text": "Hello from the other side",
-      "start": 78.98,
+      "start": 159.98,
       "duration": 5.420000000000002
     },
     {
       "text": "I must've called a thousand times",
-      "start": 84.4,
+      "start": 165.4,
       "duration": 5.97999999999999
     },
     {
       "text": "To tell you I'm sorry for everything that I've done",
-      "start": 90.38,
+      "start": 171.38,
       "duration": 5.700000000000003
     },
     {
       "text": "But when I call, you never seem to be home",
-      "start": 96.08,
+      "start": 177.08,
       "duration": 7.070000000000007
     },
     {
       "text": "Hello from the outside",
-      "start": 103.15,
+      "start": 184.15,
       "duration": 5.889999999999986
     },
     {
       "text": "At least I can say that I've tried",
-      "start": 109.03999999999999,
+      "start": 190.04,
       "duration": 5.450000000000017
     },
     {
       "text": "To tell you I'm sorry for breaking your heart",
-      "start": 114.49000000000001,
+      "start": 195.49,
       "duration": 5.849999999999994
     },
     {
       "text": "But it don't matter, it clearly doesn't tear you apart anymore",
-      "start": 120.34,
+      "start": 201.34,
       "duration": 12
     },
     {
       "text": "Hello, how are you?",
-      "start": 133.42,
+      "start": 214.42,
       "duration": 5.77000000000001
     },
     {
       "text": "It's so typical of me to talk about myself, I'm sorry",
-      "start": 139.19,
+      "start": 220.19,
       "duration": 6.060000000000002
     },
     {
       "text": "I hope that you're well",
-      "start": 145.25,
+      "start": 226.25,
       "duration": 5.969999999999999
     },
     {
       "text": "Did you ever make it out of that town where nothing ever happened?",
-      "start": 151.22,
+      "start": 232.22,
       "duration": 6
     },
     {
       "text": "It's no secret that the both of us",
-      "start": 157.22,
+      "start": 238.22,
       "duration": 6.52000000000001
     },
     {
       "text": "Are running out of time",
-      "start": 163.74,
+      "start": 244.74,
       "duration": 6.239999999999981
     },
     {
       "text": "So hello from the other side (other side)",
-      "start": 169.98,
+      "start": 250.98,
       "duration": 5.860000000000014
     },
     {
       "text": "I must've called a thousand times (thousand times)",
-      "start": 175.84,
+      "start": 256.84,
       "duration": 5.840000000000003
     },
     {
       "text": "To tell you I'm sorry for everything that I've done",
-      "start": 181.68,
+      "start": 262.68,
       "duration": 5.4599999999999795
     },
     {
       "text": "But when I call, you never seem to be home",
-      "start": 187.14,
+      "start": 268.14,
       "duration": 7
     },
     {
       "text": "Hello from the outside (outside)",
-      "start": 194.14,
+      "start": 275.14,
       "duration": 5.950000000000017
     },
     {
       "text": "At least I can say that I've tried (I've tried)",
-      "start": 200.09,
+      "start": 281.09,
       "duration": 5.599999999999994
     },
     {
       "text": "To tell you I'm sorry for breaking your heart",
-      "start": 205.69,
+      "start": 286.69,
       "duration": 5.759999999999991
     },
     {
       "text": "But it don't matter, it clearly doesn't tear you apart anymore",
-      "start": 211.45,
+      "start": 292.45,
       "duration": 8.29000000000002
     },
     {
       "text": "(Highs, highs, highs, highs)",
-      "start": 219.74,
+      "start": 300.74,
       "duration": 2.1699999999999875
     },
     {
       "text": "Ooh (lows, lows, lows, lows), anymore",
-      "start": 221.91,
+      "start": 302.91,
       "duration": 3.9199999999999875
     },
     {
       "text": "(Highs, highs, highs, highs)",
-      "start": 225.82999999999998,
+      "start": 306.83,
       "duration": 2.3300000000000125
     },
     {
       "text": "Ooh (lows, lows, lows, lows), anymore",
-      "start": 228.16,
+      "start": 309.16,
       "duration": 3.6899999999999977
     },
     {
       "text": "(Highs, highs, highs, highs)",
-      "start": 231.85,
+      "start": 312.85,
       "duration": 2.9000000000000057
     },
     {
       "text": "Ooh (lows, lows, lows, lows), anymore",
-      "start": 234.75,
+      "start": 315.75,
       "duration": 3.5500000000000114
     },
     {
       "text": "(Highs, highs, highs, highs)",
-      "start": 238.3,
+      "start": 319.3,
       "duration": 2.6599999999999966
     },
     {
       "text": "Anymore (lows, lows, lows, lows)",
-      "start": 240.96,
+      "start": 321.96,
       "duration": 2.3400000000000034
     },
     {
       "text": "Hello from the other side (other side)",
-      "start": 243.3,
+      "start": 324.3,
       "duration": 1.1899999999999977
     },
     {
       "text": "I must've called a thousand times (thousand times)",
-      "start": 244.49,
+      "start": 325.49,
       "duration": 1.1699999999999875
     },
     {
       "text": "To tell you I'm sorry for everything that I've done",
-      "start": 245.66,
+      "start": 326.66,
       "duration": 1.420000000000016
     },
     {
       "text": "But when I call, you never seem to be home",
-      "start": 247.08,
+      "start": 328.08,
       "duration": 0.9899999999999807
     },
     {
       "text": "Hello from the outside (outside)",
-      "start": 248.07,
+      "start": 329.07,
       "duration": 1.1500000000000057
     },
     {
       "text": "At least I can say that I've tried (I've tried)",
-      "start": 249.22,
+      "start": 330.22,
       "duration": 0.9000000000000057
     },
     {
       "text": "To tell you I'm sorry for breaking your heart",
-      "start": 250.12,
+      "start": 331.12,
       "duration": 0.75
     },
     {
       "text": "But it don't matter, it clearly doesn't tear you apart anymore",
-      "start": 250.87,
+      "start": 331.87,
       "duration": 3
     }
   ],
@@ -606,7 +606,7 @@ const data: StaticLesson = {
       "example_sentence": "The breakup doesn't tear me apart anymore."
     }
   ],
-  "generated_at": "2026-07-17T23:54:25.853Z"
+  "generated_at": "2026-07-21T22:34:41.023Z"
 }
 
 export default data
