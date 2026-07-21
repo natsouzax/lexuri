@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
 import ChunkCard from '@/components/ui/ChunkCard'
+import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
+import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
 import { getFeedItem, getLevelColor } from '@/lib/feed'
 import { chunkToFlashcard } from '@/lib/types'
 import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
@@ -47,7 +49,8 @@ export default function LessonView({ feedItemId: propId }: Props) {
   const [selectedChunk, setSelectedChunk]     = useState<ChunkItem | null>(null)
   const [savedChunks, setSavedChunks]         = useState<Set<string>>(new Set())
   const [makingFlashcard, setMakingFlashcard] = useState<string | null>(null)
-  const [savedCount, setSavedCount]           = useState(0)
+  const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
+  const [lyricsOpen, setLyricsOpen]           = useState(true)
   const [error, setError]                     = useState('')
   const [finishing, setFinishing]             = useState(false)
   const [resyncing, setResyncing]             = useState(false)
@@ -81,8 +84,8 @@ export default function LessonView({ feedItemId: propId }: Props) {
     }).catch(() => {})
   }, [lesson, id])
 
-  function handleWordSaved(_card: Flashcard) {
-    setSavedCount((n) => n + 1)
+  function handleWordSaved(card: Flashcard) {
+    setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
   }
 
   async function handleMakeFlashcard(chunk: ChunkItem) {
@@ -97,7 +100,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
         body: JSON.stringify({ cards: [card] }),
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
-      setSavedCount((n) => n + 1)
+      setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
     } catch (e) {
       setError(String(e))
     } finally {
@@ -198,6 +201,40 @@ export default function LessonView({ feedItemId: propId }: Props) {
 
           {error && <div className="alert-error">{error}</div>}
 
+          <div className="section-title">
+            {t('lesson.interactiveLyrics')}
+            <button
+              onClick={() => setLyricsOpen((v) => !v)}
+              style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              {lyricsOpen ? '▲' : '▼'}
+            </button>
+          </div>
+          {lyricsOpen && (
+            <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 20 }}>
+              <ChunkHighlighter
+                text={lesson.original_text}
+                chunks={lesson.chunks}
+                selectedChunk={selectedChunk}
+                onChunkClick={setSelectedChunk}
+                videoId={lesson.video_id}
+                onWordSaved={handleWordSaved}
+              />
+            </div>
+          )}
+
+          {generatedCards.length > 0 && (
+            <>
+              <div className="section-title">
+                {t('lesson.savedWords')} ({generatedCards.length})
+                <Link href="/review" style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', textDecoration: 'none' }}>{t('nav.review')} →</Link>
+              </div>
+              {generatedCards.map((card) => (
+                <GeneratedLearningCard key={card.id} card={card} />
+              ))}
+            </>
+          )}
+
           {highChunks.length > 0 && (
             <>
               <div className="section-title">{t('lesson.keyExpressions')}</div>
@@ -219,8 +256,8 @@ export default function LessonView({ feedItemId: propId }: Props) {
 
           <div className="panel" style={{ textAlign: 'center', marginBottom: 32 }}>
             <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 6 }}>
-              {savedCount > 0
-                ? `${savedCount} ${savedCount === 1 ? t('lesson.savedOne') : t('lesson.savedCount')}`
+              {generatedCards.length > 0
+                ? `${generatedCards.length} ${generatedCards.length === 1 ? t('lesson.savedOne') : t('lesson.savedCount')}`
                 : t('lesson.saveSome')}
             </p>
             <p className="panel-copy" style={{ marginBottom: 16 }}>{t('lesson.finishHint')}</p>

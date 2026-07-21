@@ -33,6 +33,7 @@ export default function ReviewSongPage() {
   const [loaded, setLoaded] = useState(false)
   const [finishing, setFinishing] = useState(false)
   const [newVerses, setNewVerses] = useState<string[]>([])
+  const [skipWait, setSkipWait] = useState(false)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
@@ -110,7 +111,11 @@ export default function ReviewSongPage() {
     )
   }
 
-  const step = progress ? nextReviewStep(progress) : { day: 1 as const, available: true }
+  const rawStep = progress ? nextReviewStep(progress) : { day: 1 as const, available: true }
+  // O usuário pode escolher avançar o dia sem esperar o intervalo.
+  const step = rawStep === 'done' || rawStep.available || !skipWait
+    ? rawStep
+    : { day: rawStep.day, available: true }
   const noCards = !cards || cards.length === 0
 
   return (
@@ -145,7 +150,10 @@ export default function ReviewSongPage() {
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
             {t('runner.locked.body')} {t(`day${step.day}.title` as DictKey)}.
           </p>
-          <Link href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('runner.locked.back')}</Link>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('runner.locked.back')}</Link>
+            <button className="btn-primary" onClick={() => setSkipWait(true)}>{t('runner.skipWait')}</button>
+          </div>
         </div>
       )}
 

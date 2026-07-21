@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Flashcard } from '@/lib/types'
 import { useLang } from '@/lib/i18n'
 
@@ -25,6 +25,11 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
     window.speechSynthesis.cancel()
     window.speechSynthesis.speak(u)
   }
+
+  // Pronúncia automática ao trocar de card.
+  useEffect(() => {
+    if (card) playAudio(card.word)
+  }, [card?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!card) return null
 

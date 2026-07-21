@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getFeedItem } from '@/lib/feed'
 import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
 import { useLang, type DictKey } from '@/lib/i18n'
+import SrsSession from '@/components/review/SrsSession'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -40,6 +41,8 @@ export default function ReviewPage() {
         <h1 className="app-hero-title">{t('review.title')}</h1>
         <p className="app-hero-subtitle">{t('review.subtitle')}</p>
       </div>
+
+      <SrsSession />
 
       {loaded && rows.length === 0 && (
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
