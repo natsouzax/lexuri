@@ -5,14 +5,27 @@
 // a UI e o idioma-alvo das traduções de palavras.
 import { createContext, useContext, useEffect, useState } from 'react'
 
-export type Lang = 'en' | 'pt' | 'es'
+// Os mesmos 12 idiomas do Lexuri original + inglês.
+export type Lang =
+  | 'en' | 'pt' | 'es' | 'fr' | 'de' | 'it'
+  | 'ja' | 'ko' | 'zh' | 'ar' | 'tr' | 'ru' | 'hi'
 
 export const LANG_STORAGE_KEY = 'lexuri_lang'
 
 export const LANG_OPTIONS: Array<{ id: Lang; label: string; flag: string }> = [
-  { id: 'en', label: 'English', flag: '🇺🇸' },
-  { id: 'pt', label: 'Português', flag: '🇧🇷' },
-  { id: 'es', label: 'Español', flag: '🇪🇸' },
+  { id: 'en', label: 'English',        flag: '🇺🇸' },
+  { id: 'pt', label: 'Português (BR)', flag: '🇧🇷' },
+  { id: 'es', label: 'Español',        flag: '🇪🇸' },
+  { id: 'fr', label: 'Français',       flag: '🇫🇷' },
+  { id: 'de', label: 'Deutsch',        flag: '🇩🇪' },
+  { id: 'it', label: 'Italiano',       flag: '🇮🇹' },
+  { id: 'ja', label: '日本語',          flag: '🇯🇵' },
+  { id: 'ko', label: '한국어',          flag: '🇰🇷' },
+  { id: 'zh', label: '中文',            flag: '🇨🇳' },
+  { id: 'ar', label: 'العربية',         flag: '🇸🇦' },
+  { id: 'tr', label: 'Türkçe',         flag: '🇹🇷' },
+  { id: 'ru', label: 'Русский',        flag: '🇷🇺' },
+  { id: 'hi', label: 'हिंदी',           flag: '🇮🇳' },
 ]
 
 // Nome do idioma pro prompt de tradução da IA.
@@ -20,6 +33,26 @@ export const NATIVE_LANG_NAME: Record<Lang, string> = {
   en: 'English',
   pt: 'Portuguese',
   es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  it: 'Italian',
+  ja: 'Japanese',
+  ko: 'Korean',
+  zh: 'Chinese (Simplified)',
+  ar: 'Arabic',
+  tr: 'Turkish',
+  ru: 'Russian',
+  hi: 'Hindi',
+}
+
+// Sugestão pelo idioma do navegador (mesma lógica do LanguagePicker original).
+export function detectBrowserLang(): Lang | null {
+  if (typeof navigator === 'undefined') return null
+  const nav = navigator.language.toLowerCase()
+  for (const opt of LANG_OPTIONS) {
+    if (nav.startsWith(opt.id)) return opt.id
+  }
+  return null
 }
 
 const DICT = {
@@ -381,7 +414,16 @@ const DICT = {
   },
 } as const
 
+import { EXTRA_DICTS } from './i18n-extra'
+
 export type DictKey = keyof typeof DICT.en
+
+const ALL_DICTS: Record<Lang, Partial<Record<DictKey, string>>> = {
+  en: DICT.en,
+  pt: DICT.pt,
+  es: DICT.es,
+  ...EXTRA_DICTS,
+}
 
 interface LangContextValue {
   lang: Lang
@@ -403,7 +445,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem(LANG_STORAGE_KEY) as Lang | null
-    if (stored && stored in DICT) {
+    if (stored && stored in ALL_DICTS) {
       setLangState(stored)
       setChosen(true)
     } else {
@@ -418,7 +460,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   }
 
   function t(key: DictKey, vars?: Record<string, string | number>): string {
-    let text: string = DICT[lang][key] ?? DICT.en[key]
+    let text: string = ALL_DICTS[lang][key] ?? DICT.en[key]
     if (vars) {
       for (const [k, v] of Object.entries(vars)) text = text.replace(`{${k}}`, String(v))
     }
@@ -440,5 +482,5 @@ export function useLang() {
 export function getNativeLangName(): string {
   if (typeof window === 'undefined') return 'Portuguese'
   const stored = window.localStorage.getItem(LANG_STORAGE_KEY) as Lang | null
-  return stored ? NATIVE_LANG_NAME[stored] ?? 'Portuguese' : 'Portuguese'
+  return stored ? NATIVE_LANG_NAME[stored] ?? 'English' : 'English'
 }
