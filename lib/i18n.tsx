@@ -74,6 +74,7 @@ const DICT = {
     'landing.terms': 'Terms',
     // nav
     'nav.songs': 'Songs',
+    'nav.albums': 'Albums',
     'nav.review': 'Review',
     'nav.library': 'Library',
     'nav.overview': 'Overview',
@@ -214,6 +215,7 @@ const DICT = {
     'landing.privacy': 'Privacidade',
     'landing.terms': 'Termos',
     'nav.songs': 'Músicas',
+    'nav.albums': 'Álbuns',
     'nav.review': 'Revisão',
     'nav.library': 'Biblioteca',
     'nav.overview': 'Visão geral',
@@ -345,6 +347,7 @@ const DICT = {
     'landing.privacy': 'Privacidad',
     'landing.terms': 'Términos',
     'nav.songs': 'Canciones',
+    'nav.albums': 'Álbumes',
     'nav.review': 'Repaso',
     'nav.library': 'Biblioteca',
     'nav.overview': 'Resumen',

@@ -17,6 +17,7 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as const
 const NAV_ITEMS: { href: string; labelKey: DictKey; Icon: () => React.ReactElement }[] = [
   { href: '/dashboard',  labelKey: 'nav.overview', Icon: OverviewIcon },
   { href: '/feed',       labelKey: 'nav.songs',    Icon: LibraryIcon },
+  { href: '/albums',     labelKey: 'nav.albums',   Icon: AlbumIcon },
   { href: '/review',     labelKey: 'nav.review',   Icon: ReviewIcon },
   { href: '/flashcards', labelKey: 'nav.library',  Icon: CardsIcon },
 ]
@@ -109,6 +110,15 @@ function LibraryIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  )
+}
+
+function AlbumIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="2.5" />
     </svg>
   )
 }

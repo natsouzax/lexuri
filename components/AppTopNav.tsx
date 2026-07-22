@@ -19,6 +19,7 @@ interface AppStats {
 const NAV_ITEMS: Array<{ href: string; labelKey: DictKey; icon: React.ReactNode }> = [
   { href: '/dashboard', labelKey: 'nav.overview', icon: <HomeIcon /> },
   { href: '/feed', labelKey: 'nav.songs', icon: <FeedIcon /> },
+  { href: '/albums', labelKey: 'nav.albums', icon: <AlbumIcon /> },
   { href: '/review', labelKey: 'nav.review', icon: <ProgressIcon /> },
   { href: '/flashcards', labelKey: 'nav.library', icon: <CardsIcon /> },
 ]
@@ -155,6 +156,15 @@ function CardsIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="5" width="14" height="14" rx="2" />
       <path d="M7 3h14v14" />
+    </svg>
+  )
+}
+
+function AlbumIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="2.5" />
     </svg>
   )
 }

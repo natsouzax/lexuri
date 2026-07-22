@@ -17,10 +17,11 @@ export function cefrToStudyLevel(cefr: string): StudyLevel {
 }
 
 export function songsForLevel(level: StudyLevel): FeedItem[] {
-  // Músicas em manutenção (legenda a re-sincronizar) ficam fora do catálogo
-  // ativo pra não ensinar palavras erradas — o arquivo/flag permanecem.
+  // Fora do catálogo avulso: músicas em manutenção (legenda a re-sincronizar,
+  // pra não ensinar errado) e faixas que pertencem a um álbum (vivem dentro
+  // do álbum, não soltas).
   return FEED_ITEMS.filter(
-    (item) => cefrToStudyLevel(item.level) === level && !item.maintenance,
+    (item) => cefrToStudyLevel(item.level) === level && !item.maintenance && !item.album,
   )
 }
 

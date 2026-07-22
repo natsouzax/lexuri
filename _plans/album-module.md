@@ -154,3 +154,32 @@ melodia. Nada aqui trava isso — a `compiled_text` (letra da faixa do usuário)
 4. Telas `/albums` e `/albums/[id]` (reusando o fluxo de faixa existente)
 5. Ciclo global do álbum + faixa compilada
 6. Testar engajamento com o grupo antes de curar um álbum completo
+
+---
+
+## STATUS (2026-07-22) — infra pronta, faltam as faixas
+
+Escolhido: **American Idiot (Green Day)** — mini-álbum de 5 faixas
+(American Idiot, Holiday, Boulevard of Broken Dreams, Wake Me Up When
+September Ends, Whatsername).
+
+**Já implementado e no build:**
+- `lib/album.ts` (tipos, registro, gating do ciclo global)
+- `data/albums/american-idiot.ts` (metadados, tema, faixas — sem letra)
+- Migration `0025_albums.sql` (album_progress, user_album_songs) — APLICAR
+- APIs `/api/albums/[id]/progress` e `/api/albums/[id]/song`
+- Telas `/albums`, `/albums/[id]`, `/albums/[id]/cycle`, `/albums/[id]/song`
+- Nav "Albums" (sidebar + topo) + rota protegida no middleware
+- `FeedItem.album` marca faixas de álbum e as tira do catálogo avulso
+
+**Falta (só o Natan pode fazer — lrclib bloqueado no ambiente do assistente):**
+1. Aplicar a migration: `npm run db:migrate`
+2. Preencher os `youtube_id` das 5 faixas em
+   `scripts/generate-album-tracks.ts` (pegar da URL do YouTube)
+3. Rodar `node --env-file=.env.local --import=tsx scripts/generate-album-tracks.ts`
+   → gera as StaticLessons + entradas no feed-items
+4. Adicionar os imports das 5 faixas em `data/featured-lessons/index.ts`
+5. Conferir sync de cada faixa (como fizemos com as músicas soltas)
+
+Enquanto as faixas não são curadas, o álbum aparece na vitrine mas as
+faixas mostram "Coming soon" e o ciclo global fica travado (correto).

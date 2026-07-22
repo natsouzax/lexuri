@@ -13,6 +13,8 @@ export interface FeedItem {
   preview: string
   maintenance?: boolean
   featured?: boolean
+  /** album_id se esta faixa pertence a um álbum (não aparece no catálogo avulso) */
+  album?: string
 }
 
 export const FEED_ITEMS: FeedItem[] = rawItems as FeedItem[]
