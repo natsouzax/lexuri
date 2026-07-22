@@ -64,7 +64,11 @@ stripe_backup_code (1).txt
 .dev.vars*
 !.dev.vars.example
 
-!.env.example
 
 .vercel
 .env*
+
+
+# opt-in: placeholder sem valores
+!.env.example
+!.dev.vars.example

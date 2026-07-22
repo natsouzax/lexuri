@@ -1,144 +1,144 @@
-# Lexuri — Turn real content into English fluency
+# Lexuri — aprender inglês com música
 
-![Lexuri](image.png)
+MVP de validação de uma hipótese simples: **aprender inglês ouvindo as músicas que você já ama gera engajamento e retenção.**
 
-> AI-powered English learning platform. You bring the content you already enjoy — YouTube videos, songs, podcasts. Lexuri extracts every idiom, phrasal verb, and collocation, and burns them into long-term memory through spaced repetition.
+O aluno ouve uma música com a letra sincronizada, toca nas palavras que não entende (tradução na hora), salva as que quer aprender, e revisa em sessões curtas ao longo de 3 dias. No fim, os próprios aprendizados compõem uma "música dele".
 
-**[lexuri.app](https://lexuri.app)** · Built solo · TypeScript end-to-end
+**Produção:** [lexuri-validacao.vercel.app](https://lexuri-validacao.vercel.app)
 
----
-
-## The Problem
-
-Most learners plateau because they study vocabulary in isolation — words, definitions, flashcards. But native fluency isn't about words. It's about *chunks*: the multi-word expressions that native speakers reach for without thinking.
-
-> *"make sense of"* · *"at the end of the day"* · *"take it for granted"*
-
-These patterns live inside the content people already consume. The bottleneck is extracting and retaining them at scale. Until now, that required a human tutor or hours of manual annotation.
-
-**Lexuri automates the entire extraction and retention loop.**
+> Este NÃO é um SaaS — é um protótipo de pesquisa. Sem venda, sem funil, sem premium. O objetivo é validar a ideia com usuários reais e evoluir a partir de dados.
 
 ---
 
-## How It Works
+## O fluxo do usuário
 
 ```
-Content you already enjoy
+Registrar → escolher nível (1 clique) → abrir uma música
         ↓
-AI scans transcript for real language patterns
+Ouvir com a letra sincronizada (karaokê)
         ↓
-You save the chunks that matter
+Tocar em palavras/chunks → tradução → salvar na biblioteca
         ↓
-SM-2 spaced repetition brings them back at the right moment
+Ciclo de revisão de 3 dias por música:
+  Day 1 — Flashcards (SRS: virar o card, avaliar dificuldade)
+  Day 2 — Jogo da memória (parear palavra ↔ tradução)
+  Day 3 — Complete a letra + "quais 2 aprendizados te marcaram?"
         ↓
-You start speaking the way that content sounds
+Takeaways viram Glossário · a cada 2 takeaways nasce um verso
+        ↓
+Verso a verso, o usuário compõe a própria música
 ```
 
-Paste a YouTube URL. Lexuri fetches the full transcript, syncs it with the player, and lets GPT-4o highlight every chunk worth learning — with meaning, context, CEFR level, and importance rating. Pick your own or let the AI choose. Turn them into flashcards in one click. Review on your schedule.
-
-Same pipeline for song lyrics via Genius.
-
----
-
-## Features
-
-| Area | Feature | What it does |
-|---|---|---|
-| AI | **Chunk Detection** | GPT-4o identifies idioms, phrasal verbs, collocations — with meaning, usage context, CEFR level, and importance rating |
-| AI | **Flashcard Generation** | Converts chunks into structured flashcards with translation in the user's native language |
-| Import | **YouTube Studio** | Full transcript synchronized with the player — collect chunks by click or let AI scan everything |
-| Import | **Music Lab** | Genius API integration — same AI pipeline applied to song lyrics |
-| Learning | **Spaced Repetition (SM-2)** | Cards surface at the optimal retention moment using the proven SM-2 algorithm |
-| Learning | **Graded Review** | 4-quality ratings (Again / Hard / Good / Easy); response time factors into next interval |
-| Content | **Curated Feed** | 19 hand-picked TED Talks and songs, tagged by CEFR level A1–C1 |
-| Progress | **Gamification** | XP, streaks, daily bonuses, milestone badges, weekly/monthly/all-time leaderboard |
-| Progress | **Performance Reports** | Accuracy rate, retention curve, average response time, review volume |
-| UX | **Offline Mode** | IndexedDB queue + Service Worker — reviews queue offline and sync on reconnect |
-| Onboarding | **Placement** | 4-step onboarding: native language, CEFR level, learning objectives |
-| Billing | **Free / Pro / Premium** | Stripe Checkout + Customer Portal — self-serve upgrades and downgrades |
-| Notifications | **Daily Reminders** | Real-time bell + email reminders via Resend |
+### Módulo Álbum
+Além das músicas soltas, o aluno pode percorrer um **álbum conceitual inteiro** (ex: *American Idiot*, Green Day) — faz o ciclo de 3 dias de cada faixa, depois um **ciclo global do álbum** com uma reflexão sobre o tema, e no fim os versos de todas as faixas compõem a "faixa dele". Álbuns organizados em 3 trilhas: básico / intermediário / avançado.
 
 ---
 
-## Business Model
+## Principais recursos
 
-Three tiers. One Stripe integration. Self-serve from day one.
-
-| Tier | What's included |
+| Área | O que faz |
 |---|---|
-| **Free** | Limited AI analyses per week, core SRS, curated feed |
-| **Pro** | Unlimited YouTube + Music, full AI chunk detection, expanded history |
-| **Premium** | Everything in Pro + priority AI (GPT-4o) + advanced exports |
-
-Stripe Checkout handles upgrades. Customer Portal handles everything else — plan changes, billing history, cancellation — without involving support.
+| **Player sincronizado** | Letra em karaokê sincronizada com o vídeo do YouTube |
+| **Tap-to-translate** | Tocar em qualquer palavra/chunk → tradução + significado; salva como flashcard |
+| **Análise de chunks (IA)** | GPT detecta idioms, phrasal verbs, collocations etc. — densa (~11-22 por 100 palavras), com filtro por tipo |
+| **Repetição espaçada (SM-2)** | Os flashcards voltam pouco antes do esquecimento |
+| **Ciclo D1/D2/D3** | Três encontros curtos por música, com trava de 1 dia entre etapas |
+| **Glossário ativo + versos** | Só entra no glossário o que o usuário escreve; a cada 2, um verso |
+| **Tradutor flutuante** | Bolinha 🌐 em qualquer tela: digitar ou selecionar texto → traduzir/ouvir/salvar |
+| **Gamificação** | XP, streak, missões diárias, badges, leaderboard |
+| **Imersão + i18n** | UI 100% em inglês; o idioma escolhido no popup só traduz o **conteúdo** (letras, chunks, palavras). 13 idiomas nativos suportados |
 
 ---
 
-## Tech Stack
+## Arquitetura
 
-Built end-to-end by one developer.
+- **Conteúdo é estático, progresso é banco.** As lições ("StaticLesson") são arquivos TypeScript pré-gerados em [`data/featured-lessons/`](data/featured-lessons/) — transcript + segments sincronizados + chunks analisados. **Zero scraping e zero IA em runtime** para carregar uma música. A única IA em runtime é traduzir/definir a palavra que o usuário toca.
+- **Curadoria offline:** as letras sincronizadas vêm do [lrclib.net](https://lrclib.net) (banco comunitário de LRC) ou de legendas do YouTube; os chunks são gerados por IA. Tudo via scripts em [`scripts/`](scripts/), fora do runtime.
+- **Supabase** guarda só o que o usuário produz (palavras salvas, progresso, takeaways, versos, gamificação) — com Row Level Security por usuário.
 
-| Layer | Technology |
+### Stack
+
+| Camada | Tecnologia |
 |---|---|
-| Framework | Next.js 16 — App Router, Server Components, TypeScript, React 19 |
-| Styling | Tailwind CSS v4 |
-| Database & Auth | Supabase — Postgres + Row Level Security + Auth + Realtime |
-| AI | GPT-4o (chunk detection), GPT-4o-mini (flashcard generation), Whisper (audio transcription fallback) |
-| Payments | Stripe Checkout, Customer Portal, Webhooks |
-| Email | Resend + React Email |
-| Offline | IndexedDB + Service Worker |
-| Deployment | Vercel |
+| Framework | Next.js 16 (App Router, React 19, TypeScript) |
+| Estilo | Tailwind v4 + design system próprio (`globals.css`) |
+| Banco + Auth | Supabase (Postgres + RLS + Auth) |
+| IA | OpenAI — GPT-4o (chunks), GPT-4o-mini (tradução/definição) |
+| Letras sincronizadas | lrclib.net (curadoria offline) |
+| Animações | Framer Motion |
+| Deploy | Vercel |
 
 ---
 
-## Architecture & Transparency
+## Rodando localmente
 
-The source code is open. Here is how the product actually works under the hood.
+```bash
+npm install
+npm run dev        # localhost:3000
+```
 
-**Server-first rendering** — Data fetching runs on the server by default. Client components are isolated to interactive surfaces only. Lean bundle, fast initial load, no prop-drilling through the tree.
+Precisa de um `.env.local` com as chaves (veja `.env.example`):
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`.
 
-**Database-level security** — Every Postgres query is scoped to the authenticated user via Row Level Security at the database layer — not just in application code. 9 migrations, all tables with RLS active.
+### Banco de dados
 
-**SM-2 fidelity** — Spaced repetition tracks `ease_factor`, `interval`, and `repetitions` exactly as the algorithm specifies. Response time is measured client-side and sent to the server. Gamification scoring is fully server-side — no client trust for points.
+```bash
+npm run db:migrate     # aplica as migrations do Supabase
+```
 
-**Offline-first reviews** — Review actions queue in IndexedDB when the connection drops. On reconnect, `/api/offline/sync` processes the queue with idempotent conflict resolution keyed by client UUID. Last-write-wins.
+Migrations em [`supabase/migrations/`](supabase/migrations/) — todas com RLS. As do MVP: `0024` (progresso/takeaways/versos) e `0025` (álbuns).
 
-**LLM robustness** — Every AI response goes through structured JSON extraction and validation before use. Chunk detection returns character offsets, type, CEFR level, and importance — all validated server-side before reaching the database.
+### Scripts de curadoria (não-runtime)
 
-**Auth coverage** — Email + password with strength validation, Google and GitHub OAuth, email verification, forgot/reset password, active session listing with individual revocation, and account deletion with cascade.
-
----
-
-## Roadmap
-
-**PWA (near-term)** — The app already has a Service Worker and a fully responsive layout. Converting to an installable PWA delivers native-feeling mobile without a second codebase.
-
-**Rate limiting by plan** — AI routes currently apply soft limits. Hard enforcement at the API layer per subscription tier is the next infrastructure piece before scaling.
-
-**Flutter app (medium-term)** — Nearly all business logic lives in REST API Routes. The backend is already mobile-ready: offline sync was designed with mobile in mind, SM-2 is pure calculation, Supabase has an official Flutter SDK. The only heavy lift is reimplementing the synchronized YouTube transcript player. The architecture supports a Flutter client without backend refactoring.
-
-**LMS Integration** — The endpoint is built (REST API, no UI yet). Integration with institutional LMS platforms opens an EdTech B2B channel.
-
----
-
-## About
-
-Lexuri is an independent product built by a single developer. The codebase is publicly visible for portfolio and transparency purposes — not as an open-source project.
-
-This is not a side project looking for contributors. It's a live product at [lexuri.app](https://lexuri.app) seeking traction, validation, and the right partners.
+| Comando | O que faz |
+|---|---|
+| `npm run check:albums` | Analisa viabilidade de álbuns candidatos (sync no lrclib + densidade) |
+| `npm run gen:album` | Gera as lições das faixas de um álbum via lrclib + chunks |
+| `npm run regen:chunks` | Re-analisa os chunks das lições sem tocar na sincronização |
+| `npm run resync:batch3` | Re-sincroniza músicas específicas via lrclib |
 
 ---
 
-## Contact
+## Deploy
 
-For partnerships, investment conversations, or integration inquiries:
+```bash
+npm run deploy     # = vercel --prod (deploy direto pela CLI)
+```
 
-**natanoliveiraad855@gmail.com**
+O deploy é feito pela CLI da Vercel (o app roda em `lexuri-validacao`). Detalhes, rollback e como conectar GitHub para deploy automático em [`_plans/deploy.md`](_plans/deploy.md).
 
 ---
 
-## License
+## Estrutura
 
-Copyright © 2026 Natan Oliveira — All rights reserved.
+```
+app/
+  (marketing)/     landing de pesquisa + privacy/terms
+  (auth)/          login, registro
+  (app)/           dashboard, feed, level, music, review, library, albums
+  api/             flashcards, progress, takeaways, llm, gamification, albums
+components/         player, chunks, review (D1/D2/D3), tradutor flutuante, ui
+data/
+  featured-lessons/  as lições estáticas (StaticLesson)
+  albums/            metadados dos álbuns conceituais
+lib/                chunks, srs, gamification, i18n, album, mvp, supabase
+scripts/            geração/re-sync de lições (offline)
+supabase/migrations/
+_plans/             decisões, roadmap, deploy, módulo álbum
+```
 
-Source code is publicly visible for portfolio and transparency purposes. The platform, brand, and product are not open for redistribution or commercial use without written permission.
+---
+
+## Documentação viva
+
+O diretório [`_plans/`](_plans/) é a memória do produto:
+- [`decisions.md`](_plans/decisions.md) — log de decisões de arquitetura/produto
+- [`roadmap.md`](_plans/roadmap.md) — o que está feito e o que falta
+- [`deploy.md`](_plans/deploy.md) — como colocar no ar
+- [`album-module.md`](_plans/album-module.md) — design do módulo álbum
+
+---
+
+## Licença
+
+Copyright © 2026 Natan Oliveira — todos os direitos reservados. Código visível para portfólio e transparência; não é open source para redistribuição.
