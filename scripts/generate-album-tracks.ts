@@ -23,11 +23,11 @@ const FEED_JSON = join(__dirname, '../data/feed-items.json')
 
 // Preencha youtube_id de cada faixa. level = CEFR (B1/B2 pra Green Day).
 const TRACKS: { songId: string; title: string; youtubeId: string; level: string; durationHint: number }[] = [
-  { songId: 'album-ai-american-idiot', title: 'American Idiot',                    youtubeId: '', level: 'B2', durationHint: 176 },
-  { songId: 'album-ai-holiday',        title: 'Holiday',                           youtubeId: '', level: 'B2', durationHint: 232 },
-  { songId: 'album-ai-boulevard',      title: 'Boulevard of Broken Dreams',        youtubeId: '', level: 'B1', durationHint: 260 },
-  { songId: 'album-ai-wake-me-up',     title: 'Wake Me Up When September Ends',    youtubeId: '', level: 'B1', durationHint: 285 },
-  { songId: 'album-ai-whatsername',    title: 'Whatsername',                       youtubeId: '', level: 'B2', durationHint: 246 },
+  { songId: 'album-ai-american-idiot', title: 'American Idiot',                    youtubeId: 'h6Z5N0Z6zH0&list=PLXjISBGUSATW6Tk78Sd6ANRIOqKZ5EYe3', level: 'B2', durationHint: 176 },
+  { songId: 'album-ai-holiday',        title: 'Holiday',                           youtubeId: 'l2hA8g1cNvQ&list=PLXjISBGUSATW6Tk78Sd6ANRIOqKZ5EYe3&index=3', level: 'B2', durationHint: 232 },
+  { songId: 'album-ai-boulevard',      title: 'Boulevard of Broken Dreams',        youtubeId: 'Dx1SPxGn-iU&list=PLXjISBGUSATW6Tk78Sd6ANRIOqKZ5EYe3&index=4', level: 'B1', durationHint: 260 },
+  { songId: 'album-ai-wake-me-up',     title: 'Wake Me Up When September Ends',    youtubeId: 'rdpBZ5_b48g&list=PLXjISBGUSATW6Tk78Sd6ANRIOqKZ5EYe3&index=11', level: 'B1', durationHint: 285 },
+  { songId: 'album-ai-whatsername',    title: 'Whatsername',                       youtubeId: 'XJdYn3VyAkQ&list=PLXjISBGUSATW6Tk78Sd6ANRIOqKZ5EYe3&index=13', level: 'B2', durationHint: 246 },
 ]
 
 interface Hit { artistName: string; trackName: string; duration: number | null; instrumental: boolean; syncedLyrics: string | null }
@@ -57,6 +57,23 @@ function mmss(sec: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
+// Aceita o que o usuário colar: só o id, id+lixo de playlist (&list=…&index=…),
+// ou a URL inteira (watch?v=…, youtu.be/…). Extrai o id de 11 chars.
+function extractVideoId(raw: string): string | null {
+  const s = raw.trim()
+  const patterns = [
+    /[?&]v=([A-Za-z0-9_-]{11})/,      // youtube.com/watch?v=ID
+    /youtu\.be\/([A-Za-z0-9_-]{11})/, // youtu.be/ID
+    /embed\/([A-Za-z0-9_-]{11})/,     // youtube.com/embed/ID
+    /^([A-Za-z0-9_-]{11})/,           // ID no começo (id ou id&list=…)
+  ]
+  for (const re of patterns) {
+    const m = s.match(re)
+    if (m) return m[1]
+  }
+  return null
+}
+
 function serialize(lesson: StaticLesson): string {
   return `// Faixa de álbum (${ALBUM_ID}) — sincronizada via lrclib.net — ${lesson.generated_at.slice(0, 10)}
 import type { StaticLesson } from '@/lib/featured-lesson'
@@ -75,10 +92,19 @@ async function main() {
     process.exit(1)
   }
 
+  // Limpa/valida os youtube_id (aceita URL, id+playlist, etc).
+  const badIds = TRACKS.filter((t) => !extractVideoId(t.youtubeId))
+  if (badIds.length) {
+    console.error(`\n⚠️  youtube_id inválido em: ${badIds.map((t) => t.title).join(', ')}`)
+    console.error('Cole a URL do vídeo ou o id de 11 caracteres.\n')
+    process.exit(1)
+  }
+
   const feed: FeedItem[] = JSON.parse(await readFile(FEED_JSON, 'utf8'))
 
   for (const t of TRACKS) {
-    console.log(`\n[${t.songId}] "${t.title}" — buscando no lrclib...`)
+    const videoId = extractVideoId(t.youtubeId)!
+    console.log(`\n[${t.songId}] "${t.title}" (${videoId}) — buscando no lrclib...`)
     const hits = (await searchLrclib(t.title)).filter((h) => h.syncedLyrics && !h.instrumental)
     if (hits.length === 0) { console.error('  ❌ sem letra sincronizada — pulei.'); continue }
     hits.sort((a, b) => Math.abs((a.duration ?? 0) - t.durationHint) - Math.abs((b.duration ?? 0) - t.durationHint))
@@ -98,7 +124,7 @@ async function main() {
 
     const lesson: StaticLesson = {
       feed_item_id: t.songId,
-      video_id: t.youtubeId,
+      video_id: videoId,
       transcript,
       segments,
       chunks,
@@ -112,7 +138,7 @@ async function main() {
       type: 'music',
       title: t.title,
       artist: ARTIST,
-      youtube_id: t.youtubeId,
+      youtube_id: videoId,
       duration: mmss(best.duration ?? t.durationHint),
       level: t.level,
       tags: ['rock', 'album', 'story'],
