@@ -9,6 +9,7 @@
 // youtube.com/watch?v=XXXXXXXXXXX → o XXXXXXXXXXX é o id).
 // Nenhuma letra fica no código — vem toda do lrclib.
 import { readFile, writeFile } from 'fs/promises'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { parseLrc } from '../lib/media/lyrics/parser'
 import { analyzeChunks } from '../lib/chunks'
@@ -47,9 +48,23 @@ async function fetchRetry(url: string, tries = 4): Promise<Response | null> {
 }
 
 async function searchLrclib(title: string): Promise<Hit[]> {
-  const url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(ARTIST)}`
-  const res = await fetchRetry(url)
-  return res?.ok ? ((await res.json()) as Hit[]) : []
+  // 1) busca estrita (track + artist)
+  const strict = `https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(ARTIST)}`
+  const r1 = await fetchRetry(strict)
+  if (r1?.ok) {
+    const arr = (await r1.json()) as Hit[]
+    if (arr.some((h) => h.syncedLyrics)) return arr
+  }
+  // 2) fallback: busca livre "title artist" (pega variações de metadados)
+  const loose = `https://lrclib.net/api/search?q=${encodeURIComponent(`${title} ${ARTIST}`)}`
+  const r2 = await fetchRetry(loose)
+  if (r2?.ok) {
+    const arr = ((await r2.json()) as Hit[]).filter(
+      (h) => h.artistName?.toLowerCase().includes(ARTIST.toLowerCase().split(' ')[0]),
+    )
+    if (arr.some((h) => h.syncedLyrics)) return arr
+  }
+  return []
 }
 
 function mmss(sec: number): string {
@@ -104,6 +119,11 @@ async function main() {
 
   for (const t of TRACKS) {
     const videoId = extractVideoId(t.youtubeId)!
+    // Pula faixas já geradas (rerun só busca o que falta — poupa OpenAI).
+    if (existsSync(join(DATA_DIR, `${t.songId}.ts`))) {
+      console.log(`\n[${t.songId}] já existe — pulei (apague o arquivo pra refazer).`)
+      continue
+    }
     console.log(`\n[${t.songId}] "${t.title}" (${videoId}) — buscando no lrclib...`)
     const hits = (await searchLrclib(t.title)).filter((h) => h.syncedLyrics && !h.instrumental)
     if (hits.length === 0) { console.error('  ❌ sem letra sincronizada — pulei.'); continue }

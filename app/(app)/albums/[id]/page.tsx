@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { getAlbum, sungTracks, albumCycleUnlocked, nextAlbumStep, type AlbumProgress } from '@/lib/album'
+import { getAlbum, sungTracks, curatedSungTracks, albumCycleUnlocked, nextAlbumStep, type AlbumProgress } from '@/lib/album'
 import { getFeedItem } from '@/lib/feed'
 import { nextReviewStep, type SongProgress } from '@/lib/mvp'
 
@@ -55,7 +55,7 @@ export default function AlbumPage() {
   }
 
   const byId = new Map(songProgress.map((p) => [p.song_id, p]))
-  const sung = sungTracks(album)
+  const sung = curatedSungTracks(album)
   const cycleUnlocked = albumCycleUnlocked(album, doneSongIds)
   const albumStep = nextAlbumStep(albumProgress)
   const doneCount = sung.filter((t) => doneSongIds.has(t.songId)).length

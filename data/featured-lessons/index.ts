@@ -22,6 +22,12 @@ import musicStressedOut      from './music-stressed-out'
 import musicHelloAdele       from './music-hello-adele'
 import musicHotelCalifornia  from './music-hotel-california'
 
+// Faixas do módulo álbum (American Idiot). Geradas por npm run gen:album.
+import albumAiHoliday        from './album-ai-holiday'
+import albumAiBoulevard      from './album-ai-boulevard'
+import albumAiWakeMeUp       from './album-ai-wake-me-up'
+import albumAiWhatsername    from './album-ai-whatsername'
+
 const ALL: Array<StaticLesson | null> = [
   musicHappy,
   musicRoar,
@@ -36,6 +42,10 @@ const ALL: Array<StaticLesson | null> = [
   musicStressedOut,
   musicHelloAdele,
   musicHotelCalifornia,
+  albumAiHoliday,
+  albumAiBoulevard,
+  albumAiWakeMeUp,
+  albumAiWhatsername,
 ]
 
 export const STATIC_LESSONS: Record<string, StaticLesson> = Object.fromEntries(

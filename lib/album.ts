@@ -34,6 +34,7 @@ export interface Album {
   tracks: AlbumTrackRef[]
 }
 
+import { getFeedItem } from '@/lib/feed'
 import { AMERICAN_IDIOT } from '@/data/albums/american-idiot'
 
 export const ALBUMS: Album[] = [AMERICAN_IDIOT]
@@ -47,6 +48,13 @@ export function sungTracks(album: Album): AlbumTrackRef[] {
   return album.tracks.filter((t) => !t.instrumental && t.songId)
 }
 
+/** Faixas cantadas que JÁ têm lição curada (existem no feed). O ciclo global
+ *  e a barra de progresso se baseiam nelas — uma faixa ainda não curada não
+ *  trava o álbum. */
+export function curatedSungTracks(album: Album): AlbumTrackRef[] {
+  return sungTracks(album).filter((t) => getFeedItem(t.songId))
+}
+
 // ── Progresso do álbum ───────────────────────────────────────────────────────
 
 export interface AlbumProgress {
@@ -56,10 +64,10 @@ export interface AlbumProgress {
   album_day3_done_at: string | null
 }
 
-// O ciclo global só libera depois que TODAS as faixas cantadas fecharam o
+// O ciclo global só libera depois que todas as faixas CURADAS fecharam o
 // próprio ciclo de 3 dias. `doneSongIds` = faixas com o ciclo completo.
 export function albumCycleUnlocked(album: Album, doneSongIds: Set<string>): boolean {
-  const sung = sungTracks(album)
+  const sung = curatedSungTracks(album)
   return sung.length > 0 && sung.every((t) => doneSongIds.has(t.songId))
 }
 

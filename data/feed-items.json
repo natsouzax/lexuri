@@ -224,5 +224,69 @@
     "preview": "One of rock's greatest narratives — layered in allegory and symbolism. Rich vocabulary, complex sentence structures and cultural references to American excess make this a compelling B2 challenge.",
     "vibe": "Philosophical",
     "featured": true
+  },
+  {
+    "id": "album-ai-holiday",
+    "type": "music",
+    "title": "Holiday",
+    "artist": "Green Day",
+    "youtube_id": "l2hA8g1cNvQ",
+    "duration": "3:53",
+    "level": "B2",
+    "tags": [
+      "rock",
+      "album",
+      "story"
+    ],
+    "preview": "Track from Green Day's album — part of the album module.",
+    "album": "american-idiot"
+  },
+  {
+    "id": "album-ai-boulevard",
+    "type": "music",
+    "title": "Boulevard of Broken Dreams",
+    "artist": "Green Day",
+    "youtube_id": "Dx1SPxGn-iU",
+    "duration": "4:20",
+    "level": "B1",
+    "tags": [
+      "rock",
+      "album",
+      "story"
+    ],
+    "preview": "Track from Green Day's album — part of the album module.",
+    "album": "american-idiot"
+  },
+  {
+    "id": "album-ai-wake-me-up",
+    "type": "music",
+    "title": "Wake Me Up When September Ends",
+    "artist": "Green Day",
+    "youtube_id": "rdpBZ5_b48g",
+    "duration": "4:45",
+    "level": "B1",
+    "tags": [
+      "rock",
+      "album",
+      "story"
+    ],
+    "preview": "Track from Green Day's album — part of the album module.",
+    "album": "american-idiot"
+  },
+  {
+    "id": "album-ai-whatsername",
+    "type": "music",
+    "title": "Whatsername",
+    "artist": "Green Day",
+    "youtube_id": "XJdYn3VyAkQ",
+    "duration": "4:05",
+    "level": "B2",
+    "tags": [
+      "rock",
+      "album",
+      "story"
+    ],
+    "preview": "Track from Green Day's album — part of the album module.",
+    "album": "american-idiot"
   }
 ]
