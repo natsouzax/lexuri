@@ -74,6 +74,41 @@ const ALBUMS: { artist: string; album: string; note: string; tracks: string[] }[
       'mad woman', 'epiphany', 'betty', 'peace', 'hoax',
     ],
   },
+  {
+    artist: 'The Beatles',
+    album: "Sgt. Pepper's Lonely Hearts Club Band",
+    note: 'Álbum-conceito; linguagem variada, algumas faixas surreais. Ícone cultural.',
+    tracks: [
+      "Sgt. Pepper's Lonely Hearts Club Band", 'With a Little Help from My Friends',
+      'Lucy in the Sky with Diamonds', 'Getting Better', 'Fixing a Hole',
+      "She's Leaving Home", 'Being for the Benefit of Mr. Kite!',
+      'Within You Without You', "When I'm Sixty-Four", 'Lovely Rita',
+      'Good Morning Good Morning', "Sgt. Pepper's Lonely Hearts Club Band (Reprise)",
+      'A Day in the Life',
+    ],
+  },
+  {
+    artist: 'Radiohead',
+    album: 'OK Computer',
+    note: 'Tema forte: alienação/tecnologia/modernidade — "faz pensar" máximo. Dicção pode ser difícil.',
+    tracks: [
+      'Airbag', 'Paranoid Android', 'Subterranean Homesick Alien',
+      'Exit Music (For a Film)', 'Let Down', 'Karma Police', 'Fitter Happier',
+      'Electioneering', 'Climbing Up the Walls', 'No Surprises', 'Lucky', 'The Tourist',
+    ],
+  },
+  {
+    artist: 'Arctic Monkeys',
+    album: "Whatever People Say I Am, That's What I'm Not",
+    note: 'Narrativa da vida noturna britânica; gíria e sotaque forte — desafiador pra learner.',
+    tracks: [
+      'The View from the Afternoon', 'I Bet You Look Good on the Dancefloor',
+      'Fake Tales of San Francisco', 'Dancing Shoes',
+      'Still Take You Home', 'Riot Van', 'Red Light Indicates Doors Are Secured',
+      'Mardy Bum', 'When the Sun Goes Down', 'From the Ritz to the Rubble',
+      'A Certain Romance',
+    ],
+  },
 ]
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -113,7 +148,11 @@ async function main() {
       if (withSync) { synced++; totalLines += lines }
       if (best && !best.instrumental && (best.syncedLyrics || best.plainLyrics)) sungTracks++
       const mark = withSync ? '✅ synced' : best?.instrumental ? '🎹 instrumental' : best ? '⚠️  plain only' : '❌ not found'
-      console.log(`  ${mark.padEnd(16)} ${dur ? `${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}` : '?:??'}  ${lines ? lines+' lines' : ''}  — ${track}`)
+      const secs = Math.round(dur)
+      const mmss = dur ? `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}` : '?:??'
+      // Densidade = linhas por minuto (baixa = muita música pra pouca letra).
+      const perMin = dur && lines ? (lines / (dur / 60)).toFixed(1) : '—'
+      console.log(`  ${mark.padEnd(16)} ${mmss.padStart(5)}  ${String(lines || '').padStart(3)} lines  ${String(perMin).padStart(4)}/min  — ${track}`)
       await sleep(400)
     }
     const mins = Math.round(totalSec / 60)
