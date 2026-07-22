@@ -14,7 +14,8 @@
     "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts",
     "deploy": "vercel --prod",
     "resync:batch3": "node --env-file=.env.local --import=tsx scripts/resync-batch3.ts",
-    "regen:chunks": "node --env-file=.env.local --import=tsx scripts/regenerate-chunks-only.ts"
+    "regen:chunks": "node --env-file=.env.local --import=tsx scripts/regenerate-chunks-only.ts",
+    "check:albums": "node --import=tsx scripts/check-albums.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
