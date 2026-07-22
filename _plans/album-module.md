@@ -51,6 +51,29 @@ candidato têm letra sincronizada, duração, densidade de linhas.
 
 ---
 
+## Dados do check:albums (rodado 2026-07-22) — futuros candidatos
+
+Todos com 100% de sync no lrclib. A métrica que decide é **linhas/min**
+(densidade de conteúdo por minuto — baixa = muita música pra pouca letra).
+
+| Álbum | Faixas | Min | Média linhas/min | Leitura |
+|---|---|---|---|---|
+| **Green Day — American Idiot** | 13 | ~58 | ~10 | ✅ ESCOLHIDO (mini de 5) — narrativo, acessível, denso |
+| **Taylor Swift — folklore** | 16 | ~62 | ~12 | Densíssimo e uniforme; ótimo pedagogicamente. 16 faixas = curadoria grande. Menos "sobre o mundo". |
+| **The Beatles — Sgt. Pepper's** | 13 | ~39 | ~10 | Ícone; densidade boa. "Within You Without You" (5.3) e "A Day in the Life" (6.0) mais esparsas. Linguagem surreal em algumas. |
+| **Radiohead — OK Computer** | 12 | ~53 | ~7 | Tema máximo (alienação/tecnologia), MAS densidade baixa e irregular: metade das faixas < 6 linhas/min ("The Tourist" 2.6, "Electioneering" 3.9). Dicção difícil. Melhor pra nível avançado. |
+| **Arctic Monkeys — debut** | 11 | ~35 | ~13 | Densidade alta e narrativo, MAS gíria + sotaque de Sheffield forte → desafiador pra learner. Bom pra um "álbum avançado". |
+
+**Leitura rápida pra quando formos expandir:**
+- Próximo depois do American Idiot: **Sgt. Pepper's** (prestígio + densidade
+  equilibrada) ou **folklore** (melhor pedagogia, se topar curar 16 faixas).
+- **OK Computer**: guardar pra uma trilha "avançada" — tema é o mais forte
+  de todos, mas a densidade baixa (7/min) significa muito instrumental/
+  atmosférico pra pouca lição. Faria sentido como álbum de nível C1.
+- **Arctic Monkeys**: idem — "álbum avançado" por causa do sotaque/gíria.
+
+---
+
 ## Candidatos pré-selecionados (verificar com check:albums)
 
 - **Pink Floyd — Wish You Were Here**: pequeno, tema forte (ausência, Syd
