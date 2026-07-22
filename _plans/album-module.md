@@ -51,6 +51,26 @@ candidato têm letra sincronizada, duração, densidade de linhas.
 
 ---
 
+## Três trilhas: um álbum por nível (básico / intermediário / avançado)
+
+Como as músicas soltas, os álbuns espelham os 3 níveis do app — cada
+learner tem um álbum-jornada no seu nível. O tipo `Album` tem `level`, e a
+vitrine `/albums` agrupa por nível.
+
+| Nível | Álbum | Status |
+|---|---|---|
+| 🌱 Básico | *a definir* — candidatos: Beatles "A Hard Day's Night", Bob Marley "Exodus" | rodar check:albums |
+| 🌿 Intermediário | **American Idiot** (Green Day) | ✅ infra pronta, faltam faixas |
+| 🌳 Avançado | *a definir* — OK Computer (tema máximo, C1) ou Arctic Monkeys | dados já coletados |
+
+Nota sobre **básico**: o critério inverte — prioriza linguagem simples e
+dicção clara sobre densidade. Álbum conceitual "que faz pensar" é raro em
+A1-A2; melhor um álbum de vocabulário cotidiano claro (Beatles inicial) ou
+temas simples e positivos (Marley). O `check:albums` mede densidade/sync,
+mas NÃO dificuldade — a escolha de básico é mais editorial que dos números.
+
+---
+
 ## Dados do check:albums (rodado 2026-07-22) — futuros candidatos
 
 Todos com 100% de sync no lrclib. A métrica que decide é **linhas/min**

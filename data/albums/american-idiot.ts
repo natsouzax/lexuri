@@ -11,6 +11,7 @@ export const AMERICAN_IDIOT: Album = {
   title: 'American Idiot',
   artist: 'Green Day',
   year: 2004,
+  level: 'intermediate',
   theme: 'Disillusionment, media noise, and searching for meaning in modern life.',
   cover: ['#c0392b', '#1a1a1a'],
   reflection: 'This album is about feeling lost in a loud, distracted world. Which two lines or ideas made you stop and think about your own life?',

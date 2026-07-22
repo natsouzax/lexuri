@@ -18,7 +18,33 @@ interface Hit {
 
 // Só TÍTULOS de faixa (metadados factuais). Candidatos "que contam história
 // e fazem pensar", com tamanhos variados pra comparar viabilidade.
+//
+// Nível-alvo por álbum (pra completar as 3 trilhas básico/interm./avançado):
+//   BÁSICO: linguagem simples, dicção clara (densidade importa menos)
+//   INTERM.: American Idiot (já escolhido)
+//   AVANÇADO: OK Computer / Arctic Monkeys (dados já coletados)
 const ALBUMS: { artist: string; album: string; note: string; tracks: string[] }[] = [
+  {
+    artist: 'The Beatles',
+    album: "A Hard Day's Night",
+    note: 'BÁSICO? Vocabulário simples do dia a dia, dicção clara, tempo médio. Temas de amor (não conceitual, mas ideal A1-A2).',
+    tracks: [
+      "A Hard Day's Night", 'I Should Have Known Better', 'If I Fell',
+      "I'm Happy Just to Dance with You", 'And I Love Her', 'Tell Me Why',
+      "Can't Buy Me Love", 'Any Time at All', "I'll Cry Instead",
+      'Things We Said Today', 'When I Get Home', "You Can't Do That", "I'll Be Back",
+    ],
+  },
+  {
+    artist: 'Bob Marley & The Wailers',
+    album: 'Exodus',
+    note: 'BÁSICO? Repetitivo, positivo, temas acessíveis (liberdade/união). Sotaque jamaicano pode somar dificuldade.',
+    tracks: [
+      'Natural Mystic', 'So Much Things to Say', 'Guiltiness', 'The Heathen',
+      'Exodus', 'Jamming', 'Waiting in Vain', 'Turn Your Lights Down Low',
+      'Three Little Birds', 'One Love / People Get Ready',
+    ],
+  },
   {
     artist: 'Pink Floyd',
     album: 'Wish You Were Here',

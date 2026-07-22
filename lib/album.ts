@@ -16,11 +16,15 @@ export interface AlbumTrackRef {
   instrumental?: boolean
 }
 
+import type { StudyLevel } from '@/lib/mvp'
+
 export interface Album {
   id: string
   title: string
   artist: string
   year: number
+  /** nível do app — a vitrine agrupa os álbuns em básico/intermediário/avançado */
+  level: StudyLevel
   /** tema do álbum, em inglês (imersão) — o fio condutor da reflexão final */
   theme: string
   /** cores do gradiente da capa */
