@@ -13,6 +13,18 @@ import { awardXP } from '@/lib/xp'
 import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
 import { useLang } from '@/lib/i18n'
 
+// Mesmas cores usadas no prompt de análise (lib/chunks.ts COLOR CODES).
+const CHUNK_TYPES = [
+  { type: 'phrasal_verb',    label: 'Phrasal Verb',    color: '#4CAF50' },
+  { type: 'idiomatic',       label: 'Idiom',           color: '#FF6B6B' },
+  { type: 'collocation',     label: 'Collocation',     color: '#4A90E2' },
+  { type: 'lexical_chunk',   label: 'Lexical Chunk',   color: '#9C27B0' },
+  { type: 'formulaic',       label: 'Formulaic',       color: '#FF9800' },
+  { type: 'grammar_pattern', label: 'Grammar Pattern', color: '#00BCD4' },
+  { type: 'emotional',       label: 'Emotional',       color: '#E91E63' },
+  { type: 'conversational',  label: 'Conversational',  color: '#607D8B' },
+] as const
+
 export interface LessonData {
   video_id: string
   title: string
@@ -53,6 +65,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
   const [generatedCards, setGeneratedCards]   = useState<Flashcard[]>([])
   const [cardsExpanded, setCardsExpanded]     = useState(false)
   const [lyricsOpen, setLyricsOpen]           = useState(true)
+  const [typeFilter, setTypeFilter]           = useState<string | null>(null)
   const [error, setError]                     = useState('')
   const [finishing, setFinishing]             = useState(false)
   const [resyncing, setResyncing]             = useState(false)
@@ -146,11 +159,13 @@ export default function LessonView({ feedItemId: propId }: Props) {
   }
 
   const levelColor = lesson ? getLevelColor(item.level) : 'var(--line)'
+  const allChunks = lesson?.chunks ?? []
+  const visibleChunks = typeFilter ? allChunks.filter((c) => c.type === typeFilter) : allChunks
   // Repeated chorus lines expand to one ChunkItem per occurrence (so every
   // repeat is clickable in the lyrics) — dedupe by text for the summary
   // cards below so "Clap along if you feel like" doesn't show 4 times.
   const seenChunkText = new Set<string>()
-  const highChunks = (lesson?.chunks ?? []).filter((c) => {
+  const highChunks = visibleChunks.filter((c) => {
     if (c.importance !== 'high') return false
     const key = c.text.toLowerCase()
     if (seenChunkText.has(key)) return false
@@ -225,15 +240,52 @@ export default function LessonView({ feedItemId: propId }: Props) {
             </button>
           </div>
           {lyricsOpen && (
-            <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 20 }}>
+            <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
               <ChunkHighlighter
                 text={lesson.original_text}
-                chunks={lesson.chunks}
+                chunks={visibleChunks}
                 selectedChunk={selectedChunk}
                 onChunkClick={setSelectedChunk}
                 videoId={lesson.video_id}
                 onWordSaved={handleWordSaved}
               />
+            </div>
+          )}
+
+          {allChunks.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+              {CHUNK_TYPES
+                .filter(({ type }) => allChunks.some((c) => c.type === type))
+                .map(({ type, label, color }) => {
+                  const active = typeFilter === type
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => setTypeFilter(active ? null : type)}
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        padding: '3px 10px',
+                        borderRadius: 20,
+                        border: `1.5px solid ${active ? color : 'transparent'}`,
+                        background: active ? color : color + '22',
+                        color: active ? '#fff' : color,
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              {typeFilter && (
+                <button
+                  onClick={() => setTypeFilter(null)}
+                  style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, border: '1.5px solid var(--line)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' }}
+                >
+                  ✕ Clear filter
+                </button>
+              )}
             </div>
           )}
 
