@@ -146,7 +146,17 @@ export default function LessonView({ feedItemId: propId }: Props) {
   }
 
   const levelColor = lesson ? getLevelColor(item.level) : 'var(--line)'
-  const highChunks = (lesson?.chunks ?? []).filter((c) => c.importance === 'high')
+  // Repeated chorus lines expand to one ChunkItem per occurrence (so every
+  // repeat is clickable in the lyrics) — dedupe by text for the summary
+  // cards below so "Clap along if you feel like" doesn't show 4 times.
+  const seenChunkText = new Set<string>()
+  const highChunks = (lesson?.chunks ?? []).filter((c) => {
+    if (c.importance !== 'high') return false
+    const key = c.text.toLowerCase()
+    if (seenChunkText.has(key)) return false
+    seenChunkText.add(key)
+    return true
+  })
 
   return (
     <>
