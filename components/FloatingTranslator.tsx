@@ -6,6 +6,7 @@ import { getNativeLangName } from '@/lib/i18n'
 import { awardXP } from '@/lib/xp'
 import { normalizeFlashcard } from '@/lib/types'
 import type { Flashcard } from '@/lib/types'
+import { GlobeIcon, SoundOnIcon } from '@/components/ui/Icons'
 
 interface WordDef {
   word: string
@@ -145,7 +146,7 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
           justifyContent: 'center',
         }}
       >
-        {open ? '✕' : '🌐'}
+        {open ? '✕' : <GlobeIcon size={20} />}
       </motion.button>
 
       <AnimatePresence>
@@ -210,9 +211,9 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
                 onClick={speak}
                 disabled={!input.trim()}
                 title="Listen"
-                style={{ flex: canSave ? '0 0 auto' : 1, width: canSave ? 40 : undefined, height: 38, borderRadius: 10, border: '1.5px solid var(--line)', background: '#fff', cursor: 'pointer', fontSize: '1rem', opacity: input.trim() ? 1 : 0.4 }}
+                style={{ flex: canSave ? '0 0 auto' : 1, width: canSave ? 40 : undefined, height: 38, borderRadius: 10, border: '1.5px solid var(--line)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'var(--ink)', opacity: input.trim() ? 1 : 0.4 }}
               >
-                🔊{canSave ? '' : ' Listen'}
+                <SoundOnIcon size={15} />{canSave ? '' : ' Listen'}
               </button>
               {canSave && (
                 <button

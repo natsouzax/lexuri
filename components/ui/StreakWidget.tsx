@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { EASE_OUT } from '@/lib/easing'
+import { FlameIcon, SnowflakeIcon } from '@/components/ui/Icons'
 
 interface Props {
   streak: number
@@ -21,7 +22,7 @@ export default function StreakWidget({ streak, bestStreak, hasFreezeAvailable, f
           animate={isActive ? { scale: [1, 1.14, 1] } : { scale: 1 }}
           transition={{ duration: 1.8, delay: 0.5, ease: 'easeInOut' }}
         >
-          {freezeUsedToday ? '🧊' : '🔥'}
+          {freezeUsedToday ? <SnowflakeIcon size={22} /> : <FlameIcon size={22} />}
         </motion.div>
 
         <div>
@@ -55,19 +56,10 @@ export default function StreakWidget({ streak, bestStreak, hasFreezeAvailable, f
 
       {hasFreezeAvailable && !freezeUsedToday && (
         <div className="streak-freeze-hint">
-          <SnowflakeIcon />
+          <SnowflakeIcon size={11} />
           <span>Freeze available</span>
         </div>
       )}
     </div>
-  )
-}
-
-function SnowflakeIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="2" x2="12" y2="22" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
   )
 }

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getAlbum, sungTracks, curatedSungTracks, albumCycleUnlocked, nextAlbumStep, type AlbumProgress } from '@/lib/album'
 import { getFeedItem } from '@/lib/feed'
 import { nextReviewStep, type SongProgress } from '@/lib/mvp'
+import { PianoIcon, LockIcon, TrophyIcon, MusicNoteIcon, MoonIcon } from '@/components/ui/Icons'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -103,7 +104,11 @@ export default function AlbumPage() {
               <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--muted)', width: 20, textAlign: 'center' }}>{i + 1}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: '0.92rem' }}>{track.title}</div>
-                {track.instrumental && <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>🎹 instrumental interlude</div>}
+                {track.instrumental && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <PianoIcon size={13} /> instrumental interlude
+                  </div>
+                )}
                 {!track.instrumental && !curated && <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Coming soon</div>}
               </div>
               {curated ? (
@@ -126,7 +131,7 @@ export default function AlbumPage() {
       <div className="panel" style={{ textAlign: 'center' }}>
         {!cycleUnlocked ? (
           <>
-            <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🔒</p>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)', marginBottom: 8 }}><LockIcon size={32} /></div>
             <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 6 }}>
               Finish every track first
             </p>
@@ -136,13 +141,13 @@ export default function AlbumPage() {
           </>
         ) : albumStep === 'done' ? (
           <>
-            <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🏆</p>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--clay)', marginBottom: 8 }}><TrophyIcon size={32} /></div>
             <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 6 }}>
               Album complete!
             </p>
             <p className="panel-copy" style={{ marginBottom: 16 }}>You finished the whole album. Listen to the track you composed.</p>
-            <Link href={`/albums/${album.id}/song`} className="btn-primary" style={{ textDecoration: 'none' }}>
-              🎼 Your album track →
+            <Link href={`/albums/${album.id}/song`} className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <MusicNoteIcon size={14} /> Your album track →
             </Link>
           </>
         ) : (
@@ -158,7 +163,9 @@ export default function AlbumPage() {
                 Do Day {albumStep.day} now →
               </Link>
             ) : (
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--muted)' }}>Available tomorrow 🌙</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <MoonIcon size={13} /> Available tomorrow
+              </span>
             )}
           </>
         )}

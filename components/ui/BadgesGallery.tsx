@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EASE_OUT } from '@/lib/easing'
 import { playTap } from '@/lib/sfx'
+import { FlameIcon } from '@/components/ui/Icons'
 
 interface BadgeDef {
   id: string
@@ -16,10 +17,10 @@ interface BadgeDef {
 
 const BADGES: BadgeDef[] = [
   // Streak
-  { id: 'streak_1',   name: 'First Fire',       description: 'Keep a 1-day streak',       icon: '🔥', category: 'streak',      condition: 'Start a streak' },
-  { id: 'streak_7',   name: 'Week Warrior',      description: '7-day streak',               icon: '🔥', category: 'streak',      condition: '7 days in a row' },
-  { id: 'streak_30',  name: 'Monthly Flame',     description: '30-day streak',              icon: '🔥', category: 'streak',      condition: '30 days in a row' },
-  { id: 'streak_100', name: 'Century Burn',      description: '100-day streak',             icon: '🔥', category: 'streak',      condition: '100 days in a row' },
+  { id: 'streak_1',   name: 'First Fire',       description: 'Keep a 1-day streak',       icon: 'fire', category: 'streak',      condition: 'Start a streak' },
+  { id: 'streak_7',   name: 'Week Warrior',      description: '7-day streak',               icon: 'fire', category: 'streak',      condition: '7 days in a row' },
+  { id: 'streak_30',  name: 'Monthly Flame',     description: '30-day streak',              icon: 'fire', category: 'streak',      condition: '30 days in a row' },
+  { id: 'streak_100', name: 'Century Burn',      description: '100-day streak',             icon: 'fire', category: 'streak',      condition: '100 days in a row' },
   // Review
   { id: 'review_1',   name: 'First Review',      description: 'Complete your first review', icon: '↺', category: 'review',      condition: 'Review 1 card' },
   { id: 'review_10',  name: '10 Reviews',        description: 'Review 10 cards total',      icon: '↺', category: 'review',      condition: 'Review 10 cards' },
@@ -66,7 +67,7 @@ function Badge({ badge, unlocked, i }: { badge: BadgeDef; unlocked: boolean; i: 
         animate={unlocked ? { scale: [1, 1.08, 1] } : {}}
         transition={{ duration: 0.5, delay: 0.3 + i * 0.04, ease: 'easeInOut' }}
       >
-        {badge.icon}
+        {badge.icon === 'fire' ? <FlameIcon size={20} /> : badge.icon}
       </motion.div>
       <div className="badge-name">{badge.name}</div>
 

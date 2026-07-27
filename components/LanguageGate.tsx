@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useLang, LANG_OPTIONS, detectBrowserLang, type Lang } from '@/lib/i18n'
+import { GlobeIcon } from '@/components/ui/Icons'
 
 // Popup de primeira visita: pergunta a língua materna (os 12 idiomas do
 // Lexuri original + inglês). Antes da escolha, todo o app fica em inglês.
@@ -46,7 +47,7 @@ export default function LanguageGate() {
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>🌍</div>
+        <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--clay)', marginBottom: 8 }}><GlobeIcon size={30} /></div>
         <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.35rem', margin: '0 0 6px', color: 'var(--ink)' }}>
           What&apos;s your native language?
         </h2>

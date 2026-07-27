@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import type { ChunkItem, Flashcard } from '@/lib/types'
 import { useWordHoverSave } from '@/hooks/useWordHoverSave'
 import WordHoverTooltip from '@/components/WordHoverTooltip'
+import { SoundOnIcon } from '@/components/ui/Icons'
 
 interface Segment {
   text: string
@@ -197,7 +198,7 @@ export default function ChunkHighlighter({
               onClick={(e) => speakText(chunkTooltip.chunk.text, e)}
               aria-label="Listen"
             >
-              🔊
+              <SoundOnIcon size={14} />
             </button>
           </div>
           {chunkTooltip.nativeTranslation && (

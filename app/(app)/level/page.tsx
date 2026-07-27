@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { STUDY_LEVELS, songsForLevel, type StudyLevel } from '@/lib/mvp'
 import { useLang } from '@/lib/i18n'
+import { LevelIcon } from '@/components/ui/Icons'
 
 // Onboarding inteiro do MVP: um pick de nível que grava no perfil e já
 // abre a primeira música daquele nível — sem quiz, sem fricção.
@@ -45,7 +46,7 @@ export default function LevelPage() {
               className="settings-nav-card"
               style={{ width: '100%', textAlign: 'left', cursor: 'pointer', opacity: saving && saving !== level ? 0.5 : 1 }}
             >
-              <span className="settings-nav-icon">{info.icon}</span>
+              <span className="settings-nav-icon"><LevelIcon level={level} size={17} /></span>
               <div>
                 <div className="settings-nav-title">{info.label}</div>
                 <div className="settings-nav-desc">{t(`level.${level}.desc`)}</div>

@@ -27,9 +27,10 @@ const NAV_ITEMS: Array<{ href: string; labelKey: DictKey; icon: React.ReactNode 
 interface Props {
   sidebarOpen: boolean
   onToggleSidebar: () => void
+  hidden: boolean
 }
 
-export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
+export default function AppTopNav({ sidebarOpen, onToggleSidebar, hidden }: Props) {
   const pathname = usePathname()
   const { t } = useLang()
   const [user, setUser] = useState<User | null>(null)
@@ -60,8 +61,8 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar }: Props) {
     <motion.header
       className="app-top-nav"
       initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ opacity: hidden ? 0 : 1, y: hidden ? -64 : 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="app-top-nav-inner">
         <button

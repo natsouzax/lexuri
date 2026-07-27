@@ -8,6 +8,7 @@ import Day2Memory from '@/components/review/Day2Memory'
 import Day3Gaps from '@/components/review/Day3Gaps'
 import { getFeedItem } from '@/lib/feed'
 import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
+import { MoonIcon } from '@/components/ui/Icons'
 import type { Flashcard, TranscriptSegment } from '@/lib/types'
 import type { LessonData } from '@/components/LessonView'
 import { useLang, type DictKey } from '@/lib/i18n'
@@ -144,7 +145,7 @@ export default function ReviewSongPage() {
 
       {step !== 'done' && !step.available && (
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
-          <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🌙</p>
+          <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)', marginBottom: 8 }}><MoonIcon size={32} /></div>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
             {t('runner.locked.title')}
           </p>

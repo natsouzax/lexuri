@@ -5,18 +5,15 @@ import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import { EASE_OUT } from '@/lib/easing'
 import { createClient } from '@/lib/supabase-browser'
-import WeeklyCalendar from '@/components/ui/WeeklyCalendar'
 import FeedItemCard from '@/components/FeedItemCard'
-import DueCardsHero from '@/components/ui/DueCardsHero'
-import StreakWidget from '@/components/ui/StreakWidget'
-import DailyMissions from '@/components/ui/DailyMissions'
+import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
+import { StarIcon, FlameIcon } from '@/components/ui/Icons'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { playSelect, playTap } from '@/lib/sfx'
 import { learningLoop } from '@/lib/product'
 import { FEED_ITEMS, getThumbnail } from '@/lib/feed'
 import type { FeedItem } from '@/lib/feed'
 import type { Rank, XPProgressInfo, Mission } from '@/lib/gamification'
-import type { Flashcard } from '@/lib/types'
 
 interface MissionProgress extends Mission {
   progress: number
@@ -58,6 +55,17 @@ const EVENT_LABELS: Record<string, string> = {
   mission_complete: 'Completed a mission',
 }
 
+const EVENT_BADGES: Record<string, { label: string; bg: string; color: string }> = {
+  flashcard_review: { label: 'Review',  bg: 'var(--sage)',                    color: 'var(--moss)' },
+  chunk_analyzed:   { label: 'Lesson',  bg: 'rgba(200,111,74,0.14)',          color: 'var(--clay)' },
+  chunk_saved:      { label: 'Lesson',  bg: 'rgba(200,111,74,0.14)',          color: 'var(--clay)' },
+  video_studied:    { label: 'Study',   bg: 'rgba(190,220,235,0.55)',         color: '#2b6a83' },
+  music_studied:    { label: 'Study',   bg: 'rgba(190,220,235,0.55)',         color: '#2b6a83' },
+  word_looked_up:   { label: 'Vocab',   bg: 'rgba(246,202,95,0.32)',          color: '#8a6510' },
+  streak_bonus:     { label: 'Streak',  bg: 'rgba(200,111,74,0.14)',          color: 'var(--clay)' },
+  mission_complete: { label: 'Mission', bg: 'var(--sage)',                    color: 'var(--moss)' },
+}
+
 function greeting(): string {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -93,15 +101,12 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<StatsData | null>(null)
-  const [dueCount, setDueCount] = useState(0)
-  const [oldestAgo, setOldestAgo] = useState(0)
   const [username, setUsername] = useState('')
-  const [loading, setLoading] = useState(true)
   const [feedItems, setFeedItems] = useState<FeedItem[]>([])
   const [savedIds, setSavedIds] = useState<string[]>([])
 
-  const gridRef = useRef<HTMLDivElement>(null)
-  const gridInView = useInView(gridRef, { once: true, margin: '-40px 0px' })
+  const cwRowRef = useRef<HTMLDivElement>(null)
+  const gridInView = useInView(cwRowRef, { once: true, margin: '-40px 0px' })
   const activityRef = useRef<HTMLDivElement>(null)
   const activityInView = useInView(activityRef, { once: true, margin: '-40px 0px' })
 
@@ -120,23 +125,7 @@ export default function DashboardPage() {
       setUsername(name.split(' ')[0])
     })
 
-    Promise.all([
-      apiFetch<StatsData>('/api/gamification/stats').then(setStats).catch(() => null),
-      apiFetch<Flashcard[]>('/api/flashcards')
-        .then(async (cards) => {
-          const { getDueCards } = await import('@/lib/srs')
-          const due = getDueCards(cards)
-          setDueCount(due.length)
-          if (due.length > 0) {
-            const oldest = due.reduce((a, b) =>
-              new Date(a.next_review) < new Date(b.next_review) ? a : b
-            )
-            const daysAgo = Math.floor((Date.now() - new Date(oldest.next_review).getTime()) / 86_400_000)
-            setOldestAgo(Math.max(0, daysAgo))
-          }
-        })
-        .catch(() => null),
-    ]).finally(() => setLoading(false))
+    apiFetch<StatsData>('/api/gamification/stats').then(setStats).catch(() => null)
   }, [])
 
   function handleToggleSave(id: string) {
@@ -151,11 +140,14 @@ export default function DashboardPage() {
     }
   }
 
+  function scrollContinueWatching(dir: 1 | -1) {
+    cwRowRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
+  }
+
   const reviewGoal = 10
   const reviewedToday = stats?.missionsToday.find((m) => m.eventType === 'flashcard_review')?.progress ?? 0
   const goalPct = Math.min(100, Math.round((reviewedToday / reviewGoal) * 100))
   const rank = stats?.rank
-  const xp = stats?.xpProgress
   const musicItems = feedItems.filter((i) => i.type === 'music')
   const currentLesson = musicItems[0] ?? feedItems[0]
   const displayItems = (musicItems.length > 0 ? musicItems : feedItems).slice(0, 6)
@@ -168,204 +160,216 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* ── Due cards hero ── */}
-      <DueCardsHero dueCount={dueCount} oldestAgo={oldestAgo} loading={loading} />
-
-      {/* ── Hero ── */}
-      <div className="home-hero">
-        <div className="home-hero-copy">
-          <motion.p
-            className="app-hero-subtitle"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05, ease: EASE_OUT }}
-          >
-            {greeting()}, {username || 'there'}
-          </motion.p>
-          <motion.h1
-            className="app-hero-title"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.14, ease: EASE_OUT }}
-          >
-            Continue learning from real English.
-          </motion.h1>
-          <motion.p
-            className="app-hero-body"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.24, ease: EASE_OUT }}
-          >
-            Watch, listen, save the useful chunks, then review them before they fade.
-          </motion.p>
-          <motion.div
-            className="learning-loop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.38 }}
-          >
-            {learningLoop.map((step, i) => (
-              <motion.span
-                key={step}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.4 + i * 0.06, ease: EASE_OUT }}
+      <div className="dash-layout">
+        {/* ═══════════════════════ MAIN COLUMN ═══════════════════════ */}
+        <div className="dash-main">
+          {/* ── Promo banner ── */}
+          <div className="home-hero promo-banner">
+            <span className="promo-sparkle promo-sparkle-1">✦</span>
+            <span className="promo-sparkle promo-sparkle-2">✦</span>
+            <span className="promo-sparkle promo-sparkle-3">✦</span>
+            <div className="home-hero-copy">
+              <motion.p
+                className="app-hero-subtitle"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.05, ease: EASE_OUT }}
               >
-                {step}
-              </motion.span>
-            ))}
-          </motion.div>
-        </div>
+                {greeting()}, {username || 'there'}
+              </motion.p>
+              <motion.h1
+                className="app-hero-title"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.14, ease: EASE_OUT }}
+              >
+                Continue learning from real English.
+              </motion.h1>
+              <motion.p
+                className="app-hero-body"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.24, ease: EASE_OUT }}
+              >
+                Watch, listen, save the useful chunks, then review them before they fade.
+              </motion.p>
+              <motion.div
+                className="learning-loop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.38 }}
+              >
+                {learningLoop.map((step, i) => (
+                  <motion.span
+                    key={step}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.4 + i * 0.06, ease: EASE_OUT }}
+                  >
+                    {step}
+                  </motion.span>
+                ))}
+              </motion.div>
+              {currentLesson && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5, ease: EASE_OUT }}
+                >
+                  <Link href={`/feed/${currentLesson.id}`} className="btn-mkt-primary promo-cta">
+                    <span style={{ fontSize: '0.85rem', marginLeft: -2 }}>▶</span>
+                    Join the lesson
+                  </Link>
+                </motion.div>
+              )}
+            </div>
 
-        {currentLesson && (
-          <motion.div
-            initial={{ opacity: 0, x: 28 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.55, delay: 0.18, ease: EASE_OUT }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.015, transition: { duration: 0.2 } }}
-              whileTap={{ scale: 0.99 }}
-            >
-              <Link href={`/feed/${currentLesson.id}`} className="continue-card">
-                <div style={{ position: 'relative', overflow: 'hidden' }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getThumbnail(currentLesson.youtube_id)} alt={currentLesson.title} />
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.22)' }}>
-                    <motion.div
-                      style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
-                      whileHover={{ scale: 1.12 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                    >
-                      <span style={{ fontSize: '1.1rem', marginLeft: 3 }}>▶</span>
-                    </motion.div>
-                  </div>
-                </div>
-                <div className="continue-card-body">
-                  <span className="mini-label">Start learning</span>
-                  <h2>{currentLesson.title}</h2>
-                  <p>{currentLesson.channel ?? currentLesson.artist} · {currentLesson.duration}</p>
-                  <div className="skill-row">
-                    {currentLesson.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
-                  </div>
-                  <span className="btn-primary">Start Lesson</span>
-                </div>
+            {currentLesson && (
+              <motion.div
+                initial={{ opacity: 0, x: 28 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.55, delay: 0.18, ease: EASE_OUT }}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.015, transition: { duration: 0.2 } }}
+                  whileTap={{ scale: 0.99 }}
+                >
+                  <Link href={`/feed/${currentLesson.id}`} className="continue-card">
+                    <div style={{ position: 'relative', overflow: 'hidden' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={getThumbnail(currentLesson.youtube_id)} alt={currentLesson.title} />
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.22)' }}>
+                        <motion.div
+                          style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+                          whileHover={{ scale: 1.12 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                        >
+                          <span style={{ fontSize: '1.1rem', marginLeft: 3 }}>▶</span>
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div className="continue-card-body">
+                      <span className="mini-label">Start learning</span>
+                      <h2>{currentLesson.title}</h2>
+                      <p>{currentLesson.channel ?? currentLesson.artist} · {currentLesson.duration}</p>
+                      <div className="skill-row">
+                        {currentLesson.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
+                      </div>
+                      <span className="btn-primary">Start Lesson</span>
+                    </div>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* ── Stat pill row ── */}
+          <div className="stat-pill-row">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: EASE_OUT }}>
+              <Link href="/review" className="stat-pill">
+                <span className="pill-ring" style={{ ['--goal' as string]: `${goalPct}%` }}>
+                  <span>{goalPct}%</span>
+                </span>
+                <span className="stat-pill-text">
+                  <span className="stat-pill-value">{reviewedToday}/{reviewGoal} Reviewed</span>
+                  <span className="stat-pill-label">Today&apos;s goal</span>
+                </span>
+                <ChevronRightIcon />
               </Link>
             </motion.div>
-          </motion.div>
-        )}
-      </div>
 
-      {/* ── Stat panels ── */}
-      <div className="home-grid">
-        <motion.section
-          className="panel"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.28, ease: EASE_OUT } }}
-          whileHover={{ y: -4 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-        >
-          <div className="panel-head">
-            <span className="mini-label">Daily goal</span>
-            <strong>{reviewedToday} / {reviewGoal}</strong>
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.37, ease: EASE_OUT }}>
+              <Link href="/level" className="stat-pill">
+                <span className="stat-pill-icon clay"><StarIcon size={17} /></span>
+                <span className="stat-pill-text">
+                  <span className="stat-pill-value">{rank?.label ?? 'Explorer'}</span>
+                  <span className="stat-pill-label">{(stats?.points ?? 148).toLocaleString()} XP</span>
+                </span>
+                <ChevronRightIcon />
+              </Link>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.44, ease: EASE_OUT }}>
+              <Link href="/achievements" className="stat-pill">
+                <span className="stat-pill-icon butter"><FlameIcon size={17} /></span>
+                <span className="stat-pill-text">
+                  <span className="stat-pill-value">{stats?.streak ?? 0} Day Streak</span>
+                  <span className="stat-pill-label">Keep it going</span>
+                </span>
+                <ChevronRightIcon />
+              </Link>
+            </motion.div>
           </div>
-          <div className="goal-circle" style={{ ['--goal' as string]: `${goalPct}%` }}>
-            <span>{goalPct}%</span>
+
+          {/* ── Continue Watching ── */}
+          <div className="cw-head">
+            <SectionTitle>Continue Watching</SectionTitle>
+            <div className="cw-arrows">
+              <button type="button" className="cw-arrow-btn" onClick={() => scrollContinueWatching(-1)} aria-label="Scroll left">
+                <ChevronLeftIcon />
+              </button>
+              <button type="button" className="cw-arrow-btn" onClick={() => scrollContinueWatching(1)} aria-label="Scroll right">
+                <ChevronRightIcon />
+              </button>
+            </div>
           </div>
-          <p className="panel-copy">Review 10 cards to keep your memory curve healthy.</p>
-          <WeeklyCalendar weekActivity={stats?.weekActivity ?? Array(7).fill(false)} />
-        </motion.section>
-
-        <motion.section
-          className="panel"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.37, ease: EASE_OUT } }}
-          whileHover={{ y: -4 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-        >
-          <div className="panel-head">
-            <span className="mini-label">Current level</span>
-            <strong>{rank?.label ?? 'Explorer'}</strong>
+          <div ref={cwRowRef} className="cw-row" style={{ marginBottom: 32 }}>
+            {displayItems.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 18 }}
+                animate={gridInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.4, delay: i * 0.07, ease: EASE_OUT }}
+              >
+                <FeedItemCard item={item} />
+              </motion.div>
+            ))}
           </div>
-          <p className="rank-title">{(stats?.points ?? 148).toLocaleString()} XP</p>
-          <div className="xp-bar-track-light">
-            <motion.div
-              className="xp-bar-fill"
-              initial={{ width: 0 }}
-              animate={{ width: `${xp?.progressPct ?? 74}%` }}
-              transition={{ duration: 0.9, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            />
+
+          {/* ── Recent Activity ── */}
+          <SectionTitle>Recent Activity</SectionTitle>
+          <div ref={activityRef} className="activity-list">
+            {activities.map((evt, i) => {
+              const badge = EVENT_BADGES[evt.event_type] ?? { label: 'Activity', bg: 'var(--sage)', color: 'var(--moss)' }
+              return (
+                <motion.div
+                  key={`${evt.event_type}-${i}`}
+                  className="activity-row"
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={activityInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.3, delay: i * 0.06, ease: EASE_OUT }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className="activity-badge" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
+                    {EVENT_LABELS[evt.event_type] ?? evt.event_type}
+                  </span>
+                  <small>{timeAgo(evt.event_ts)}</small>
+                  <strong>+{evt.points} XP</strong>
+                </motion.div>
+              )
+            })}
           </div>
-          <p className="panel-copy">
-            {xp?.nextRank ? `${xp.xpToNext?.toLocaleString()} XP until ${xp.nextRank.label}.` : 'You reached the top rank.'}
-          </p>
-        </motion.section>
+        </div>
 
-        <motion.section
-          className="panel"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.46, ease: EASE_OUT } }}
-          whileHover={{ y: -4 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-        >
-          <span className="mini-label" style={{ display: 'block', marginBottom: 14 }}>Streak</span>
-          <StreakWidget
-            streak={stats?.streak ?? 0}
-            hasFreezeAvailable={false}
-            freezeUsedToday={false}
-          />
-        </motion.section>
-      </div>
-
-      {/* ── Daily Missions ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: 0.56, ease: EASE_OUT } }}
-        style={{ marginBottom: 8 }}
-      >
-        <DailyMissions missions={stats?.missionsToday ?? []} loading={loading} />
-      </motion.div>
-
-      {/* ── Recommended Content ── */}
-      <SectionTitle>Recommended Content</SectionTitle>
-      <div
-        ref={gridRef}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 20,
-          marginBottom: 32,
-        }}
-      >
-        {displayItems.map((item, i) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 18 }}
-            animate={gridInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.4, delay: i * 0.07, ease: EASE_OUT }}
-          >
-            <FeedItemCard item={item} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ── Recent Activity ── */}
-      <SectionTitle>Recent Activity</SectionTitle>
-      <div ref={activityRef} className="activity-list">
-        {activities.map((evt, i) => (
-          <motion.div
-            key={`${evt.event_type}-${i}`}
-            className="activity-row"
-            initial={{ opacity: 0, x: -12 }}
-            animate={activityInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.3, delay: i * 0.06, ease: EASE_OUT }}
-          >
-            <span>{EVENT_LABELS[evt.event_type] ?? evt.event_type}</span>
-            <small>{timeAgo(evt.event_ts)}</small>
-            <strong>+{evt.points} XP</strong>
-          </motion.div>
-        ))}
+        {/* ═══════════════════════ RIGHT PANEL ═══════════════════════ */}
+        <ProfileSidePanel />
       </div>
     </>
+  )
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
   )
 }

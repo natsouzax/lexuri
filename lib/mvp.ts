@@ -4,10 +4,10 @@ import { FEED_ITEMS, type FeedItem } from './feed'
 
 export type StudyLevel = 'beginner' | 'intermediate' | 'advanced'
 
-export const STUDY_LEVELS: Record<StudyLevel, { label: string; icon: string; desc: string }> = {
-  beginner:     { label: 'Beginner',     icon: '🌱', desc: 'Sei algumas palavras, mas frases completas são difíceis.' },
-  intermediate: { label: 'Intermediate', icon: '🌿', desc: 'Acompanho bem, mas perco muitos detalhes.' },
-  advanced:     { label: 'Advanced',     icon: '🌳', desc: 'Entendo quase tudo — quero soar mais natural.' },
+export const STUDY_LEVELS: Record<StudyLevel, { label: string; desc: string }> = {
+  beginner:     { label: 'Beginner',     desc: 'Sei algumas palavras, mas frases completas são difíceis.' },
+  intermediate: { label: 'Intermediate', desc: 'Acompanho bem, mas perco muitos detalhes.' },
+  advanced:     { label: 'Advanced',     desc: 'Entendo quase tudo — quero soar mais natural.' },
 }
 
 export function cefrToStudyLevel(cefr: string): StudyLevel {
@@ -37,10 +37,10 @@ export interface SongProgress {
 
 export type ReviewDay = 1 | 2 | 3
 
-export const DAY_INFO: Record<ReviewDay, { title: string; desc: string; icon: string }> = {
-  1: { title: 'Day 1 — Flashcards', desc: 'Releia as palavras que você salvou. Só leitura, sem teste.', icon: '📖' },
-  2: { title: 'Day 2 — Jogo da memória', desc: 'Encontre os pares palavra ↔ tradução.', icon: '🃏' },
-  3: { title: 'Day 3 — Complete a letra', desc: 'Preencha os trechos da música e registre seus aprendizados.', icon: '✍️' },
+export const DAY_INFO: Record<ReviewDay, { title: string; desc: string }> = {
+  1: { title: 'Day 1 — Flashcards', desc: 'Releia as palavras que você salvou. Só leitura, sem teste.' },
+  2: { title: 'Day 2 — Jogo da memória', desc: 'Encontre os pares palavra ↔ tradução.' },
+  3: { title: 'Day 3 — Complete a letra', desc: 'Preencha os trechos da música e registre seus aprendizados.' },
 }
 
 function isSameCalendarDay(a: Date, b: Date): boolean {

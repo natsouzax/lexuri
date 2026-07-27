@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { playSoft, playSuccess, playFanfare } from '@/lib/sfx'
 import type { Flashcard } from '@/lib/types'
+import { SoundOnIcon } from '@/components/ui/Icons'
 
 interface Props {
   cards: Flashcard[]
@@ -79,9 +80,9 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
           <button
             onClick={() => playAudio(card.word)}
             aria-label="Listen"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--ink)' }}
           >
-            🔊
+            <SoundOnIcon size={17} />
           </button>
         </div>
 

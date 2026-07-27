@@ -41,15 +41,16 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+  const matchesPrefix = (p: string) => pathname === p || pathname.startsWith(`${p}/`)
 
-  if (!user && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
+  if (!user && PROTECTED_PREFIXES.some(matchesPrefix)) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
-  if (user && AUTH_PAGES.some((p) => pathname.startsWith(p))) {
+  if (user && AUTH_PAGES.some(matchesPrefix)) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

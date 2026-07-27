@@ -76,6 +76,9 @@ export default function Sidebar() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.3 }}
       >
+        <Link href="/feedback" className="sidebar-site-link" style={{ marginBottom: 8 }}>
+          <span>Send feedback</span>
+        </Link>
         {user ? (
           <div className="sidebar-user-row">
             <div className="sidebar-user-dropdown">

@@ -8,6 +8,7 @@ import Day2Memory from '@/components/review/Day2Memory'
 import { getAlbum, sungTracks, nextAlbumStep, type AlbumProgress } from '@/lib/album'
 import { getFeedItem } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
+import { TrophyIcon, MusicNoteIcon, MoonIcon, PencilIcon } from '@/components/ui/Icons'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -117,7 +118,9 @@ export default function AlbumCyclePage() {
 
       <div className="app-hero" style={{ textAlign: 'center', marginBottom: 24 }}>
         <h1 className="app-hero-title">
-          {step === 'done' ? 'Album complete 🏆' : `Album Cycle — Day ${step.day}`}
+          {step === 'done' ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><TrophyIcon size={28} /> Album complete</span>
+          ) : `Album Cycle — Day ${step.day}`}
         </h1>
         <p className="app-hero-subtitle">{album.title} · {album.artist}</p>
       </div>
@@ -126,13 +129,15 @@ export default function AlbumCyclePage() {
 
       {step === 'done' && (
         <div style={{ textAlign: 'center' }}>
-          <Link href={`/albums/${album.id}/song`} className="btn-primary" style={{ textDecoration: 'none' }}>🎼 Your album track →</Link>
+          <Link href={`/albums/${album.id}/song`} className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <MusicNoteIcon size={14} /> Your album track →
+          </Link>
         </div>
       )}
 
       {step !== 'done' && !step.available && (
         <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
-          <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🌙</p>
+          <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)', marginBottom: 8 }}><MoonIcon size={32} /></div>
           <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>This step opens tomorrow.</p>
           <Link href={`/albums/${album.id}`} className="btn-secondary" style={{ textDecoration: 'none' }}>Back to album</Link>
         </div>
@@ -145,7 +150,7 @@ export default function AlbumCyclePage() {
           {step.day === 3 && (
             <div style={{ maxWidth: 520, margin: '0 auto' }}>
               <div className="panel" style={{ marginBottom: 16 }}>
-                <span className="mini-label">✍️ Final reflection</span>
+                <span className="mini-label" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><PencilIcon size={13} /> Final reflection</span>
                 <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', margin: '8px 0 4px' }}>
                   {album.reflection}
                 </p>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChunkItem, Flashcard, TranscriptSegment } from '@/lib/types'
 import { useWordHoverSave } from '@/hooks/useWordHoverSave'
 import WordHoverTooltip from '@/components/WordHoverTooltip'
+import { SoundOnIcon } from '@/components/ui/Icons'
 
 declare global {
   interface Window {
@@ -454,7 +455,7 @@ export default function YoutubeSyncPlayer({
                   onClick={(e) => speakChunkText(chunkTooltip.chunk.text, e)}
                   aria-label="Listen"
                 >
-                  🔊
+                  <SoundOnIcon size={14} />
                 </button>
               </div>
               <span className="chunk-tooltip-meaning">{chunkTooltip.chunk.contextual_translation}</span>

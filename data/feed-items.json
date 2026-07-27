@@ -288,5 +288,21 @@
     ],
     "preview": "Track from Green Day's album — part of the album module.",
     "album": "american-idiot"
+  },
+  {
+    "id": "album-ai-american-idiot",
+    "type": "music",
+    "title": "American Idiot",
+    "artist": "Green Day",
+    "youtube_id": "h6Z5N0Z6zH0",
+    "duration": "2:56",
+    "level": "B2",
+    "tags": [
+      "rock",
+      "album",
+      "story"
+    ],
+    "preview": "Track from Green Day's album — part of the album module.",
+    "album": "american-idiot"
   }
 ]

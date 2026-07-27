@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLang, type Lang } from '@/lib/i18n'
+import { GlobeIcon, SoundOffIcon, SoundOnIcon, TapIcon } from '@/components/ui/Icons'
 
 // Demo interativa da experiência central: a faixa "Happy" toca de fundo
 // (via YouTube, autoplay mudo + loop das primeiras linhas), a letra
@@ -132,7 +133,7 @@ export default function HeroLyricsDemo() {
       animate={{ opacity: 1, y: 0, rotate: 0 }}
       transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        background: 'var(--dark-surface)',
+        background: 'linear-gradient(135deg, var(--dark-surface) 0%, var(--dark-bg) 55%, #0d130f 130%)',
         border: '1px solid var(--dark-border)',
         borderRadius: 22,
         padding: '22px 24px 20px',
@@ -218,7 +219,7 @@ export default function HeroLyricsDemo() {
                         padding: '3px 10px',
                       }}
                     >
-                      🌐 {tr[i]}
+                      <GlobeIcon size={12} /> {tr[i]}
                     </span>
                   </motion.div>
                 )}
@@ -237,20 +238,25 @@ export default function HeroLyricsDemo() {
           style={{
             width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
             background: muted ? 'rgba(255,250,240,0.1)' : 'var(--clay)',
-            border: 'none', cursor: 'pointer', color: '#fff', fontSize: '0.85rem',
+            border: 'none', cursor: 'pointer', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'background 200ms ease',
           }}
         >
-          {muted ? '🔇' : '🔊'}
+          {muted ? <SoundOffIcon size={15} /> : <SoundOnIcon size={15} />}
         </button>
         <div style={{ flex: 1, height: 5, borderRadius: 999, background: 'rgba(255,250,240,0.12)', overflow: 'hidden' }}>
           <div style={{ width: `${((active + 1) / LINES.length) * 100}%`, height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, var(--clay), var(--butter))', transition: 'width 500ms ease' }} />
         </div>
       </div>
 
-      <p style={{ margin: '12px 0 0', fontSize: '0.68rem', color: 'var(--dark-muted)', textAlign: 'center' }}>
-        {muted ? (ready ? '🔇 tap the speaker for sound · 👆 tap a phrase' : '👆 tap a highlighted phrase') : '👆 tap a highlighted phrase'}
+      <p style={{ margin: '12px 0 0', fontSize: '0.68rem', color: 'var(--dark-muted)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, flexWrap: 'wrap' }}>
+        {muted && ready && (
+          <>
+            <SoundOffIcon size={11} /> tap the speaker for sound ·{' '}
+          </>
+        )}
+        <TapIcon size={11} /> tap a highlighted phrase
       </p>
     </motion.div>
   )

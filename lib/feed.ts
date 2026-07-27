@@ -24,7 +24,7 @@ export function getFeedItem(id: string): FeedItem | undefined {
 }
 
 export function getThumbnail(youtubeId: string): string {
-  return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`
+  return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
 }
 
 export function getYouTubeUrl(youtubeId: string): string {

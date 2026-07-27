@@ -5,6 +5,7 @@ import { getDueCards, type SRSCard } from '@/lib/srs'
 import { playSuccess, playSoft, playTap } from '@/lib/sfx'
 import { useLang } from '@/lib/i18n'
 import type { Flashcard } from '@/lib/types'
+import { SoundOnIcon } from '@/components/ui/Icons'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -103,7 +104,7 @@ export default function SrsSession() {
               <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.45rem' }}>
                 {card.word}
               </span>
-              <button onClick={() => speak(card.word)} aria-label="Play" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>🔊</button>
+              <button onClick={() => speak(card.word)} aria-label="Play" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--ink)' }}><SoundOnIcon size={16} /></button>
             </div>
             {revealed && (
               <>

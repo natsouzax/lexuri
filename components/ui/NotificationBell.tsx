@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js'
+import { BellIcon } from '@/components/ui/Icons'
 
 interface Notification {
   id: string
@@ -74,10 +75,11 @@ export default function NotificationBell() {
     <div style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', padding: 4 }}
+        className="profile-icon-btn"
+        style={{ cursor: 'pointer' }}
         aria-label="Notifications"
       >
-        🔔
+        <BellIcon size={16} />
         {unread > 0 && (
           <span style={{
             position: 'absolute', top: 0, right: 0,

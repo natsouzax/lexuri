@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getFeedItem, FEED_ITEMS } from '@/lib/feed'
+import { getDueCards } from '@/lib/srs'
 import type { Takeaway, UserVerse } from '@/lib/mvp'
 import type { Flashcard } from '@/lib/types'
 import { useLang, type DictKey } from '@/lib/i18n'
+import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
+import { BookIcon, FlameIcon, CheckCircleIcon, SearchIcon, PencilIcon } from '@/components/ui/Icons'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -69,12 +72,43 @@ export default function LibraryPage() {
     })
   }, [])
 
+  const dueCount = getDueCards(cards).length
+  const matureCount = cards.filter((c) => wordStatus(c).key === 'mature').length
+
   return (
-    <>
-      <div className="app-hero">
-        <h1 className="app-hero-title">{t('lib.title')}</h1>
-        <p className="app-hero-subtitle">{t('lib.subtitle')}</p>
-      </div>
+    <div className="dash-layout">
+      <div className="dash-main">
+        <div className="app-hero promo-banner">
+          <span className="promo-sparkle promo-sparkle-1">✦</span>
+          <span className="promo-sparkle promo-sparkle-2">✦</span>
+          <span className="promo-sparkle promo-sparkle-3">✦</span>
+          <h1 className="app-hero-title">{t('lib.title')}</h1>
+          <p className="app-hero-subtitle">{t('lib.subtitle')}</p>
+        </div>
+
+        <div className="stat-pill-row">
+          <div className="stat-pill">
+            <span className="stat-pill-icon clay"><BookIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{cards.length} Words</span>
+              <span className="stat-pill-label">In your library</span>
+            </span>
+          </div>
+          <Link href="/review" className="stat-pill">
+            <span className="stat-pill-icon butter"><FlameIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{dueCount} Due</span>
+              <span className="stat-pill-label">Ready for review</span>
+            </span>
+          </Link>
+          <div className="stat-pill">
+            <span className="stat-pill-icon" style={{ background: 'var(--sage)', color: 'var(--moss)' }}><CheckCircleIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{matureCount} Mature</span>
+              <span className="stat-pill-label">Well retained</span>
+            </span>
+          </div>
+        </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
         {TABS.map((tb) => (
@@ -137,12 +171,17 @@ export default function LibraryPage() {
               <>
                 {/* Filtros — sempre em inglês (imersão) */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 18 }}>
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="🔍 Search words…"
-                    style={{ flex: '1 1 180px', minWidth: 160, padding: '8px 14px', borderRadius: 999, border: '1.5px solid var(--line)', background: '#fff', fontSize: '0.85rem' }}
-                  />
+                  <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 160 }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', display: 'flex' }}>
+                      <SearchIcon size={14} />
+                    </span>
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search words…"
+                      style={{ width: '100%', padding: '8px 14px 8px 34px', borderRadius: 999, border: '1.5px solid var(--line)', background: '#fff', fontSize: '0.85rem' }}
+                    />
+                  </div>
                   {songs.length > 0 && (
                     <select
                       value={songFilter}
@@ -245,7 +284,7 @@ export default function LibraryPage() {
               const item = getFeedItem(tk.song_id)
               return (
                 <div key={tk.id} className="panel" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>✍️</span>
+                  <span style={{ color: 'var(--muted)', flexShrink: 0, display: 'flex' }}><PencilIcon size={16} /></span>
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.55 }}>{tk.text}</p>
                     <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700, marginTop: 6 }}>
@@ -285,7 +324,10 @@ export default function LibraryPage() {
           )}
         </>
       )}
-    </>
+      </div>
+
+      <ProfileSidePanel />
+    </div>
   )
 }
 

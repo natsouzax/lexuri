@@ -52,8 +52,8 @@ h1, h2, h3 {
   overflow: hidden;
   transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1);
   position: sticky;
-  top: 56px;
-  height: calc(100vh - 56px);
+  top: 70px;
+  height: calc(100vh - 70px);
   align-self: flex-start;
 }
 .sidebar-wrap.closed { width: 0; }
@@ -92,20 +92,27 @@ h1, h2, h3 {
 
 /* ── App Top Nav ──────────────────────────────────── */
 .app-top-nav {
-  background: var(--dark-bg);
-  border-bottom: 1px solid var(--dark-border);
-  position: sticky;
-  top: 0;
+  background: rgba(24, 33, 29, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--dark-border);
+  border-radius: 22px;
+  /* Fixed (not sticky/in-flow) so each page's hero can bleed all the way
+     to the top and show its real colors through the translucent bar,
+     instead of the header sitting over a flat, unrelated backdrop. */
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  right: 16px;
   z-index: 100;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
-  flex-shrink: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
 }
 
 .app-top-nav-inner {
   display: flex;
   align-items: center;
   height: 56px;
-  padding: 0 24px;
+  padding: 0 20px;
   gap: 0;
 }
 
@@ -246,14 +253,19 @@ h1, h2, h3 {
 
 /* ── Sidebar (dark) ─────────────────────────────── */
 .sidebar {
-  width: 248px;
-  height: 100%;
-  background: var(--dark-bg);
+  width: calc(100% - 16px);
+  height: calc(100% - 28px);
+  margin: 12px 0 16px 16px;
+  background: rgba(24, 33, 29, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--dark-border);
+  border-radius: 22px;
   display: flex;
   flex-direction: column;
   padding: 20px 18px 24px;
   overflow-y: auto;
-  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
 }
 
 .sidebar-user-row {
@@ -354,6 +366,7 @@ h1, h2, h3 {
 .main-content {
   flex: 1;
   min-width: 0;
+  background: var(--paper);
   padding: 0 48px 48px;
   padding-right: max(48px, calc(48px + env(safe-area-inset-right)));
   padding-bottom: max(48px, calc(24px + env(safe-area-inset-bottom)));
@@ -866,6 +879,11 @@ h1, h2, h3 {
   animation: skeleton-pulse 1.4s ease infinite;
 }
 
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── XP history row ─────────────────────────────────── */
 .xp-history-row {
   display: flex;
@@ -906,6 +924,155 @@ h1, h2, h3 {
 .mkt-section-dark  { background: var(--dark-bg); color: var(--paper); }
 .mkt-section-cream { background: var(--paper); color: var(--ink); }
 .mkt-section-sage  { background: var(--sage); color: var(--ink); }
+
+/* Hero — inverted: warm clay/ink gradient instead of the flat dark bg,
+   matching the app's promo-banner. Descendant overrides below re-tune
+   the text/button colors that were originally tuned for the dark bg. */
+.mkt-hero-flip {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--clay) 0%, #a8482b 55%, var(--ink) 130%);
+}
+.mkt-hero-flip .mkt-eyebrow-dark {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  background: rgba(255, 250, 240, 0.14);
+  border: 1px solid rgba(255, 250, 240, 0.24);
+  border-radius: 999px;
+  padding: 5px 14px;
+}
+.mkt-hero-flip .mkt-lead-dark {
+  color: rgba(255, 250, 240, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.mkt-hero-flip .btn-mkt-primary {
+  background: #fff;
+  color: var(--clay);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+.mkt-hero-flip .btn-mkt-primary:hover {
+  background: var(--paper);
+  color: var(--clay);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.mkt-hero-flip .btn-mkt-ghost {
+  border-color: rgba(255, 250, 240, 0.5);
+}
+.mkt-hero-flip .btn-mkt-ghost:hover {
+  border-color: rgba(255, 250, 240, 0.85);
+  background: rgba(255, 250, 240, 0.1);
+}
+
+/* Section transitions — a soft fade at the seam instead of a hard cut,
+   so consecutive sections blend into each other. Each fade lives on the
+   section it exits FROM, layered on top of its own background. */
+.mkt-fade-to-cream,
+.mkt-fade-to-dark {
+  position: relative;
+}
+.mkt-fade-to-cream::after,
+.mkt-fade-to-dark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45px;
+  pointer-events: none;
+}
+.mkt-fade-to-cream::after { background: linear-gradient(to bottom, transparent, var(--paper)); }
+.mkt-fade-to-dark::after  { background: linear-gradient(to bottom, transparent, var(--dark-bg)); }
+
+/* Steps list — dashed connector running behind the numbered icons,
+   visible only in the gaps between cards (each card's own background
+   covers it where they'd otherwise overlap). */
+/* "How it works" — horizontal step cards with a ghost numeral, replacing
+   the plain stacked list (felt generic/AI-templated). */
+.mkt-steps-head { text-align: center; max-width: 560px; margin: 0 auto 44px; }
+.mkt-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.mkt-step-card {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 26px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.mkt-step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.mkt-step-num {
+  position: absolute;
+  top: 6px;
+  right: 16px;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 3.2rem;
+  line-height: 1;
+  color: var(--line);
+  pointer-events: none;
+}
+.mkt-step-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 16px;
+}
+.mkt-step-title { position: relative; font-weight: 900; font-size: 1.02rem; color: var(--ink); margin-bottom: 6px; }
+.mkt-step-desc { position: relative; font-size: 0.86rem; color: var(--muted); line-height: 1.6; }
+
+/* Closing CTA band — same clay/ink gradient as the hero, so the page
+   opens and closes on the same visual note instead of trailing off flat. */
+.mkt-cta-band {
+  position: relative;
+  overflow: hidden;
+  margin-top: 52px;
+  border-radius: 28px;
+  padding: 48px 40px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--clay) 0%, #a8482b 55%, var(--ink) 130%);
+  box-shadow: var(--shadow-lg);
+}
+.mkt-cta-band h3 {
+  position: relative;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  color: #fff;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.mkt-cta-band p {
+  position: relative;
+  color: rgba(255, 250, 240, 0.88);
+  font-size: 0.95rem;
+  margin: 0 0 26px;
+}
+.mkt-cta-band .btn-mkt-primary {
+  position: relative;
+  background: #fff;
+  color: var(--clay);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+.mkt-cta-band .btn-mkt-primary:hover {
+  background: var(--paper);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 720px) {
+  .mkt-steps-grid { grid-template-columns: 1fr; }
+  .mkt-cta-band { padding: 36px 26px; }
+}
 
 /* Typography */
 .mkt-eyebrow {
@@ -1017,21 +1184,28 @@ h1, h2, h3 {
 
 /* Nav */
 .mkt-nav {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 14px;
+  left: 0;
+  right: 0;
   z-index: 100;
-  background: rgba(24, 33, 29, 0.92);
+  width: calc(100% - 32px);
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 250, 240, 0.14);
+  background: rgba(24, 33, 29, 0.55);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--dark-border);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
 }
 .mkt-nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  max-width: 1120px;
+  height: 60px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 12px 0 22px;
 }
 .mkt-nav-logo {
   display: flex;
@@ -1095,6 +1269,10 @@ h1, h2, h3 {
 }
 .mkt-footer-link:hover { color: var(--paper); }
 .mkt-footer-bottom { border-top: 1px solid var(--dark-border); padding-top: 24px; font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center; }
+
+.mkt-footer-credit { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+.mkt-footer-credit-name { font-weight: 900; font-size: 0.85rem; color: var(--paper); margin-bottom: 2px; }
+.mkt-footer-credit-role { font-size: 0.76rem; color: var(--dark-muted); }
 
 /* Feature cards */
 .feature-card {
@@ -2615,6 +2793,8 @@ h1, h2, h3 {
 }
 
 .chunk-speak-btn {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   cursor: pointer;
@@ -2968,101 +3148,55 @@ h1, h2, h3 {
   .mkt-legal-table td { padding: 8px 10px; }
 }
 
-/* ── DueCardsHero ─────────────────────────────────────────────────────────── */
-.due-hero-skeleton {
-  height: 84px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #f0ede8 0%, #f8f5f0 50%, #f0ede8 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-  margin-bottom: 20px;
+/* ── Review page: collapsible hero + small due-cards notification ────────── */
+/* Extra `.app-hero` in the selector bumps specificity above `.promo-banner`,
+   which also sets `position` — without it, cascade order decided the
+   winner and `position: relative` would leave `top: 56px` pushing this
+   element down without reserving the space (content below overlapped it). */
+.app-hero.app-hero-collapsible {
+  position: sticky;
+  top: 70px;
+  z-index: 40;
+  transition: transform 220ms ease, opacity 220ms ease;
 }
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.app-hero-collapsible.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
-
-.due-hero {
-  display: flex;
+.due-note {
+  display: inline-flex;
   align-items: center;
-  gap: 20px;
-  padding: 18px 22px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #fff;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 20px;
-  transition: box-shadow 160ms ease;
-}
-.due-hero--empty {
-  background: rgba(70,98,74,0.05);
-  border-color: rgba(70,98,74,0.22);
-}
-.due-hero--empty .due-hero-title { color: var(--moss); }
-.due-hero--urgent {
-  background: rgba(200,111,74,0.04);
-  border-color: rgba(200,111,74,0.28);
-}
-.due-hero-check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(70,98,74,0.12);
-  color: var(--moss);
-  flex-shrink: 0;
-}
-.due-hero-count {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: var(--clay);
-  color: #fff;
-  flex-shrink: 0;
-  min-width: 68px;
-}
-.due-hero--urgent .due-hero-count { background: #b83a28; }
-.due-hero-num {
-  font-family: Fraunces, Georgia, serif;
-  font-weight: 900;
-  font-size: 2rem;
-  line-height: 1;
-}
-.due-hero-unit {
-  font-size: 0.6rem;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.1);
+  border: 1px solid rgba(255, 250, 240, 0.18);
+  color: var(--paper);
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.85;
-  margin-top: 3px;
 }
-.due-hero-body { flex: 1; min-width: 0; }
-.due-hero-title {
-  font-weight: 800;
-  font-size: 1rem;
-  color: var(--ink);
-  line-height: 1.3;
+.due-note-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clay-bright);
+  flex-shrink: 0;
 }
-.due-hero-sub {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin-top: 3px;
+.due-note strong { font-weight: 900; }
+.due-note a {
+  color: var(--clay-bright);
+  text-decoration: none;
+  font-weight: 900;
+  margin-left: 4px;
 }
-@media (max-width: 480px) {
-  .due-hero { flex-wrap: wrap; gap: 14px; }
-  .due-hero > *:last-child { width: 100%; }
-  .due-hero > *:last-child a,
-  .due-hero > *:last-child button { width: 100%; text-align: center; }
-}
+.due-note a:hover { text-decoration: underline; }
 
 /* ── StreakWidget ─────────────────────────────────────────────────────────── */
 .streak-widget { display: flex; flex-direction: column; gap: 10px; }
 .streak-top { display: flex; align-items: center; gap: 14px; }
-.streak-flame { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+.streak-flame { display: flex; line-height: 1; flex-shrink: 0; color: var(--clay); }
 .streak-count-row { display: flex; align-items: baseline; gap: 6px; }
 .streak-num {
   font-family: Fraunces, Georgia, serif;
@@ -3451,4 +3585,262 @@ h1, h2, h3 {
   .rsm-stat:last-child { border-bottom: none; }
   .rsm-actions { flex-direction: column; }
   .rsm-actions a, .rsm-actions button { width: 100%; text-align: center; }
+}
+
+/* =====================================================
+   DASHBOARD v2 — 3-column course-platform layout
+   (main column + sticky right profile panel), Lexuri colors
+   ===================================================== */
+.dash-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+}
+.dash-main { min-width: 0; }
+.dash-side {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Promo banner — vibrant clay/ink gradient replacing the plain dark hero */
+.promo-banner {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--clay) 0%, #a8482b 55%, var(--ink) 130%);
+  /* Clears the fixed floating header — its own background still bleeds to
+     the very top, showing through/around the translucent header. */
+  padding-top: 90px;
+}
+.promo-sparkle {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+.promo-sparkle-1 { top: 24px;  right: 46%; font-size: 0.9rem; }
+.promo-sparkle-2 { top: 64px;  right: 38%; font-size: 1.4rem; }
+.promo-sparkle-3 { bottom: 40px; right: 44%; font-size: 1rem; }
+.promo-cta {
+  margin-top: 20px;
+  display: inline-flex;
+}
+/* The default clay-bright subtitle color reads fine on the dark hero, but
+   washes out against this warm gradient — bump contrast here specifically. */
+.promo-banner .app-hero-subtitle {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Stat pill row */
+.stat-pill-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 24px 0 32px;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+.stat-pill:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-pill-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+.stat-pill-icon.clay   { background: rgba(200, 111, 74, 0.14); color: var(--clay); }
+.stat-pill-icon.butter { background: rgba(246, 202, 95, 0.32); color: #8a6510; }
+.stat-pill-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.stat-pill-value {
+  font-weight: 900;
+  font-size: 0.86rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-pill-label { font-size: 0.7rem; color: var(--muted); font-weight: 700; }
+.stat-pill svg { color: var(--muted); flex-shrink: 0; }
+
+/* Small goal ring used as the first pill's icon */
+.pill-ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: conic-gradient(var(--clay) var(--goal, 0%), var(--sage) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pill-ring span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+/* Continue Watching — header w/ scroll arrows + horizontal row */
+.cw-head { display: flex; align-items: center; justify-content: space-between; }
+.cw-arrows { display: flex; gap: 6px; }
+.cw-arrow-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background 120ms ease;
+}
+.cw-arrow-btn:hover { background: var(--sage); }
+.cw-row {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-behavior: smooth;
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 45px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 45px), transparent 100%);
+}
+.cw-row > * { flex: 0 0 280px; }
+
+/* Recent Activity — category badge chip */
+.activity-badge {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Right profile panel */
+.profile-panel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+/* Softens the seam where the clay hero (left column) meets this card
+   (right column) at the same height — a faint warm wash instead of a
+   hard color cut at the top-left corner. */
+.profile-panel--top {
+  background: linear-gradient(160deg, rgba(200, 111, 74, 0.1) 0%, #fff 45%);
+}
+.profile-panel-head { margin-bottom: 14px; }
+.profile-avatar-lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clay);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin: 0 auto 12px;
+}
+.profile-greeting {
+  text-align: center;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.02rem;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.profile-sub { text-align: center; font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+.profile-icon-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 22px; }
+.profile-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+.profile-icon-btn:hover { background: var(--sage); }
+
+/* Weekly bar chart (right panel) */
+.week-chart { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 84px; }
+.week-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.week-chart-bar { width: 100%; max-width: 20px; border-radius: 6px 6px 3px 3px; background: var(--line); transition: height 400ms cubic-bezier(0.4, 0, 0.2, 1); }
+.week-chart-bar.active { background: linear-gradient(180deg, var(--clay) 0%, var(--moss) 100%); }
+.week-chart-day { font-size: 0.6rem; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+
+/* Top Learners list */
+.top-learners-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.top-learners-head a { font-size: 0.76rem; font-weight: 800; color: var(--clay); text-decoration: none; }
+.top-learners-head a:hover { text-decoration: underline; }
+.top-learner-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.top-learner-row:last-child { border-bottom: 0; }
+.top-learner-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--moss);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.top-learner-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.top-learner-name { font-size: 0.82rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-learner-sub { font-size: 0.7rem; color: var(--muted); }
+.top-learner-rank {
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--sage);
+  color: var(--moss);
+  flex-shrink: 0;
+}
+.top-learner-rank.me { background: var(--clay); color: #fff; }
+
+@media (max-width: 900px) {
+  .dash-layout { grid-template-columns: 1fr; }
+  .dash-side { position: static; }
+}
+@media (max-width: 640px) {
+  .stat-pill-row { grid-template-columns: 1fr; }
 }

@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { ALBUMS, sungTracks, type Album } from '@/lib/album'
 import { STUDY_LEVELS, type StudyLevel } from '@/lib/mvp'
+import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
+import { DiscIcon, MusicNoteIcon, ListIcon, LevelIcon } from '@/components/ui/Icons'
 
 const LEVEL_ORDER: StudyLevel[] = ['beginner', 'intermediate', 'advanced']
 
@@ -51,40 +53,74 @@ function AlbumCard({ album }: { album: Album }) {
 // Vitrine de álbuns conceituais, agrupada por nível (básico/intermediário/
 // avançado) — um álbum-jornada para cada nível do app.
 export default function AlbumsPage() {
+  const curatedAlbums = ALBUMS.filter((a) => sungTracks(a).length > 0)
+  const totalTracks = ALBUMS.reduce((sum, a) => sum + sungTracks(a).length, 0)
+
   return (
-    <>
-      <div className="app-hero">
-        <h1 className="app-hero-title">Albums</h1>
-        <p className="app-hero-subtitle">
-          Go through a whole concept album — one that tells a story and makes you think.
-        </p>
+    <div className="dash-layout">
+      <div className="dash-main">
+        <div className="app-hero promo-banner">
+          <span className="promo-sparkle promo-sparkle-1">✦</span>
+          <span className="promo-sparkle promo-sparkle-2">✦</span>
+          <span className="promo-sparkle promo-sparkle-3">✦</span>
+          <h1 className="app-hero-title">Albums</h1>
+          <p className="app-hero-subtitle">
+            Go through a whole concept album — one that tells a story and makes you think.
+          </p>
+        </div>
+
+        <div className="stat-pill-row">
+          <div className="stat-pill">
+            <span className="stat-pill-icon clay"><DiscIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{ALBUMS.length} Albums</span>
+              <span className="stat-pill-label">Concept journeys</span>
+            </span>
+          </div>
+          <div className="stat-pill">
+            <span className="stat-pill-icon butter"><MusicNoteIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{curatedAlbums.length}/{ALBUMS.length} Curated</span>
+              <span className="stat-pill-label">Ready to study</span>
+            </span>
+          </div>
+          <div className="stat-pill">
+            <span className="stat-pill-icon" style={{ background: 'var(--sage)', color: 'var(--moss)' }}><ListIcon size={17} /></span>
+            <span className="stat-pill-text">
+              <span className="stat-pill-value">{totalTracks} Tracks</span>
+              <span className="stat-pill-label">Across all albums</span>
+            </span>
+          </div>
+        </div>
+
+        {LEVEL_ORDER.map((level) => {
+          const albums = ALBUMS.filter((a) => a.level === level)
+          const info = STUDY_LEVELS[level]
+          return (
+            <div key={level}>
+              <div className="section-title"><LevelIcon level={level} size={14} /> {info.label}</div>
+              {albums.length === 0 ? (
+                <div className="alert-info" style={{ marginBottom: 28 }}>
+                  No {info.label.toLowerCase()} album yet — coming soon.
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                    gap: 20,
+                    marginBottom: 32,
+                  }}
+                >
+                  {albums.map((album) => <AlbumCard key={album.id} album={album} />)}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
-      {LEVEL_ORDER.map((level) => {
-        const albums = ALBUMS.filter((a) => a.level === level)
-        const info = STUDY_LEVELS[level]
-        return (
-          <div key={level}>
-            <div className="section-title">{info.icon} {info.label}</div>
-            {albums.length === 0 ? (
-              <div className="alert-info" style={{ marginBottom: 28 }}>
-                No {info.label.toLowerCase()} album yet — coming soon.
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 20,
-                  marginBottom: 32,
-                }}
-              >
-                {albums.map((album) => <AlbumCard key={album.id} album={album} />)}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </>
+      <ProfileSidePanel />
+    </div>
   )
 }

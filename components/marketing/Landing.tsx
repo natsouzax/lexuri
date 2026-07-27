@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useLang } from '@/lib/i18n'
 import { EASE_OUT } from '@/lib/easing'
 import HeroLyricsDemo from './HeroLyricsDemo'
+import { MusicNoteIcon, TapIcon, RepeatIcon } from '@/components/ui/Icons'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 22 },
@@ -19,14 +20,19 @@ export default function Landing() {
   const { t } = useLang()
 
   const steps = [
-    { icon: '🎵', bg: 'var(--sage)',           title: t('landing.step1.title'), desc: t('landing.step1.desc') },
-    { icon: '👆', bg: 'rgba(200,111,74,0.16)', title: t('landing.step2.title'), desc: t('landing.step2.desc') },
-    { icon: '🔁', bg: 'rgba(246,202,95,0.28)', title: t('landing.step3.title'), desc: t('landing.step3.desc') },
+    { Icon: MusicNoteIcon, color: 'var(--moss)',  bg: 'var(--sage)',           title: t('landing.step1.title'), desc: t('landing.step1.desc') },
+    { Icon: TapIcon,       color: 'var(--clay)',  bg: 'rgba(200,111,74,0.16)', title: t('landing.step2.title'), desc: t('landing.step2.desc') },
+    { Icon: RepeatIcon,    color: '#8a6510',      bg: 'rgba(246,202,95,0.28)', title: t('landing.step3.title'), desc: t('landing.step3.desc') },
   ]
 
   return (
     <>
-      <section className="mkt-section-dark" style={{ padding: '64px 0 80px', overflow: 'hidden' }}>
+      {/* Extra top padding clears the fixed floating nav (its background
+          still bleeds to the very top, behind/around the nav pill). */}
+      <section className="mkt-section-dark mkt-hero-flip mkt-fade-to-cream" style={{ padding: '112px 0 80px' }}>
+        <span className="promo-sparkle promo-sparkle-1">✦</span>
+        <span className="promo-sparkle promo-sparkle-2">✦</span>
+        <span className="promo-sparkle promo-sparkle-3">✦</span>
         <div className="mkt-container mkt-redesign-hero">
           <div>
             <motion.span className="mkt-eyebrow mkt-eyebrow-dark" {...fadeUp(0.08)}>
@@ -55,7 +61,7 @@ export default function Landing() {
               </motion.div>
             </motion.div>
 
-            <motion.p style={{ fontSize: '0.8rem', color: 'var(--dark-muted)', marginTop: 14 }} {...fadeUp(0.5)}>
+            <motion.p style={{ fontSize: '0.8rem', color: 'rgba(255,250,240,0.8)', marginTop: 14 }} {...fadeUp(0.5)}>
               {t('landing.time')}
             </motion.p>
           </div>
@@ -66,50 +72,52 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mkt-section-cream mkt-section-sm">
-        <div className="mkt-container" style={{ maxWidth: 640 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <section className="mkt-section-cream mkt-section-sm mkt-fade-to-dark">
+        <div className="mkt-container">
+          <motion.div
+            className="mkt-steps-head"
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.45, ease: EASE_OUT }}
+          >
+            <span className="mkt-eyebrow">How it works</span>
+            <h2 className="mkt-h2">Three steps. Zero pressure.</h2>
+          </motion.div>
+
+          <div className="mkt-steps-grid">
             {steps.map((s, i) => (
               <motion.div
                 key={s.title}
-                initial={{ opacity: 0, y: 16 }}
+                className="mkt-step-card"
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.45, delay: i * 0.08, ease: EASE_OUT }}
-                whileHover={{ y: -3 }}
-                style={{
-                  display: 'flex',
-                  gap: 16,
-                  alignItems: 'flex-start',
-                  background: '#fff',
-                  border: '1px solid var(--line)',
-                  borderRadius: 18,
-                  padding: '18px 20px',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
               >
-                <span style={{ width: 44, height: 44, borderRadius: 14, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
-                  {s.icon}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--ink)', marginBottom: 2 }}>
-                    <span style={{ color: 'var(--clay)', fontWeight: 900, marginRight: 6 }}>{i + 1}.</span>
-                    {s.title}
-                  </div>
-                  <div style={{ fontSize: '0.86rem', color: 'var(--muted)', lineHeight: 1.55 }}>{s.desc}</div>
-                </div>
+                <span className="mkt-step-num">{i + 1}</span>
+                <span className="mkt-step-icon" style={{ background: s.bg, color: s.color }}><s.Icon size={20} /></span>
+                <div className="mkt-step-title">{s.title}</div>
+                <div className="mkt-step-desc">{s.desc}</div>
               </motion.div>
             ))}
           </div>
 
           <motion.div
-            style={{ textAlign: 'center', marginTop: 36 }}
-            initial={{ opacity: 0, y: 12 }}
+            className="mkt-cta-band"
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, ease: EASE_OUT }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.5, ease: EASE_OUT }}
           >
-            <Link href="/register" className="btn-mkt-dark">{t('landing.cta')}</Link>
+            <span className="promo-sparkle promo-sparkle-1">✦</span>
+            <span className="promo-sparkle promo-sparkle-2">✦</span>
+            <span className="promo-sparkle promo-sparkle-3">✦</span>
+            <h3>Ready to learn from real English?</h3>
+            <p>{t('landing.time')}</p>
+            <motion.div style={{ display: 'inline-block' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link href="/register" className="btn-mkt-primary">{t('landing.cta')}</Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
