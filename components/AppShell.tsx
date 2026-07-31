@@ -13,9 +13,13 @@ function isOverview(pathname: string) {
   return pathname.startsWith('/dashboard')
 }
 
+const FULL_BLEED_HERO_ROUTES = new Set(['/dashboard', '/feed', '/albums', '/review', '/flashcards'])
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(() => isOverview(pathname))
+  const overview = isOverview(pathname)
+  const fullBleedHero = FULL_BLEED_HERO_ROUTES.has(pathname)
+  const [sidebarOpen, setSidebarOpen] = useState(() => overview)
   const scrollHidden = useHideOnScroll()
 
   // Sidebar defaults open only on Overview — every other page starts closed.
@@ -26,7 +30,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${fullBleedHero ? ` hero-bleed-shell${sidebarOpen ? ' hero-bleed-sidebar-open' : ''}` : ''}`}>
       <AppTopNav sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(v => !v)} hidden={scrollHidden} />
       <div className="app-body">
         <motion.div

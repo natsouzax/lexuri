@@ -8,7 +8,6 @@ import { useLang, type DictKey } from '@/lib/i18n'
 import SrsSession from '@/components/review/SrsSession'
 import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
 import { FlameIcon, BookIcon, CheckCircleIcon, DayIcon } from '@/components/ui/Icons'
-import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import type { Flashcard } from '@/lib/types'
 
 async function apiFetch<T>(path: string): Promise<T> {
@@ -26,7 +25,6 @@ export default function ReviewPage() {
   const [loaded, setLoaded] = useState(false)
   const [dueCount, setDueCount] = useState(0)
   const [oldestAgo, setOldestAgo] = useState(0)
-  const heroHidden = useHideOnScroll()
 
   useEffect(() => {
     apiFetch<{ progress: SongProgress[] }>('/api/progress')
@@ -60,7 +58,7 @@ export default function ReviewPage() {
   return (
     <div className="dash-layout">
       <div className="dash-main">
-        <div className={`app-hero promo-banner app-hero-collapsible${heroHidden ? ' is-hidden' : ''}`}>
+        <div className="app-hero promo-banner">
           <span className="promo-sparkle promo-sparkle-1">✦</span>
           <span className="promo-sparkle promo-sparkle-2">✦</span>
           <span className="promo-sparkle promo-sparkle-3">✦</span>

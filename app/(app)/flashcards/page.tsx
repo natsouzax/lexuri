@@ -6,6 +6,7 @@ import { getFeedItem, FEED_ITEMS } from '@/lib/feed'
 import { getDueCards } from '@/lib/srs'
 import type { Takeaway, UserVerse } from '@/lib/mvp'
 import type { Flashcard } from '@/lib/types'
+import type { MusicStudioData } from '@/lib/music/types'
 import { useLang, type DictKey } from '@/lib/i18n'
 import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
 import { BookIcon, FlameIcon, CheckCircleIcon, SearchIcon, PencilIcon } from '@/components/ui/Icons'
@@ -51,6 +52,7 @@ export default function LibraryPage() {
   const [cards, setCards] = useState<Flashcard[]>([])
   const [takeaways, setTakeaways] = useState<Takeaway[]>([])
   const [verses, setVerses] = useState<UserVerse[]>([])
+  const [studio, setStudio] = useState<MusicStudioData | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   // Filtros da aba de palavras.
@@ -64,10 +66,12 @@ export default function LibraryPage() {
       apiFetch<Flashcard[]>('/api/flashcards').catch(() => [] as Flashcard[]),
       apiFetch<{ takeaways: Takeaway[]; verses: UserVerse[] }>('/api/takeaways')
         .catch(() => ({ takeaways: [], verses: [] })),
-    ]).then(([c, tw]) => {
+      apiFetch<MusicStudioData>('/api/user-songs').catch(() => null),
+    ]).then(([c, tw, music]) => {
       setCards(c)
       setTakeaways(tw.takeaways)
       setVerses(tw.verses)
+      setStudio(music)
       setLoaded(true)
     })
   }, [])
@@ -303,12 +307,48 @@ export default function LibraryPage() {
           <div className="panel" style={{ marginBottom: 16 }}>
             <span className="mini-label">{t('lib.song.label')}</span>
             <p className="panel-copy">{t('lib.song.how')}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginTop: 16 }}>
+              <div>
+                <strong style={{ display: 'block', fontSize: '0.92rem' }}>
+                  {studio?.song ? studio.song.title : `${studio?.availableTakeawaysCount ?? takeaways.length}/14 chunks ready`}
+                </strong>
+                <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
+                  {studio?.song?.status === 'completed'
+                    ? 'Your final recording is ready.'
+                    : studio?.song
+                      ? 'Practice pronunciation and record your performance.'
+                      : 'Four verses, one chorus, then two final verses.'}
+                </span>
+              </div>
+              <Link href="/my-song" className="btn-primary" style={{ textDecoration: 'none' }}>
+                {studio?.song ? 'Open Music Studio' : 'See my progress'}
+              </Link>
+            </div>
           </div>
-          {loaded && verses.length === 0 && (
+          {loaded && verses.length === 0 && !studio?.song && (
             <EmptyState
               title={t('lib.song.empty.title')}
               body={t('lib.song.empty.body')}
             />
+          )}
+          {studio?.song?.status === 'completed' && studio.song.recording_url && (
+            <div className="panel" style={{ marginBottom: 16 }}>
+              <span className="mini-label">Final recording</span>
+              <audio controls src={studio.song.recording_url} style={{ width: '100%', marginTop: 10 }} />
+            </div>
+          )}
+          {(studio?.songHistory.length ?? 0) > 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+              {studio?.songHistory.slice(1).map((song) => (
+                <div key={song.id} className="panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 0.5fr) minmax(220px, 1fr)', gap: 14, alignItems: 'center' }}>
+                  <div>
+                    <strong style={{ display: 'block' }}>{song.title}</strong>
+                    <small style={{ color: 'var(--muted)' }}>{song.completed_at ? new Date(song.completed_at).toLocaleDateString() : song.status}</small>
+                  </div>
+                  {song.recording_url && <audio controls src={song.recording_url} style={{ width: '100%' }} />}
+                </div>
+              ))}
+            </div>
           )}
           {verses.length > 0 && (
             <div className="panel" style={{ padding: '32px 28px', textAlign: 'center' }}>

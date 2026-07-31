@@ -114,6 +114,7 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
         )}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/flashcards" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('act.done.glossary')}</a>
+          <a href="/my-song" className="btn-secondary" style={{ textDecoration: 'none' }}>Music Studio</a>
           <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.nextSong')}</a>
         </div>
       </div>

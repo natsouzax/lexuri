@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js'
+import type { RealtimeChannel, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 import { BellIcon } from '@/components/ui/Icons'
 
 interface Notification {
@@ -19,11 +19,12 @@ export default function NotificationBell() {
   const [open, setOpen]   = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   // Load initial notifications and subscribe to realtime
   useEffect(() => {
     let mounted = true
+    let channel: RealtimeChannel | null = null
 
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -40,8 +41,9 @@ export default function NotificationBell() {
       if (mounted) setNotifications((data ?? []) as Notification[])
 
       // Realtime subscription
-      supabase
-        .channel(`notifications:${user.id}`)
+      if (!mounted) return
+      channel = supabase
+        .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
@@ -53,9 +55,11 @@ export default function NotificationBell() {
     }
 
     init()
-    return () => { mounted = false }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    return () => {
+      mounted = false
+      if (channel) void supabase.removeChannel(channel)
+    }
+  }, [supabase])
 
   const unread = notifications.filter(n => !n.read).length
 
