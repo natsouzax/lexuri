@@ -6,6 +6,7 @@ const PROTECTED_PREFIXES = [
   '/albums',
   '/flashcards',
   '/review',
+  '/speaking-review',
   '/level',
   '/dashboard',
   '/leaderboard',

@@ -3,16 +3,18 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
+import { getNativeLangName } from '@/lib/i18n'
 import {
   recordedBlobToPcmWav,
   supportedRecordingMimeType,
   extensionForMime,
 } from '@/lib/music/audio'
 import {
+  BACKING_SONG_START_SECONDS,
+  BACKING_TOTAL_SECONDS,
   COUNT_IN_SECONDS,
-  SECTION_SECONDS,
   SONG_SECONDS,
-  scheduleBackingTrack,
+  renderBackingTrackWav,
   sectionIndexAt,
 } from '@/lib/music/backing-track'
 import type {
@@ -20,6 +22,7 @@ import type {
   PersonalSongSection,
   PronunciationAttempt,
   PronunciationResult,
+  SongPerformanceAssessment,
 } from '@/lib/music/types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -36,6 +39,11 @@ function scoreColor(score: number | null | undefined): string {
   return '#b84335'
 }
 
+async function ensureAudioContextRunning(context: AudioContext, errorMessage: string) {
+  if (context.state !== 'running') await context.resume()
+  if ((context.state as AudioContextState) !== 'running') throw new Error(errorMessage)
+}
+
 function latestAttemptsBySection(attempts: PronunciationAttempt[]) {
   const latest = new Map<string, PronunciationAttempt>()
   for (const attempt of attempts) {
@@ -49,7 +57,7 @@ interface LiveResult extends PronunciationResult {
   createdAt: string
 }
 
-type PerformanceMode = 'idle' | 'rehearsal' | 'count-in' | 'recording'
+type PerformanceMode = 'idle' | 'preparing' | 'ready' | 'rehearsal' | 'count-in' | 'recording'
 
 export default function MusicStudio() {
   const [data, setData] = useState<MusicStudioData | null>(null)
@@ -60,13 +68,20 @@ export default function MusicStudio() {
   const [recordingSectionId, setRecordingSectionId] = useState<string | null>(null)
   const [analysingSectionId, setAnalysingSectionId] = useState<string | null>(null)
   const [liveResults, setLiveResults] = useState<Record<string, LiveResult>>({})
+  const [practicePreviewUrls, setPracticePreviewUrls] = useState<Record<string, string>>({})
   const [practiceSeconds, setPracticeSeconds] = useState(0)
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('idle')
   const [performanceSection, setPerformanceSection] = useState(0)
   const [performanceElapsed, setPerformanceElapsed] = useState(0)
   const [countdown, setCountdown] = useState(0)
+  const [backingAudioUrl, setBackingAudioUrl] = useState<string | null>(null)
+  const [backingAudioPreparing, setBackingAudioPreparing] = useState(false)
   const [finalBlob, setFinalBlob] = useState<Blob | null>(null)
   const [finalPreviewUrl, setFinalPreviewUrl] = useState<string | null>(null)
+  const [analysingFinal, setAnalysingFinal] = useState(false)
+  const [finalAssessmentOverride, setFinalAssessmentOverride] = useState<SongPerformanceAssessment | null | undefined>(undefined)
+  const [savingSpeakingWords, setSavingSpeakingWords] = useState(false)
+  const [savedSpeakingWords, setSavedSpeakingWords] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const [consent, setConsent] = useState(false)
 
@@ -74,14 +89,22 @@ export default function MusicStudio() {
   const practiceStreamRef = useRef<MediaStream | null>(null)
   const practiceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const practiceAutoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const practicePreviewUrlsRef = useRef<Record<string, string>>({})
 
   const audioContextRef = useRef<AudioContext | null>(null)
+  const backingMonitorRef = useRef<HTMLAudioElement | null>(null)
+  const backingAudioBlobRef = useRef<Blob | null>(null)
+  const backingAudioUrlRef = useRef<string | null>(null)
+  const finalPreviewUrlRef = useRef<string | null>(null)
   const performanceStreamRef = useRef<MediaStream | null>(null)
+  const performanceMixDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null)
+  const performanceBackingBufferRef = useRef<AudioBuffer | null>(null)
+  const performanceBackingSourceRef = useRef<AudioBufferSourceNode | null>(null)
   const performanceRecorderRef = useRef<MediaRecorder | null>(null)
+  const performanceVoiceRecorderRef = useRef<MediaRecorder | null>(null)
   const performanceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const performanceStartRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const performanceStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const scheduledTrackRef = useRef<ReturnType<typeof scheduleBackingTrack> | null>(null)
   const discardPerformanceRef = useRef(false)
 
   const load = useCallback(async () => {
@@ -116,11 +139,26 @@ export default function MusicStudio() {
     performanceTimerRef.current = null
     performanceStartRef.current = null
     performanceStopRef.current = null
-    scheduledTrackRef.current?.stop()
-    scheduledTrackRef.current = null
+    const backingSource = performanceBackingSourceRef.current
+    performanceBackingSourceRef.current = null
+    if (backingSource) {
+      backingSource.onended = null
+      try { backingSource.stop() } catch { /* already stopped */ }
+      try { backingSource.disconnect() } catch { /* already disconnected */ }
+    }
     performanceStreamRef.current?.getTracks().forEach((track) => track.stop())
     performanceStreamRef.current = null
+    performanceMixDestinationRef.current = null
+    performanceBackingBufferRef.current = null
     performanceRecorderRef.current = null
+    performanceVoiceRecorderRef.current = null
+    const monitor = backingMonitorRef.current
+    if (monitor) {
+      monitor.onended = null
+      monitor.pause()
+      monitor.srcObject = null
+      monitor.currentTime = 0
+    }
     const context = audioContextRef.current
     audioContextRef.current = null
     if (context && context.state !== 'closed') await context.close().catch(() => {})
@@ -132,8 +170,55 @@ export default function MusicStudio() {
   useEffect(() => () => {
     cleanupPractice()
     void cleanupPerformance()
-    if (finalPreviewUrl) URL.revokeObjectURL(finalPreviewUrl)
-  }, [cleanupPerformance, cleanupPractice, finalPreviewUrl])
+    if (finalPreviewUrlRef.current) URL.revokeObjectURL(finalPreviewUrlRef.current)
+    finalPreviewUrlRef.current = null
+    Object.values(practicePreviewUrlsRef.current).forEach((url) => URL.revokeObjectURL(url))
+    practicePreviewUrlsRef.current = {}
+  }, [cleanupPerformance, cleanupPractice])
+
+  const songId = data?.song?.id
+  useEffect(() => {
+    setFinalAssessmentOverride(undefined)
+    setSavedSpeakingWords(null)
+  }, [songId])
+
+  useEffect(() => {
+    if (!songId) {
+      setBackingAudioPreparing(false)
+      return
+    }
+
+    let cancelled = false
+    const previousUrl = backingAudioUrlRef.current
+    if (previousUrl) URL.revokeObjectURL(previousUrl)
+    backingAudioBlobRef.current = null
+    backingAudioUrlRef.current = null
+    setBackingAudioUrl(null)
+    setBackingAudioPreparing(true)
+
+    void renderBackingTrackWav()
+      .then((blob) => {
+        if (cancelled) return
+        const url = URL.createObjectURL(blob)
+        backingAudioBlobRef.current = blob
+        backingAudioUrlRef.current = url
+        setBackingAudioUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setError('Não foi possível preparar a música de fundo neste navegador.')
+      })
+      .finally(() => {
+        if (!cancelled) setBackingAudioPreparing(false)
+      })
+
+    return () => {
+      cancelled = true
+      const currentUrl = backingAudioUrlRef.current
+      if (currentUrl) URL.revokeObjectURL(currentUrl)
+      backingAudioBlobRef.current = null
+      backingAudioUrlRef.current = null
+    }
+  }, [songId])
 
   const latestAttempts = useMemo(
     () => latestAttemptsBySection(data?.attempts ?? []),
@@ -161,6 +246,47 @@ export default function MusicStudio() {
     window.speechSynthesis.speak(utterance)
   }
 
+  function keepPracticePreview(sectionId: string, blob: Blob) {
+    const previousUrl = practicePreviewUrlsRef.current[sectionId]
+    if (previousUrl) URL.revokeObjectURL(previousUrl)
+    const nextUrl = URL.createObjectURL(blob)
+    practicePreviewUrlsRef.current = {
+      ...practicePreviewUrlsRef.current,
+      [sectionId]: nextUrl,
+    }
+    setPracticePreviewUrls((current) => ({ ...current, [sectionId]: nextUrl }))
+  }
+
+  function clearFinalPreview() {
+    if (finalPreviewUrlRef.current) URL.revokeObjectURL(finalPreviewUrlRef.current)
+    finalPreviewUrlRef.current = null
+    setFinalPreviewUrl(null)
+    setFinalBlob(null)
+  }
+
+  async function analyseFinalPerformance(songId: string, voiceBlob: Blob) {
+    setAnalysingFinal(true)
+    setError('')
+    try {
+      const extension = extensionForMime(voiceBlob.type)
+      const form = new FormData()
+      form.append('audio', voiceBlob, `final-voice.${extension}`)
+      form.append('songId', songId)
+      form.append('nativeLanguage', getNativeLangName())
+      const assessment = await apiFetch<SongPerformanceAssessment>('/api/pronunciation/assess-song', {
+        method: 'POST',
+        body: form,
+      })
+      setFinalAssessmentOverride(assessment)
+    } catch (analysisError) {
+      setError(analysisError instanceof Error
+        ? `A gravação ficou pronta, mas a análise falhou: ${analysisError.message}`
+        : 'A gravação ficou pronta, mas não foi possível analisar a performance.')
+    } finally {
+      setAnalysingFinal(false)
+    }
+  }
+
   async function analysePracticeBlob(section: PersonalSongSection, blob: Blob) {
     setAnalysingSectionId(section.id)
     setError('')
@@ -170,6 +296,7 @@ export default function MusicStudio() {
       form.append('audio', wav, 'practice.wav')
       form.append('songId', section.song_id)
       form.append('sectionId', section.id)
+      form.append('nativeLanguage', getNativeLangName())
       const result = await apiFetch<LiveResult>('/api/pronunciation/assess', {
         method: 'POST',
         body: form,
@@ -206,6 +333,11 @@ export default function MusicStudio() {
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/webm' })
         cleanupPractice()
+        if (blob.size === 0) {
+          setError('A gravação ficou vazia. Tente novamente e mantenha o microfone ativo.')
+          return
+        }
+        keepPracticePreview(section.id, blob)
         void analysePracticeBlob(section, blob)
       }
 
@@ -232,14 +364,14 @@ export default function MusicStudio() {
     if (recorder?.state === 'recording') recorder.stop()
   }
 
-  function updatePerformanceClock(context: AudioContext, songStart: number, final: boolean) {
-    const untilSong = songStart - context.currentTime
+  function updatePerformanceClock(playbackSeconds: number, final: boolean) {
+    const untilSong = BACKING_SONG_START_SECONDS - playbackSeconds
     if (untilSong > 0) {
       setCountdown(Math.max(1, Math.ceil(untilSong / (COUNT_IN_SECONDS / 4))))
       setPerformanceMode(final ? 'count-in' : 'rehearsal')
       return
     }
-    const elapsed = Math.min(SONG_SECONDS, Math.max(0, context.currentTime - songStart))
+    const elapsed = Math.min(SONG_SECONDS, Math.max(0, playbackSeconds - BACKING_SONG_START_SECONDS))
     setCountdown(0)
     setPerformanceElapsed(elapsed)
     setPerformanceSection(sectionIndexAt(elapsed))
@@ -247,26 +379,43 @@ export default function MusicStudio() {
   }
 
   async function startRehearsal() {
-    if (!data?.song || performanceMode !== 'idle') return
+    if (!data?.song || !backingAudioUrl || performanceMode !== 'idle') return
     setError('')
-    const context = new AudioContext()
-    await context.resume()
-    audioContextRef.current = context
-    const track = scheduleBackingTrack(context)
-    scheduledTrackRef.current = track
-    setPerformanceMode('rehearsal')
-    setPerformanceSection(0)
-    performanceTimerRef.current = setInterval(
-      () => updatePerformanceClock(context, track.songStart, false),
-      100,
-    )
-    performanceStopRef.current = setTimeout(() => {
-      void cleanupPerformance()
-    }, Math.max(0, (track.endAt - context.currentTime + 0.3) * 1000))
+    const monitor = backingMonitorRef.current
+    if (!monitor) return
+
+    try {
+      monitor.currentTime = 0
+      monitor.volume = 0.9
+      monitor.onended = () => { void cleanupPerformance() }
+      await monitor.play()
+      setPerformanceMode('rehearsal')
+      setPerformanceSection(0)
+      updatePerformanceClock(monitor.currentTime, false)
+      performanceTimerRef.current = setInterval(
+        () => updatePerformanceClock(monitor.currentTime, false),
+        100,
+      )
+    } catch {
+      await cleanupPerformance()
+      setError('O navegador bloqueou a música de fundo. Toque novamente em “Rehearse with the beat”.')
+    }
+  }
+
+  function stopPerformanceRecorders(): boolean {
+    let stopped = false
+    for (const recorder of [performanceRecorderRef.current, performanceVoiceRecorderRef.current]) {
+      if (recorder?.state === 'recording') {
+        recorder.stop()
+        stopped = true
+      }
+    }
+    return stopped
   }
 
   async function startFinalPerformance() {
-    if (!data?.song || performanceMode !== 'idle') return
+    if (!data?.song || !backingAudioUrl || performanceMode !== 'idle') return
+    const performanceSongId = data.song.id
     if (!consent) {
       setError('Confirme o consentimento de gravação antes de começar.')
       return
@@ -277,75 +426,174 @@ export default function MusicStudio() {
     }
 
     setError('')
-    if (finalPreviewUrl) URL.revokeObjectURL(finalPreviewUrl)
-    setFinalPreviewUrl(null)
-    setFinalBlob(null)
+    clearFinalPreview()
+    setFinalAssessmentOverride(null)
     discardPerformanceRef.current = false
+    setPerformanceMode('preparing')
 
     try {
+      const backingBlob = backingAudioBlobRef.current
+      if (!backingBlob) throw new Error('A música de fundo ainda não ficou pronta.')
+      const context = new AudioContext()
+      audioContextRef.current = context
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       })
-      const context = new AudioContext()
-      await context.resume()
+      performanceStreamRef.current = stream
+      performanceBackingBufferRef.current = await context.decodeAudioData(
+        await backingBlob.arrayBuffer(),
+      )
+
       const mixDestination = context.createMediaStreamDestination()
+      const voiceDestination = context.createMediaStreamDestination()
+      performanceMixDestinationRef.current = mixDestination
       const mic = context.createMediaStreamSource(stream)
       const micGain = context.createGain()
       micGain.gain.value = 1.05
-      mic.connect(micGain).connect(mixDestination)
+      mic.connect(micGain)
+      micGain.connect(mixDestination)
+      micGain.connect(voiceDestination)
 
-      const track = scheduleBackingTrack(context, { recordDestination: mixDestination, outputGain: 0.38 })
       const mimeType = supportedRecordingMimeType()
       const recorder = mimeType
         ? new MediaRecorder(mixDestination.stream, { mimeType, audioBitsPerSecond: 128_000 })
         : new MediaRecorder(mixDestination.stream)
-      const chunks: BlobPart[] = []
-      recorder.ondataavailable = (event) => { if (event.data.size > 0) chunks.push(event.data) }
-      recorder.onerror = () => {
-        setError('A gravação final foi interrompida pelo navegador.')
-        discardPerformanceRef.current = true
-        void cleanupPerformance()
-      }
-      recorder.onstop = () => {
-        if (!discardPerformanceRef.current && chunks.length > 0) {
-          const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/webm' })
+      const voiceRecorder = mimeType
+        ? new MediaRecorder(voiceDestination.stream, { mimeType, audioBitsPerSecond: 96_000 })
+        : new MediaRecorder(voiceDestination.stream)
+      const finalChunks: BlobPart[] = []
+      const voiceChunks: BlobPart[] = []
+      let finalStopped = false
+      let voiceStopped = false
+
+      const finishPerformance = () => {
+        if (!finalStopped || !voiceStopped) return
+        if (!discardPerformanceRef.current && finalChunks.length > 0) {
+          const blob = new Blob(finalChunks, { type: recorder.mimeType || mimeType || 'audio/webm' })
           const url = URL.createObjectURL(blob)
+          finalPreviewUrlRef.current = url
           setFinalBlob(blob)
           setFinalPreviewUrl(url)
+
+          if (voiceChunks.length > 0) {
+            const voiceBlob = new Blob(voiceChunks, {
+              type: voiceRecorder.mimeType || mimeType || 'audio/webm',
+            })
+            void analyseFinalPerformance(performanceSongId, voiceBlob)
+          } else {
+            setError('A música ficou pronta, mas a faixa de voz estava vazia e não pôde ser analisada.')
+          }
         }
         void cleanupPerformance()
       }
+      const handleRecorderError = () => {
+        setError('A gravação final foi interrompida pelo navegador.')
+        discardPerformanceRef.current = true
+        stopPerformanceRecorders()
+        void cleanupPerformance()
+      }
+      recorder.ondataavailable = (event) => { if (event.data.size > 0) finalChunks.push(event.data) }
+      voiceRecorder.ondataavailable = (event) => { if (event.data.size > 0) voiceChunks.push(event.data) }
+      recorder.onerror = handleRecorderError
+      voiceRecorder.onerror = handleRecorderError
+      recorder.onstop = () => {
+        finalStopped = true
+        finishPerformance()
+      }
+      voiceRecorder.onstop = () => {
+        voiceStopped = true
+        finishPerformance()
+      }
 
-      audioContextRef.current = context
-      performanceStreamRef.current = stream
       performanceRecorderRef.current = recorder
-      scheduledTrackRef.current = track
-      setPerformanceMode('count-in')
+      performanceVoiceRecorderRef.current = voiceRecorder
+      setPerformanceMode('ready')
       setPerformanceSection(0)
-
-      performanceTimerRef.current = setInterval(
-        () => updatePerformanceClock(context, track.songStart, true),
-        100,
-      )
-      const recorderLeadSeconds = 0.12
-      performanceStartRef.current = setTimeout(() => {
-        if (recorder.state === 'inactive') recorder.start(250)
-      }, Math.max(0, (track.songStart - context.currentTime - recorderLeadSeconds) * 1000))
-      performanceStopRef.current = setTimeout(() => {
-        if (recorder.state === 'recording') recorder.stop()
-      }, Math.max(0, (track.endAt - context.currentTime + 0.15) * 1000))
     } catch (recordError) {
       discardPerformanceRef.current = true
+      setFinalAssessmentOverride(undefined)
       await cleanupPerformance()
       setError(recordError instanceof Error ? recordError.message : 'Não foi possível acessar o microfone.')
     }
   }
 
+  async function beginFinalPerformance() {
+    if (performanceMode !== 'ready') return
+    const context = audioContextRef.current
+    const mixDestination = performanceMixDestinationRef.current
+    const backingBuffer = performanceBackingBufferRef.current
+    const recorder = performanceRecorderRef.current
+    const voiceRecorder = performanceVoiceRecorderRef.current
+    if (!context || !mixDestination || !backingBuffer || !recorder || !voiceRecorder) {
+      setError('A gravação não ficou pronta. Tente preparar o microfone novamente.')
+      await cleanupPerformance()
+      return
+    }
+
+    setError('')
+    discardPerformanceRef.current = false
+    try {
+      await (context.state === 'running' ? Promise.resolve() : context.resume())
+      await ensureAudioContextRunning(
+        context,
+        'O navegador bloqueou o áudio. Toque novamente em “Start performance”.',
+      )
+
+      // One source feeds both destinations. What the user hears is the exact
+      // backing track written into the final MediaRecorder stream.
+      const source = context.createBufferSource()
+      const speakerGain = context.createGain()
+      const recordingGain = context.createGain()
+      source.buffer = backingBuffer
+      speakerGain.gain.value = 0.95
+      recordingGain.gain.value = 0.82
+      source.connect(speakerGain).connect(context.destination)
+      source.connect(recordingGain).connect(mixDestination)
+      performanceBackingSourceRef.current = source
+
+      const backingStartAt = context.currentTime + 0.08
+      const songStartAt = backingStartAt + BACKING_SONG_START_SECONDS
+      const songEndAt = songStartAt + SONG_SECONDS
+      source.start(backingStartAt)
+
+      setPerformanceMode('count-in')
+      setPerformanceSection(0)
+      updatePerformanceClock(0, true)
+      performanceTimerRef.current = setInterval(
+        () => updatePerformanceClock(Math.max(0, context.currentTime - backingStartAt), true),
+        100,
+      )
+
+      source.onended = () => {
+        if (!stopPerformanceRecorders()) void cleanupPerformance()
+      }
+      const recorderLeadSeconds = 0.12
+      performanceStartRef.current = setTimeout(() => {
+        try {
+          if (recorder.state === 'inactive') recorder.start(250)
+          if (voiceRecorder.state === 'inactive') voiceRecorder.start(250)
+        } catch {
+          discardPerformanceRef.current = true
+          setError('O navegador não conseguiu iniciar as duas faixas de gravação.')
+          stopPerformanceRecorders()
+          void cleanupPerformance()
+        }
+      }, Math.max(0, (songStartAt - context.currentTime - recorderLeadSeconds) * 1000))
+      performanceStopRef.current = setTimeout(() => {
+        stopPerformanceRecorders()
+      }, Math.max(0, (Math.min(songEndAt + 0.15, backingStartAt + BACKING_TOTAL_SECONDS) - context.currentTime) * 1000))
+    } catch (recordError) {
+      discardPerformanceRef.current = true
+      setFinalAssessmentOverride(undefined)
+      await cleanupPerformance()
+      setError(recordError instanceof Error ? recordError.message : 'Não foi possível tocar a música de fundo.')
+    }
+  }
+
   function cancelPerformance() {
     discardPerformanceRef.current = true
-    const recorder = performanceRecorderRef.current
-    if (recorder?.state === 'recording') recorder.stop()
-    else void cleanupPerformance()
+    setFinalAssessmentOverride(undefined)
+    if (!stopPerformanceRecorders()) void cleanupPerformance()
   }
 
   async function saveFinalRecording() {
@@ -370,13 +618,30 @@ export default function MusicStudio() {
         body: JSON.stringify({ recordingPath: path, mimeType: uploadMimeType, consent: true }),
       })
       await load()
-      setFinalBlob(null)
-      if (finalPreviewUrl) URL.revokeObjectURL(finalPreviewUrl)
-      setFinalPreviewUrl(null)
+      clearFinalPreview()
+      setFinalAssessmentOverride(undefined)
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : String(saveError))
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function saveSpeakingPracticeWords() {
+    if (!data?.song) return
+    setSavingSpeakingWords(true)
+    setError('')
+    try {
+      const response = await apiFetch<{ savedCount: number }>('/api/speaking-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songId: data.song.id }),
+      })
+      setSavedSpeakingWords(response.savedCount)
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : String(saveError))
+    } finally {
+      setSavingSpeakingWords(false)
     }
   }
 
@@ -385,6 +650,9 @@ export default function MusicStudio() {
   }
 
   const song = data?.song ?? null
+  const performanceAssessment = finalAssessmentOverride === undefined
+    ? song?.performance_assessment ?? null
+    : finalAssessmentOverride
   const sections = song?.sections ?? []
   const currentSection = sections[Math.min(performanceSection, Math.max(0, sections.length - 1))]
   const progress = Math.min(100, ((data?.availableTakeawaysCount ?? 0) / (data?.requiredTakeaways ?? 14)) * 100)
@@ -459,15 +727,15 @@ export default function MusicStudio() {
             <div className="music-section-heading">
               <span>02</span>
               <div>
-                <h3>Pronunciation rehearsal</h3>
-                <p>Listen, speak without the instrumental, and improve the highlighted sounds.</p>
+                <h3>Clarity rehearsal</h3>
+                <p>Listen, speak without the instrumental, and improve the words the AI could not understand.</p>
               </div>
             </div>
 
-            {!data?.azureConfigured && (
-              <div className="music-azure-notice">
-                <strong>Azure connection pending</strong>
-                <span>Add the free Speech credentials to activate phoneme-level feedback. The rest of the studio is ready.</span>
+            {!data?.speechAnalysisConfigured && (
+              <div className="music-analysis-notice">
+                <strong>Voice analysis unavailable</strong>
+                <span>Configure the same OpenAI key used by Lexuri to activate word-level clarity feedback.</span>
               </div>
             )}
 
@@ -503,6 +771,7 @@ export default function MusicStudio() {
               const feedback = currentLive?.feedback ?? stored?.feedback
               const isRecording = recordingSectionId === section.id
               const isAnalysing = analysingSectionId === section.id
+              const practicePreviewUrl = practicePreviewUrls[section.id]
 
               return (
                 <div className="music-practice-card">
@@ -518,9 +787,11 @@ export default function MusicStudio() {
                           type="button"
                           className="btn-primary"
                           onClick={() => startPracticeRecording(section)}
-                          disabled={!data?.azureConfigured || isAnalysing || recordingSectionId !== null}
+                          disabled={!data?.speechAnalysisConfigured || isAnalysing || recordingSectionId !== null}
                         >
-                          {isAnalysing ? <><span className="spinner" /> Analysing…</> : 'Record my voice'}
+                          {isAnalysing
+                            ? <><span className="spinner" /> Analysing…</>
+                            : practicePreviewUrl ? 'Record again' : 'Record my voice'}
                         </button>
                       ) : (
                         <button type="button" className="music-record-stop" onClick={stopPracticeRecording}>
@@ -528,19 +799,33 @@ export default function MusicStudio() {
                         </button>
                       )}
                     </div>
-                    <small>Speak naturally. This recording is analysed and then discarded.</small>
+                    {practicePreviewUrl && !isRecording && (
+                      <div className="music-practice-playback">
+                        <div>
+                          <strong>Listen to your recording</strong>
+                          <span>Kept only in this browser tab.</span>
+                        </div>
+                        <audio
+                          controls
+                          preload="metadata"
+                          src={practicePreviewUrl}
+                          aria-label={`Your recording for ${section.label}`}
+                        />
+                      </div>
+                    )}
+                    <small>OpenAI receives a temporary copy for transcription. Lexuri does not save this practice audio.</small>
                   </div>
 
                   {scores ? (
                     <div className="music-practice-result">
                       <div className="music-main-score" style={{ color: scoreColor(scores.pronunciation ?? scores.accuracy) }}>
                         <strong>{Math.round(scores.pronunciation ?? scores.accuracy ?? 0)}</strong>
-                        <span>pronunciation</span>
+                        <span>clarity</span>
                       </div>
                       <div className="music-score-list">
-                        <span><small>Accuracy</small><strong>{Math.round(scores.accuracy ?? 0)}</strong></span>
-                        <span><small>Fluency</small><strong>{Math.round(scores.fluency ?? 0)}</strong></span>
+                        <span><small>Word match</small><strong>{Math.round(scores.accuracy ?? 0)}</strong></span>
                         <span><small>Complete</small><strong>{Math.round(scores.completeness ?? 0)}</strong></span>
+                        <span><small>AI confidence</small><strong>{scores.confidence === null || scores.confidence === undefined ? '—' : Math.round(scores.confidence)}</strong></span>
                       </div>
                       {feedback && <p>{feedback}</p>}
                       {words.length > 0 && (
@@ -549,7 +834,7 @@ export default function MusicStudio() {
                             <span
                               key={`${word.word}-${index}`}
                               className={(word.accuracy ?? 100) < 75 || word.errorType !== 'None' ? 'needs-work' : 'good'}
-                              title={`${word.accuracy ?? 0}% · ${word.errorType}`}
+                              title={`${word.accuracy ?? 0}% · ${word.errorType}${word.recognizedWord && word.errorType !== 'None' ? ` · heard as ${word.recognizedWord}` : ''}`}
                             >
                               {word.word}
                             </span>
@@ -560,7 +845,7 @@ export default function MusicStudio() {
                   ) : (
                     <div className="music-practice-empty">
                       <div className="music-sound-wave" aria-hidden="true"><i /><i /><i /><i /><i /></div>
-                      <p>Your word-by-word feedback will appear here.</p>
+                      <p>Your word-by-word clarity feedback will appear here.</p>
                     </div>
                   )}
                 </div>
@@ -571,31 +856,76 @@ export default function MusicStudio() {
           <section className="music-studio-section music-performance-section">
             <div className="music-section-heading">
               <span>03</span>
-              <div><h3>Final performance</h3><p>Use headphones, follow the lyrics, and sing over your backing track.</p></div>
+              <div><h3>Final performance</h3><p>Use headphones and sing over the backing track. Recording stops automatically and shows a preview before saving.</p></div>
             </div>
+
+            <audio
+              ref={backingMonitorRef}
+              className="music-backing-monitor"
+              src={backingAudioUrl ?? undefined}
+              preload="auto"
+              playsInline
+              aria-hidden="true"
+            />
 
             <label className="music-consent">
               <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
               <span>I agree to record and privately store my voice for this learning activity.</span>
             </label>
+            <p className="music-bluetooth-note" role="note">
+              <span aria-hidden="true">ⓘ</span>
+              Bluetooth headphones may lose the backing track when the microphone starts. For best results, use wired headphones.
+            </p>
 
             {performanceMode === 'idle' ? (
               <div className="music-performance-actions">
-                <button type="button" className="btn-secondary" onClick={startRehearsal}>Rehearse with the beat</button>
-                <button type="button" className="btn-primary" onClick={startFinalPerformance} disabled={!consent}>Record final song</button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={startRehearsal}
+                  disabled={backingAudioPreparing || !backingAudioUrl}
+                >
+                  {backingAudioPreparing ? 'Preparing backing track…' : 'Rehearse with the beat'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={startFinalPerformance}
+                  disabled={!consent || backingAudioPreparing || !backingAudioUrl}
+                >
+                  Record final song
+                </button>
               </div>
             ) : (
               <div className="music-live-stage">
                 <div className="music-live-meta">
                   <span className={performanceMode === 'recording' ? 'is-recording' : ''}>
-                    {performanceMode === 'count-in' ? `Get ready · ${countdown}` : performanceMode === 'recording' ? 'Recording' : countdown > 0 ? `Count in · ${countdown}` : 'Rehearsal'}
+                    {performanceMode === 'preparing'
+                      ? 'Preparing microphone'
+                      : performanceMode === 'ready'
+                        ? 'Microphone ready'
+                        : performanceMode === 'count-in'
+                          ? `Get ready · ${countdown}`
+                          : performanceMode === 'recording'
+                            ? 'Recording voice + backing track'
+                            : countdown > 0 ? `Count in · ${countdown}` : 'Rehearsal'}
                   </span>
                   <button type="button" onClick={cancelPerformance}>Stop</button>
                 </div>
-                <div className="music-live-lyrics">
-                  <small>{currentSection?.label}</small>
-                  <p>{currentSection?.lyrics}</p>
-                </div>
+                {performanceMode === 'ready' ? (
+                  <div className="music-live-ready">
+                    <strong>Put on your headphones and get ready.</strong>
+                    <span>The count-in and backing track will start with the next click.</span>
+                    <button type="button" className="btn-primary" onClick={beginFinalPerformance}>
+                      Start performance
+                    </button>
+                  </div>
+                ) : (
+                  <div className="music-live-lyrics">
+                    <small>{currentSection?.label}</small>
+                    <p>{currentSection?.lyrics}</p>
+                  </div>
+                )}
                 <div className="music-live-progress"><span style={{ width: `${Math.min(100, performanceElapsed / SONG_SECONDS * 100)}%` }} /></div>
                 <small>{Math.floor(performanceElapsed)}s / {Math.round(SONG_SECONDS)}s</small>
               </div>
@@ -605,9 +935,104 @@ export default function MusicStudio() {
               <div className="music-final-preview">
                 <div><span className="mini-label">Your new take</span><strong>Listen before saving</strong></div>
                 <audio controls src={finalPreviewUrl} />
-                <button type="button" className="btn-primary" onClick={saveFinalRecording} disabled={saving}>
+                <button type="button" className="btn-primary" onClick={saveFinalRecording} disabled={saving || analysingFinal}>
                   {saving ? <><span className="spinner" /> Saving…</> : 'Save to my Library'}
                 </button>
+              </div>
+            )}
+
+            {analysingFinal && (
+              <div className="music-final-analysis-loading" role="status" aria-live="polite">
+                <span className="spinner" />
+                <div>
+                  <strong>Analysing your complete performance…</strong>
+                  <span>The AI is checking what it understood across the whole song.</span>
+                </div>
+              </div>
+            )}
+
+            {performanceAssessment && !analysingFinal && (
+              <div className="music-final-assessment">
+                <div className="music-final-assessment-head">
+                  <div>
+                    <span className="mini-label">Complete song feedback</span>
+                    <h4>What the AI understood</h4>
+                    <p>{performanceAssessment.feedback}</p>
+                  </div>
+                  <div
+                    className="music-final-score"
+                    style={{ color: scoreColor(performanceAssessment.scores.pronunciation) }}
+                  >
+                    <strong>{Math.round(performanceAssessment.scores.pronunciation ?? 0)}</strong>
+                    <span>clarity</span>
+                  </div>
+                </div>
+
+                <div className="music-final-metrics">
+                  <span><small>Word match</small><strong>{Math.round(performanceAssessment.scores.accuracy ?? 0)}%</strong></span>
+                  <span><small>Complete</small><strong>{Math.round(performanceAssessment.scores.completeness ?? 0)}%</strong></span>
+                  <span><small>AI confidence</small><strong>{performanceAssessment.scores.confidence == null ? '—' : `${Math.round(performanceAssessment.scores.confidence)}%`}</strong></span>
+                </div>
+
+                <div className="music-final-sections">
+                  {performanceAssessment.sections.map((section) => (
+                    <div key={section.sectionId}>
+                      <span>{section.label}</span>
+                      <strong>{Math.round(section.score)}%</strong>
+                      <div><i style={{ width: `${section.score}%` }} /></div>
+                      <small>{section.understoodCount}/{section.totalWords} words</small>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="music-final-transcript">
+                  <span>AI transcript</span>
+                  <p>{performanceAssessment.recognizedText || 'No speech was recognized.'}</p>
+                </div>
+
+                <div className="music-final-word-groups">
+                  <div>
+                    <strong>Clearly understood</strong>
+                    <div className="music-word-scores">
+                      {performanceAssessment.words
+                        .filter((word) => word.errorType === 'None')
+                        .map((word, index) => <span className="good" key={`${word.word}-good-${index}`}>{word.word}</span>)}
+                    </div>
+                  </div>
+                  <div>
+                    <strong>Practice next</strong>
+                    {performanceAssessment.focusWords.length > 0 ? (
+                      <div>
+                        <div className="music-word-scores">
+                          {performanceAssessment.focusWords.map((word, index) => (
+                            <span className="needs-work" key={`${word.word}-focus-${index}`}>
+                              {word.recognizedWord ? `${word.word} → ${word.recognizedWord}` : `${word.word} · not heard`}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="music-speaking-save">
+                          {savedSpeakingWords === null ? (
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={saveSpeakingPracticeWords}
+                              disabled={savingSpeakingWords}
+                            >
+                              {savingSpeakingWords
+                                ? <><span className="spinner" /> Saving…</>
+                                : 'Save words to speaking practice'}
+                            </button>
+                          ) : (
+                            <span>✓ {savedSpeakingWords} {savedSpeakingWords === 1 ? 'word is' : 'words are'} ready</span>
+                          )}
+                          {savedSpeakingWords !== null && (
+                            <Link href="/speaking-review" className="btn-primary">Start speaking practice →</Link>
+                          )}
+                        </div>
+                      </div>
+                    ) : <p>Every expected word was understood.</p>}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -615,7 +1040,7 @@ export default function MusicStudio() {
               <div className="music-completed-card">
                 <div><span>Song completed</span><strong>{song.title}</strong></div>
                 <audio controls src={song.recording_url} />
-                <p>Your completion is saved and ready for your teacher. You can record another version whenever you want.</p>
+                <p>Your recording and feedback are saved in your Library. Teacher review remains an optional extra.</p>
               </div>
             )}
 

@@ -398,7 +398,7 @@ export default function YoutubeSyncPlayer({
   return (
     <div className="yt-sync-wrapper">
       {/* Video — full width */}
-      <div style={{ border: '1px solid var(--line)', borderRadius: 24, background: 'rgba(255,250,240,0.78)', boxShadow: 'var(--shadow-md)', padding: 12 }}>
+      <div className="yt-video-frame">
         <div ref={containerRef} className="yt-video-container">
           <div ref={playerDivRef} className="yt-player-div" />
 

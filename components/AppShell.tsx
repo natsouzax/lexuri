@@ -13,12 +13,20 @@ function isOverview(pathname: string) {
   return pathname.startsWith('/dashboard')
 }
 
-const FULL_BLEED_HERO_ROUTES = new Set(['/dashboard', '/feed', '/albums', '/review', '/flashcards'])
+// Toda página cujo hero é `.app-hero.promo-banner` precisa estar aqui, senão o
+// gradiente para na borda da sidebar em vez de correr por trás dela.
+const FULL_BLEED_HERO_ROUTES = new Set(['/dashboard', '/feed', '/albums', '/review', '/speaking-review', '/flashcards', '/my-song', '/leaderboard', '/achievements'])
+
+// A tela de uma música (/feed/<id>) tem hero como as demais, mas é rota
+// dinâmica — não dá pra listar no Set acima.
+function hasFullBleedHero(pathname: string) {
+  return FULL_BLEED_HERO_ROUTES.has(pathname) || /^\/feed\/[^/]+$/.test(pathname)
+}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const overview = isOverview(pathname)
-  const fullBleedHero = FULL_BLEED_HERO_ROUTES.has(pathname)
+  const fullBleedHero = hasFullBleedHero(pathname)
   const [sidebarOpen, setSidebarOpen] = useState(() => overview)
   const scrollHidden = useHideOnScroll()
 

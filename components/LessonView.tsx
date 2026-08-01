@@ -7,6 +7,15 @@ import YoutubeSyncPlayer from '@/components/YoutubeSyncPlayer'
 import ChunkCard from '@/components/ui/ChunkCard'
 import ChunkHighlighter from '@/components/ui/ChunkHighlighter'
 import GeneratedLearningCard from '@/components/ui/GeneratedLearningCard'
+import {
+  CardsIcon,
+  CheckCircleIcon,
+  ChevronIcon,
+  CloseIcon,
+  LevelIcon,
+  MusicNoteIcon,
+  SyncIcon,
+} from '@/components/ui/Icons'
 import { getFeedItem, getLevelColor } from '@/lib/feed'
 import { chunkToFlashcard } from '@/lib/types'
 import { awardXP } from '@/lib/xp'
@@ -24,6 +33,13 @@ const CHUNK_TYPES = [
   { type: 'emotional',       label: 'Emotional',       color: '#E91E63' },
   { type: 'conversational',  label: 'Conversational',  color: '#607D8B' },
 ] as const
+
+// item.level é CEFR (A1…C2); LevelIcon fala a linguagem de STUDY_LEVELS.
+function studyLevelFor(cefr: string): 'beginner' | 'intermediate' | 'advanced' {
+  if (cefr.startsWith('A')) return 'beginner'
+  if (cefr.startsWith('B')) return 'intermediate'
+  return 'advanced'
+}
 
 export interface LessonData {
   video_id: string
@@ -69,7 +85,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
   const [error, setError]                     = useState('')
   const [finishing, setFinishing]             = useState(false)
   const [resyncing, setResyncing]             = useState(false)
-  const [resyncMsg, setResyncMsg]             = useState('')
+  const [resyncMsg, setResyncMsg]             = useState<{ ok: boolean; text: string } | null>(null)
 
   const loadLesson = useCallback(async () => {
     if (!item) return
@@ -134,16 +150,16 @@ export default function LessonView({ feedItemId: propId }: Props) {
   // IP residencial de quem está rodando e regrava o arquivo da lição.
   async function handleResync() {
     setResyncing(true)
-    setResyncMsg('')
+    setResyncMsg(null)
     try {
       const res = await apiFetch<{ segments: number; chunks: number }>('/api/admin/resync-lesson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedItemId: id }),
       })
-      setResyncMsg(`✅ Updated — ${res.segments} lines, ${res.chunks} chunks. Reload the page.`)
+      setResyncMsg({ ok: true, text: `Updated — ${res.segments} lines, ${res.chunks} chunks. Reload the page.` })
     } catch (e) {
-      setResyncMsg(`❌ ${String(e)}`)
+      setResyncMsg({ ok: false, text: String(e) })
     } finally {
       setResyncing(false)
     }
@@ -151,14 +167,16 @@ export default function LessonView({ feedItemId: propId }: Props) {
 
   if (!item) {
     return (
-      <div style={{ padding: 48 }}>
-        <div className="alert-error">{t('lesson.notFound')}</div>
-        <Link href="/feed" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>{t('lesson.back')}</Link>
+      <div className="card lesson-state-card">
+        <p className="lesson-state-title">{t('lesson.notFound')}</p>
+        <div className="lesson-state-actions">
+          <Link href="/feed" className="btn-secondary">{t('lesson.back')}</Link>
+        </div>
       </div>
     )
   }
 
-  const levelColor = lesson ? getLevelColor(item.level) : 'var(--line)'
+  const levelColor = getLevelColor(item.level)
   const allChunks = lesson?.chunks ?? []
   const visibleChunks = typeFilter ? allChunks.filter((c) => c.type === typeFilter) : allChunks
   // Repeated chorus lines expand to one ChunkItem per occurrence (so every
@@ -172,43 +190,84 @@ export default function LessonView({ feedItemId: propId }: Props) {
     seenChunkText.add(key)
     return true
   })
+  // O pill do topo descreve a música, então conta sobre allChunks — senão
+  // o número cairia junto quando o usuário filtra por tipo de chunk.
+  const keyExpressionCount = new Set(
+    allChunks.filter((c) => c.importance === 'high').map((c) => c.text.toLowerCase()),
+  ).size
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <Link href="/feed" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>{t('lesson.back')}</Link>
-        <span style={{ fontSize: '0.72rem', fontWeight: 900, padding: '2px 10px', borderRadius: 999, background: levelColor, color: '#fff' }}>{item.level}</span>
-        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{item.duration}</span>
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={handleResync}
-            disabled={resyncing}
-            title="Re-scrapes YouTube with the local IP and rewrites the lesson file — dev only (npm run dev)"
-            style={{ marginLeft: 'auto', border: '1.5px solid var(--line)', borderRadius: 999, padding: '6px 16px', background: '#fff', color: 'var(--muted)', fontWeight: 700, fontSize: '0.82rem', cursor: resyncing ? 'default' : 'pointer', opacity: resyncing ? 0.6 : 1 }}
-          >
-            {resyncing ? <><span className="spinner" /> Syncing…</> : '🔄 Sync (local)'}
-          </button>
-        )}
-      </div>
+      <div className="app-hero promo-banner">
+        <span className="promo-sparkle promo-sparkle-1">✦</span>
+        <span className="promo-sparkle promo-sparkle-2">✦</span>
+        <span className="promo-sparkle promo-sparkle-3">✦</span>
 
-      <div className="app-hero" style={{ marginBottom: 16 }}>
+        <div className="lesson-meta-row">
+          <Link href="/feed" className="lesson-meta-chip">{t('lesson.back')}</Link>
+          <span className="lesson-meta-chip is-level" style={{ background: levelColor }}>{item.level}</span>
+          <span className="lesson-meta-chip is-muted">{item.duration}</span>
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              type="button"
+              onClick={handleResync}
+              disabled={resyncing}
+              title="Re-scrapes YouTube with the local IP and rewrites the lesson file — dev only (npm run dev)"
+              className="lesson-meta-chip lesson-meta-dev"
+            >
+              {resyncing ? <><span className="spinner" /> Syncing…</> : <><SyncIcon size={13} /> Sync (local)</>}
+            </button>
+          )}
+        </div>
+
         <h1 className="app-hero-title">{item.title}</h1>
         <p className="app-hero-subtitle">{item.artist ?? item.channel ?? ''}</p>
       </div>
 
-      {resyncMsg && <div className="alert-info" style={{ marginBottom: 16 }}>{resyncMsg}</div>}
+      <div className="stat-pill-row">
+        <div className="stat-pill">
+          <span className="stat-pill-icon clay"><LevelIcon level={studyLevelFor(item.level)} size={17} /></span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{item.level}</span>
+            <span className="stat-pill-label">Song level</span>
+          </span>
+        </div>
+        <div className="stat-pill">
+          <span className="stat-pill-icon butter"><CardsIcon size={17} /></span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{generatedCards.length} saved</span>
+            <span className="stat-pill-label">Words in your library</span>
+          </span>
+        </div>
+        <div className="stat-pill">
+          <span className="stat-pill-icon" style={{ background: 'var(--sage)', color: 'var(--moss)' }}><MusicNoteIcon size={17} /></span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{keyExpressionCount} expressions</span>
+            <span className="stat-pill-label">Key phrases in this song</span>
+          </span>
+        </div>
+      </div>
+
+      {resyncMsg && (
+        <div className={resyncMsg.ok ? 'alert-info' : 'alert-error'} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {resyncMsg.ok && <CheckCircleIcon size={16} />}
+          <span>{resyncMsg.text}</span>
+        </div>
+      )}
 
       {loading && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '32px 0', color: 'var(--muted)' }}>
+        <div className="lesson-loading">
           <span className="spinner" />
           <span>{t('lesson.loading')}</span>
         </div>
       )}
 
       {loadError && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="alert-error">{t('lesson.loadError')}</div>
-          <button className="btn-secondary" onClick={loadLesson}>{t('lesson.retry')}</button>
+        <div className="card lesson-state-card">
+          <p className="lesson-state-title">{t('lesson.loadError')}</p>
+          <div className="lesson-state-actions">
+            <button className="btn-secondary" onClick={loadLesson}>{t('lesson.retry')}</button>
+          </div>
         </div>
       )}
 
@@ -233,14 +292,17 @@ export default function LessonView({ feedItemId: propId }: Props) {
           <div className="section-title">
             {t('lesson.interactiveLyrics')}
             <button
+              type="button"
+              className="lesson-toggle"
               onClick={() => setLyricsOpen((v) => !v)}
-              style={{ marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700, color: 'var(--moss)', background: 'none', border: 'none', cursor: 'pointer' }}
+              aria-expanded={lyricsOpen}
+              aria-label={lyricsOpen ? 'Collapse lyrics' : 'Expand lyrics'}
             >
-              {lyricsOpen ? '▲' : '▼'}
+              <ChevronIcon direction={lyricsOpen ? 'up' : 'down'} size={16} />
             </button>
           </div>
           {lyricsOpen && (
-            <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
+            <div className="lesson-lyrics-panel">
               <ChunkHighlighter
                 text={lesson.original_text}
                 chunks={visibleChunks}
@@ -253,7 +315,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
           )}
 
           {allChunks.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+            <div className="lesson-chunk-filters">
               {CHUNK_TYPES
                 .filter(({ type }) => allChunks.some((c) => c.type === type))
                 .map(({ type, label, color }) => {
@@ -261,18 +323,11 @@ export default function LessonView({ feedItemId: propId }: Props) {
                   return (
                     <button
                       key={type}
+                      type="button"
+                      className={`lesson-chunk-chip${active ? ' active' : ''}`}
+                      style={{ '--chip': color } as React.CSSProperties}
+                      aria-pressed={active}
                       onClick={() => setTypeFilter(active ? null : type)}
-                      style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        padding: '3px 10px',
-                        borderRadius: 20,
-                        border: `1.5px solid ${active ? color : 'transparent'}`,
-                        background: active ? color : color + '22',
-                        color: active ? '#fff' : color,
-                        cursor: 'pointer',
-                        transition: 'all 120ms ease',
-                      }}
                     >
                       {label}
                     </button>
@@ -280,10 +335,11 @@ export default function LessonView({ feedItemId: propId }: Props) {
                 })}
               {typeFilter && (
                 <button
+                  type="button"
+                  className="lesson-chunk-chip is-clear"
                   onClick={() => setTypeFilter(null)}
-                  style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, border: '1.5px solid var(--line)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' }}
                 >
-                  ✕ Clear filter
+                  <CloseIcon size={12} /> Clear filter
                 </button>
               )}
             </div>
@@ -301,10 +357,13 @@ export default function LessonView({ feedItemId: propId }: Props) {
               ))}
               {generatedCards.length > 1 && (
                 <button
+                  type="button"
+                  className="lesson-toggle lesson-toggle-wide"
                   onClick={() => setCardsExpanded((v) => !v)}
-                  style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--moss)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0 16px' }}
+                  aria-expanded={cardsExpanded}
                 >
-                  {cardsExpanded ? '▲ Show less' : `▼ Show ${generatedCards.length - 1} more`}
+                  <ChevronIcon direction={cardsExpanded ? 'up' : 'down'} size={14} />
+                  {cardsExpanded ? 'Show less' : `Show ${generatedCards.length - 1} more`}
                 </button>
               )}
             </>
@@ -329,8 +388,8 @@ export default function LessonView({ feedItemId: propId }: Props) {
             </>
           )}
 
-          <div className="panel" style={{ textAlign: 'center', marginBottom: 32 }}>
-            <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 6 }}>
+          <div className="panel lesson-finish-panel">
+            <p className="lesson-finish-title">
               {generatedCards.length > 0
                 ? `${generatedCards.length} ${generatedCards.length === 1 ? t('lesson.savedOne') : t('lesson.savedCount')}`
                 : t('lesson.saveSome')}
@@ -340,7 +399,6 @@ export default function LessonView({ feedItemId: propId }: Props) {
               className="btn-primary"
               onClick={handleFinish}
               disabled={finishing}
-              style={{ padding: '12px 32px' }}
             >
               {finishing ? <><span className="spinner" /> {t('lesson.going')}</> : t('lesson.finishCta')}
             </button>

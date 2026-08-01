@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLang, type Lang } from '@/lib/i18n'
-import { GlobeIcon, SoundOffIcon, SoundOnIcon, TapIcon } from '@/components/ui/Icons'
+import { SoundOffIcon, SoundOnIcon, TapIcon } from '@/components/ui/Icons'
 
 // Demo interativa da experiência central: a faixa "Happy" toca de fundo
 // (via YouTube, autoplay mudo + loop das primeiras linhas), a letra
@@ -14,6 +14,10 @@ interface Line {
   before: string
   chunk?: string
   after: string
+  /** Tipo + cor do chunk, na mesma paleta do app (lib/chunks.ts COLOR CODES). */
+  type?: string
+  color?: string
+  example?: string
 }
 
 const VIDEO_ID = 'ZbZSe6N_BXs'
@@ -21,11 +25,40 @@ const LOOP_START = 5
 const LOOP_END = 38
 
 const LINES: Line[] = [
-  { at: 5.5,  before: 'It might seem crazy what ', chunk: "I'm 'bout to say", after: '' },
-  { at: 13.0, before: 'Sunshine she’s here, you can ', chunk: 'take a break', after: '' },
-  { at: 24.2, before: 'With the air like I don’t care, baby, ', chunk: 'by the way', after: '' },
-  { at: 30.7, before: 'Clap along if you feel like a ', chunk: 'room without a roof', after: '' },
+  {
+    at: 5.5, before: 'It might seem crazy what ', chunk: "I'm 'bout to say", after: '',
+    type: 'lexical_chunk', color: '#9C27B0',
+    example: "I'm 'bout to leave — call me later.",
+  },
+  {
+    at: 13.0, before: 'Sunshine she’s here, you can ', chunk: 'take a break', after: '',
+    type: 'collocation', color: '#4A90E2',
+    example: "Let's take a break and come back in ten minutes.",
+  },
+  {
+    at: 24.2, before: 'With the air like I don’t care, baby, ', chunk: 'by the way', after: '',
+    type: 'conversational', color: '#607D8B',
+    example: 'By the way, did you finish the report?',
+  },
+  {
+    at: 30.7, before: 'Clap along if you feel like a ', chunk: 'room without a roof', after: '',
+    type: 'idiomatic', color: '#FF6B6B',
+    example: 'Winning that game felt like a room without a roof.',
+  },
 ]
+
+function formatChunkType(type: string) {
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function speakChunk(text: string, e: React.MouseEvent) {
+  e.stopPropagation()
+  if (!window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = 'en-US'
+  window.speechSynthesis.speak(utterance)
+}
 
 // Tradução dos 4 chunks por idioma; fallback = glossa em inglês simples.
 const DEMO_TR: Partial<Record<Lang, string[]>> = {
@@ -196,6 +229,8 @@ export default function HeroLyricsDemo() {
                 {line.after}
               </p>
 
+              {/* Mesmo card do app (classes .chunk-tooltip-*), só que ancorado
+                  embaixo da linha em vez de flutuando sobre o vídeo. */}
               <AnimatePresence>
                 {revealed === i && line.chunk && (
                   <motion.div
@@ -205,22 +240,29 @@ export default function HeroLyricsDemo() {
                     transition={{ duration: 0.25 }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 6,
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        color: 'var(--clay-bright)',
-                        background: 'rgba(217,123,84,0.14)',
-                        borderRadius: 8,
-                        padding: '3px 10px',
-                      }}
-                    >
-                      <GlobeIcon size={12} /> {tr[i]}
-                    </span>
+                    <div className="chunk-tooltip-fixed chunk-tooltip-inline">
+                      <div className="chunk-tooltip-header">
+                        <span className="chunk-type-badge" style={{ color: line.color }}>
+                          {formatChunkType(line.type ?? '')}
+                        </span>
+                        <button
+                          type="button"
+                          className="chunk-speak-btn"
+                          onClick={(e) => speakChunk(line.chunk!, e)}
+                          title="Listen"
+                          aria-label={`Listen to ${line.chunk}`}
+                        >
+                          <SoundOnIcon size={14} />
+                        </button>
+                      </div>
+                      <strong className="chunk-tooltip-translation">{tr[i]}</strong>
+                      {lang !== 'en' && (
+                        <span className="chunk-tooltip-meaning">{DEMO_TR.en![i]}</span>
+                      )}
+                      {line.example && (
+                        <span className="chunk-tooltip-example">{line.example}</span>
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

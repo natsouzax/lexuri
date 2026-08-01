@@ -7,7 +7,11 @@ import type { User } from '@supabase/supabase-js'
 import { EASE_OUT } from '@/lib/easing'
 import { createClient } from '@/lib/supabase-browser'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
+import { ChevronIcon, CloseIcon } from './Icons'
 import NotificationBell from './NotificationBell'
+
+// A escolha vale pra todas as páginas que usam o painel, e sobrevive ao reload.
+const PANEL_KEY = 'lexuri_profile_panel'
 
 interface StatsData {
   weekActivity: boolean[]
@@ -53,9 +57,30 @@ export default function ProfileSidePanel() {
   const [username, setUsername] = useState('')
   const [weekActivity, setWeekActivity] = useState<boolean[]>(Array(7).fill(false))
   const [topLearners, setTopLearners] = useState<LeaderboardEntry[]>([])
+  const [collapsed, setCollapsed] = useState(false)
+  const [ready, setReady] = useState(false)
   const sideHidden = useHideOnScroll()
 
+  // Lido só no cliente — ler localStorage no render quebraria a hidratação.
   useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(PANEL_KEY) === 'collapsed')
+    } catch { /* modo privado / storage bloqueado */ }
+    setReady(true)
+  }, [])
+
+  function toggleCollapsed(next: boolean) {
+    setCollapsed(next)
+    try {
+      localStorage.setItem(PANEL_KEY, next ? 'collapsed' : 'open')
+    } catch { /* idem */ }
+  }
+
+  // Escondido não busca nada: sem o `ready` o primeiro render dispararia as
+  // três chamadas antes de sabermos que o usuário já tinha fechado o painel.
+  useEffect(() => {
+    if (!ready || collapsed) return
+
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null)
@@ -71,7 +96,7 @@ export default function ProfileSidePanel() {
     apiFetch<LeaderboardResponse>('/api/gamification/leaderboard?window=weekly')
       .then((res) => setTopLearners(res.entries.slice(0, 4)))
       .catch(() => {})
-  }, [])
+  }, [ready, collapsed])
 
   const weekDisplay = [...weekActivity].reverse() // oldest → newest, left to right
   const weekDayLabels = (() => {
@@ -86,6 +111,24 @@ export default function ProfileSidePanel() {
 
   const profileName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? (username || 'You')
   const profileAvatar = user?.user_metadata?.avatar_url as string | undefined
+
+  // O aside vira `display: contents` e some do grid; o `:has()` no CSS faz a
+  // coluna principal esticar pra ocupar os 320px que sobraram.
+  if (collapsed) {
+    return (
+      <aside className="dash-side is-collapsed">
+        <button
+          type="button"
+          className="profile-panel-restore"
+          onClick={() => toggleCollapsed(false)}
+          title="Show your profile"
+          aria-label="Show your profile"
+        >
+          <ChevronIcon direction="left" size={16} />
+        </button>
+      </aside>
+    )
+  }
 
   return (
     <aside className="dash-side">
@@ -103,6 +146,15 @@ export default function ProfileSidePanel() {
       >
         <div className="profile-panel-head">
           <span className="section-title" style={{ margin: 0 }}>Your Profile</span>
+          <button
+            type="button"
+            className="profile-panel-close"
+            onClick={() => toggleCollapsed(true)}
+            title="Hide this panel"
+            aria-label="Hide this panel"
+          >
+            <CloseIcon size={14} />
+          </button>
         </div>
 
         {profileAvatar ? (

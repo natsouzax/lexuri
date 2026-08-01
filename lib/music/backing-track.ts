@@ -12,6 +12,8 @@ export const SECTION_SECONDS = SECONDS_PER_BEAT
   * MUSIC_TEMPLATE.barsPerSection
 export const SONG_SECONDS = SECTION_SECONDS * MUSIC_TEMPLATE.sectionCount
 export const COUNT_IN_SECONDS = SECONDS_PER_BEAT * MUSIC_TEMPLATE.countInBeats
+export const BACKING_SONG_START_SECONDS = 0.14 + COUNT_IN_SECONDS
+export const BACKING_TOTAL_SECONDS = BACKING_SONG_START_SECONDS + SONG_SECONDS + 0.3
 
 interface ScheduledTrack {
   songStart: number
@@ -20,8 +22,10 @@ interface ScheduledTrack {
 }
 
 interface BackingOptions {
+  monitorDestination?: AudioNode
   recordDestination?: AudioNode
   outputGain?: number
+  recordingGain?: number
 }
 
 const CHORDS = [
@@ -39,14 +43,22 @@ function envelope(gain: AudioParam, start: number, duration: number, peak: numbe
 }
 
 export function scheduleBackingTrack(
-  context: AudioContext,
+  context: AudioContext | OfflineAudioContext,
   options: BackingOptions = {},
 ): ScheduledTrack {
   const nodes: AudioScheduledSourceNode[] = []
   const bus = context.createGain()
-  bus.gain.value = options.outputGain ?? 0.42
-  bus.connect(context.destination)
-  if (options.recordDestination) bus.connect(options.recordDestination)
+  bus.gain.value = 1
+
+  const monitorBus = context.createGain()
+  monitorBus.gain.value = options.outputGain ?? 0.42
+  bus.connect(monitorBus).connect(options.monitorDestination ?? context.destination)
+
+  const recordingBus = options.recordDestination ? context.createGain() : null
+  if (recordingBus && options.recordDestination) {
+    recordingBus.gain.value = options.recordingGain ?? options.outputGain ?? 0.42
+    bus.connect(recordingBus).connect(options.recordDestination)
+  }
 
   const startAt = context.currentTime + 0.14
   const songStart = startAt + COUNT_IN_SECONDS
@@ -181,8 +193,61 @@ export function scheduleBackingTrack(
         try { node.stop() } catch { /* already stopped */ }
       }
       try { bus.disconnect() } catch { /* already disconnected */ }
+      try { monitorBus.disconnect() } catch { /* already disconnected */ }
+      try { recordingBus?.disconnect() } catch { /* already disconnected */ }
     },
   }
+}
+
+function writeAscii(view: DataView, offset: number, value: string) {
+  for (let index = 0; index < value.length; index += 1) {
+    view.setUint8(offset + index, value.charCodeAt(index))
+  }
+}
+
+function audioBufferToWav(buffer: AudioBuffer): Blob {
+  const channels = buffer.numberOfChannels
+  const bytesPerSample = 2
+  const dataBytes = buffer.length * channels * bytesPerSample
+  const wav = new ArrayBuffer(44 + dataBytes)
+  const view = new DataView(wav)
+
+  writeAscii(view, 0, 'RIFF')
+  view.setUint32(4, 36 + dataBytes, true)
+  writeAscii(view, 8, 'WAVE')
+  writeAscii(view, 12, 'fmt ')
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true)
+  view.setUint16(22, channels, true)
+  view.setUint32(24, buffer.sampleRate, true)
+  view.setUint32(28, buffer.sampleRate * channels * bytesPerSample, true)
+  view.setUint16(32, channels * bytesPerSample, true)
+  view.setUint16(34, 16, true)
+  writeAscii(view, 36, 'data')
+  view.setUint32(40, dataBytes, true)
+
+  const channelData = Array.from({ length: channels }, (_, channel) => buffer.getChannelData(channel))
+  let offset = 44
+  for (let frame = 0; frame < buffer.length; frame += 1) {
+    for (let channel = 0; channel < channels; channel += 1) {
+      const sample = Math.max(-1, Math.min(1, channelData[channel][frame]))
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true)
+      offset += bytesPerSample
+    }
+  }
+
+  return new Blob([wav], { type: 'audio/wav' })
+}
+
+export async function renderBackingTrackWav(): Promise<Blob> {
+  const sampleRate = 22_050
+  const offline = new OfflineAudioContext(
+    1,
+    Math.ceil(BACKING_TOTAL_SECONDS * sampleRate),
+    sampleRate,
+  )
+  scheduleBackingTrack(offline, { outputGain: 0.82 })
+  return audioBufferToWav(await offline.startRendering())
 }
 
 export function sectionIndexAt(elapsedSeconds: number): number {
@@ -191,4 +256,3 @@ export function sectionIndexAt(elapsedSeconds: number): number {
     Math.floor(elapsedSeconds / SECTION_SECONDS),
   ))
 }
-

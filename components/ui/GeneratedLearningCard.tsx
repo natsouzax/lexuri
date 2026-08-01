@@ -7,19 +7,15 @@ interface Props {
 export default function GeneratedLearningCard({ card }: Props) {
   return (
     <div className="learning-card">
-      <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', marginBottom: 6 }}>
+      <div className="learning-card-word">
         {card.word}
         {card.translation && (
-          <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 400, fontSize: '0.88rem', color: 'var(--muted)', marginLeft: 10 }}>
-            {card.translation}
-          </span>
+          <span className="learning-card-translation">{card.translation}</span>
         )}
       </div>
-      {card.explanation && <p style={{ fontSize: '0.9rem', margin: '0 0 6px' }}>{card.explanation}</p>}
+      {card.explanation && <p className="learning-card-explanation">{card.explanation}</p>}
       {card.example && (
-        <p style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic', margin: 0, borderLeft: '2px solid var(--clay)', paddingLeft: 10 }}>
-          &ldquo;{card.example}&rdquo;
-        </p>
+        <p className="learning-card-example">&ldquo;{card.example}&rdquo;</p>
       )}
     </div>
   )

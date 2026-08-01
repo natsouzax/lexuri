@@ -61,10 +61,16 @@ export default function PrivacyPage() {
             <li>YouTube URLs you paste into the Service</li>
             <li>Song titles you search via the Music Lab</li>
             <li>Text excerpts (chunks) you select from transcripts or lyrics</li>
+            <li>Speaking-practice and final-performance voice recordings you explicitly consent to submit</li>
           </ul>
           <p>
             This content is sent to our AI provider (OpenAI) to generate flashcard definitions
             and language explanations. See Section 4 for details.
+          </p>
+          <p>
+            Short speaking-practice recordings are processed temporarily for transcription and
+            pronunciation feedback, then discarded by Lexuri. A final song recording is stored
+            privately only when you explicitly choose to save it.
           </p>
 
           <h3>1.4 Usage and Technical Data</h3>
@@ -101,6 +107,10 @@ export default function PrivacyPage() {
                 <td>Contract execution (Art. 7, V)</td>
               </tr>
               <tr>
+                <td>Voice transcription and speaking clarity feedback</td>
+                <td>Consent (Art. 7, I)</td>
+              </tr>
+              <tr>
                 <td>Payment processing</td>
                 <td>Contract execution (Art. 7, V)</td>
               </tr>
@@ -122,7 +132,7 @@ export default function PrivacyPage() {
           <h2>3. How We Use Your Data</h2>
           <ul>
             <li>Provide, operate, and improve the Service</li>
-            <li>Generate AI-powered flashcards and language explanations</li>
+            <li>Generate AI-powered flashcards, language explanations, and speaking clarity feedback</li>
             <li>Calculate spaced repetition schedules and gamification scores</li>
             <li>Send transactional emails (account verification, password reset, daily reminders)</li>
             <li>Send product updates and tips (only if you opted in)</li>
@@ -154,7 +164,7 @@ export default function PrivacyPage() {
               </tr>
               <tr>
                 <td><a href="https://openai.com/policies/privacy-policy" className="mkt-legal-link" target="_blank" rel="noopener">OpenAI</a></td>
-                <td>AI flashcard generation, chunk analysis</td>
+                <td>AI learning content and speaking-practice transcription</td>
                 <td>USA</td>
                 <td>Text/audio you submit for processing</td>
               </tr>

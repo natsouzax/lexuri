@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { callLLM, safeJsonParse } from '@/lib/openai'
-import { isAzureSpeechConfigured } from '@/lib/azure-speech'
+import { isSpeechAnalysisConfigured } from '@/lib/openai-speech'
 import {
   REQUIRED_TAKEAWAYS,
   SONG_SECTION_LAYOUT,
@@ -11,7 +11,14 @@ import {
   validateGeneratedSong,
   type TakeawaySource,
 } from '@/lib/music/song'
-import type { PersonalSong, PronunciationAttempt } from '@/lib/music/types'
+import type {
+  PersonalSong,
+  PronunciationAttempt,
+  PronunciationScores,
+  PronunciationWord,
+  SongPerformanceAssessment,
+  SongPerformanceSectionResult,
+} from '@/lib/music/types'
 import { errorMessage } from '@/lib/http'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -28,6 +35,26 @@ interface UserSongRow {
   final_recording_mime: string | null
   completed_at: string | null
   created_at: string
+  performance_recognized_text: string | null
+  performance_overall_scores: PronunciationScores | null
+  performance_word_scores: PronunciationWord[] | null
+  performance_section_results: SongPerformanceSectionResult[] | null
+  performance_feedback: string | null
+  performance_assessed_at: string | null
+}
+
+function performanceAssessment(song: UserSongRow): SongPerformanceAssessment | null {
+  if (!song.performance_assessed_at || !song.performance_overall_scores) return null
+  const words = song.performance_word_scores ?? []
+  return {
+    recognizedText: song.performance_recognized_text ?? '',
+    scores: song.performance_overall_scores,
+    words,
+    focusWords: words.filter((word) => word.errorType !== 'None'),
+    sections: song.performance_section_results ?? [],
+    feedback: song.performance_feedback ?? '',
+    assessedAt: song.performance_assessed_at,
+  }
 }
 
 async function studioPayload(supabase: SupabaseClient, userId: string) {
@@ -81,6 +108,7 @@ async function studioPayload(supabase: SupabaseClient, userId: string) {
       ...latest,
       sections: sections ?? [],
       recording_url: songHistory[0]?.recording_url ?? null,
+      performance_assessment: performanceAssessment(latest),
     } as PersonalSong
     attempts = (attemptRows ?? []) as PronunciationAttempt[]
   }
@@ -89,7 +117,7 @@ async function studioPayload(supabase: SupabaseClient, userId: string) {
     requiredTakeaways: REQUIRED_TAKEAWAYS,
     totalTakeaways: takeaways?.length ?? 0,
     availableTakeawaysCount: available.length,
-    azureConfigured: isAzureSpeechConfigured(),
+    speechAnalysisConfigured: isSpeechAnalysisConfigured(),
     song,
     songHistory,
     attempts,

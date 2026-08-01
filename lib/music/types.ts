@@ -27,6 +27,7 @@ export interface PersonalSong {
   created_at: string
   sections: PersonalSongSection[]
   recording_url?: string | null
+  performance_assessment: SongPerformanceAssessment | null
 }
 
 export interface PronunciationScores {
@@ -35,6 +36,7 @@ export interface PronunciationScores {
   completeness: number | null
   prosody: number | null
   pronunciation: number | null
+  confidence?: number | null
 }
 
 export interface PronunciationPhoneme {
@@ -44,6 +46,7 @@ export interface PronunciationPhoneme {
 
 export interface PronunciationWord {
   word: string
+  recognizedWord?: string | null
   accuracy: number | null
   errorType: string
   phonemes: PronunciationPhoneme[]
@@ -55,6 +58,19 @@ export interface PronunciationResult {
   words: PronunciationWord[]
   focusWords: PronunciationWord[]
   feedback: string
+}
+
+export interface SongPerformanceSectionResult {
+  sectionId: string
+  label: string
+  score: number
+  understoodCount: number
+  totalWords: number
+}
+
+export interface SongPerformanceAssessment extends PronunciationResult {
+  sections: SongPerformanceSectionResult[]
+  assessedAt: string
 }
 
 export interface PronunciationAttempt {
@@ -71,7 +87,7 @@ export interface MusicStudioData {
   requiredTakeaways: number
   totalTakeaways: number
   availableTakeawaysCount: number
-  azureConfigured: boolean
+  speechAnalysisConfigured: boolean
   song: PersonalSong | null
   songHistory: Array<{
     id: string
@@ -81,4 +97,37 @@ export interface MusicStudioData {
     recording_url: string | null
   }>
   attempts: PronunciationAttempt[]
+}
+
+export interface SpeakingReviewItem {
+  id: string
+  word: string
+  sourceSongId: string | null
+  lastHeardAs: string | null
+  easeFactor: number
+  intervalDays: number
+  repetitions: number
+  attemptCount: number
+  successCount: number
+  lastScore: number | null
+  nextReviewAt: string
+  lastReviewedAt: string | null
+}
+
+export interface SpeakingReviewStats {
+  total: number
+  due: number
+  learning: number
+  mastered: number
+}
+
+export interface SpeakingReviewData {
+  items: SpeakingReviewItem[]
+  stats: SpeakingReviewStats
+  speechAnalysisConfigured: boolean
+}
+
+export interface SpeakingReviewAssessment extends PronunciationResult {
+  understood: boolean
+  item: SpeakingReviewItem
 }

@@ -18,9 +18,7 @@ interface AppStats {
 
 const NAV_ITEMS: Array<{ href: string; labelKey: DictKey; icon: React.ReactNode }> = [
   { href: '/dashboard', labelKey: 'nav.overview', icon: <HomeIcon /> },
-  { href: '/feed', labelKey: 'nav.songs', icon: <FeedIcon /> },
-  { href: '/albums', labelKey: 'nav.albums', icon: <AlbumIcon /> },
-  { href: '/review', labelKey: 'nav.review', icon: <ProgressIcon /> },
+  { href: '/feedback', labelKey: 'nav.feedback', icon: <FeedbackIcon /> },
   { href: '/flashcards', labelKey: 'nav.library', icon: <CardsIcon /> },
 ]
 
@@ -161,30 +159,11 @@ function CardsIcon() {
   )
 }
 
-function AlbumIcon() {
+function FeedbackIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="2.5" />
-    </svg>
-  )
-}
-
-function FeedIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </svg>
-  )
-}
-
-function ProgressIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      <path d="M8 9h8M8 13h5" />
     </svg>
   )
 }

@@ -35,69 +35,31 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
   return (
     <div
       onClick={() => onSelect?.(chunk)}
-      style={{
-        border: isSelected
-          ? `1px solid ${chunk.color}`
-          : `1px solid ${chunk.color}44`,
-        borderLeft: `4px solid ${chunk.color}`,
-        borderRadius: 8,
-        padding: '12px 14px',
-        background: isSelected ? `${chunk.color}12` : `${chunk.color}06`,
-        cursor: onSelect ? 'pointer' : 'default',
-        transition: 'background 0.12s, border-color 0.12s',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-      }}
+      className={`chunk-card${onSelect ? ' is-clickable' : ''}${isSelected ? ' is-selected' : ''}`}
+      style={{ '--chunk': chunk.color } as React.CSSProperties}
     >
-      <span style={{
-        display: 'block',
-        fontSize: '0.62rem',
-        fontWeight: 900,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: chunk.color,
-      }}>
+      <span className="chunk-card-type">
         {TYPE_LABELS[chunk.type] ?? chunk.type}
       </span>
 
-      <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1rem', lineHeight: 1.2 }}>
-        {chunk.text}
-      </div>
+      <div className="chunk-card-text">{chunk.text}</div>
 
       {chunk.why_it_matters && (
-        <p style={{ fontSize: '0.76rem', color: 'var(--muted)', lineHeight: 1.45, margin: 0 }}>
-          {chunk.why_it_matters}
-        </p>
+        <p className="chunk-card-why">{chunk.why_it_matters}</p>
       )}
 
       {chunk.contextual_translation && (
-        <p style={{ fontSize: '0.78rem', fontWeight: 600, color: chunk.color, margin: 0 }}>
-          {chunk.contextual_translation}
-        </p>
+        <p className="chunk-card-translation">{chunk.contextual_translation}</p>
       )}
 
       {chunk.example_sentence && (
-        <small style={{
-          display: 'block',
-          fontSize: '0.74rem',
-          fontStyle: 'italic',
-          color: 'var(--muted)',
-          opacity: 0.75,
-          lineHeight: 1.4,
-          marginTop: 4,
-          paddingLeft: 8,
-          borderLeft: `2px solid ${chunk.color}44`,
-        }}>
-          {chunk.example_sentence}
-        </small>
+        <small className="chunk-card-example">{chunk.example_sentence}</small>
       )}
 
-      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
+      <div className="chunk-card-actions">
         <button
           type="button"
           className="btn-secondary"
-          style={{ fontSize: '0.72rem', padding: '3px 10px' }}
           onClick={(e) => { e.stopPropagation(); playAudio() }}
           title="Play pronunciation"
         >
@@ -105,8 +67,8 @@ export default function ChunkCard({ chunk, isSelected, onSelect, onMakeFlashcard
         </button>
         {chunk.flashcard_suggestion && onMakeFlashcard && (
           <button
+            type="button"
             className="btn-primary"
-            style={{ fontSize: '0.72rem', padding: '3px 12px' }}
             onClick={(e) => { e.stopPropagation(); onMakeFlashcard(chunk) }}
             disabled={making || saved}
           >

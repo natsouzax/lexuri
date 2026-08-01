@@ -239,6 +239,17 @@ h1, h2, h3 {
 .app-top-mobile-link:hover { color: var(--paper); background: rgba(255,250,240,0.06); }
 .app-top-mobile-link.active { color: var(--clay-bright); }
 
+@media (max-width: 1180px) {
+  .app-top-logo { margin-right: 16px; }
+  .app-top-link { gap: 5px; padding: 10px 12px; font-size: 0.79rem; }
+  .app-top-right { margin-left: 8px; }
+}
+
+@media (max-width: 980px) {
+  .app-top-links { display: none; }
+  .app-top-hamburger { display: flex; }
+}
+
 .app-top-mobile-xp {
   display: flex;
   align-items: center;
@@ -551,6 +562,19 @@ h1, h2, h3 {
 .chip:hover { background: #b05a37; }
 
 /* ── YoutubeSyncPlayer: video container & interactive subtitles ── */
+/* Moldura do player. O 90% deixa o clipe ~10% menor que a coluna de conteúdo
+   — como o container interno é aspect-ratio 16/9, a altura acompanha sozinha.
+   Volta a 100% no mobile e no landscape baixo, onde não sobra largura. */
+.yt-video-frame {
+  width: 90%;
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.78);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+}
+
 .yt-video-container {
   position: relative;
   border-radius: 18px;
@@ -758,6 +782,13 @@ h1, h2, h3 {
   .deck-word          { font-size: 1.25rem; }
   .vocab-card         { padding: 14px 16px; }
   .learning-card      { padding: 16px 18px; }
+  .chunk-card         { padding: 14px 15px; border-radius: 14px; }
+
+  /* ── Lesson (song) page ── */
+  .lesson-lyrics-panel { padding: 16px 18px; border-radius: 16px; }
+  .lesson-meta-dev     { margin-left: 0; }
+  .lesson-state-card   { padding: 28px 20px; }
+  .lesson-finish-panel .btn-primary { width: 100%; }
 
   /* ── Review buttons ── */
   .review-buttons     { gap: 5px; }
@@ -771,6 +802,7 @@ h1, h2, h3 {
   .chip               { font-size: 0.8rem; padding: 6px 12px; }
 
   /* ── YoutubeSyncPlayer: stack to single column ── */
+  .yt-video-frame     { width: 100%; border-radius: 18px; padding: 8px; }
   .yt-player-grid     { grid-template-columns: 1fr !important; }
   .yt-transcript      { max-height: 360px !important; margin-top: 12px; }
 
@@ -2806,6 +2838,22 @@ h1, h2, h3 {
   border-top-color: var(--ink);
 }
 
+/* Variante ancorada no fluxo — usada na demo da landing, que abre o card
+   embaixo do verso em vez de flutuar sobre o vídeo. Some a seta e o
+   posicionamento fixo; o resto do card é idêntico ao do app. */
+.chunk-tooltip-inline {
+  position: static;
+  transform: none;
+  max-width: none;
+  width: 100%;
+  margin-top: 9px;
+  z-index: auto;
+  background: rgba(255, 250, 240, 0.07);
+  border: 1px solid var(--dark-border);
+  box-shadow: none;
+}
+.chunk-tooltip-inline::after { display: none; }
+
 .chunk-tooltip-header {
   display: flex;
   align-items: center;
@@ -2942,6 +2990,7 @@ h1, h2, h3 {
   }
 
   /* Cap video height so controls below it remain reachable */
+  .yt-video-frame { width: 100%; padding: 6px; }
   .yt-video-container {
     aspect-ratio: unset;
     height: min(55svh, 260px);
@@ -3070,6 +3119,168 @@ h1, h2, h3 {
   transition: box-shadow 160ms ease, transform 160ms ease;
 }
 .lesson-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.10); transform: translateY(-2px); }
+
+/* ── Lesson (song) page — /feed/[id] ─────────────────────────
+   Same language as the redesigned /feed: promo-banner hero, stat
+   pills, cards on tokens. Meta chips live INSIDE the hero, so they
+   sit on the gradient rather than under the floating header. */
+.lesson-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.lesson-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: 1px solid rgba(255, 250, 240, 0.22);
+  background: rgba(255, 250, 240, 0.10);
+  color: var(--paper);
+  transition: background 140ms ease, border-color 140ms ease;
+}
+a.lesson-meta-chip:hover { background: rgba(255, 250, 240, 0.2); border-color: rgba(255, 250, 240, 0.4); }
+.lesson-meta-chip.is-level { border-color: transparent; color: #fff; }
+.lesson-meta-chip.is-muted { font-weight: 700; color: rgba(255, 250, 240, 0.8); }
+.lesson-meta-dev {
+  margin-left: auto;
+  cursor: pointer;
+  font-family: inherit;
+}
+.lesson-meta-dev:disabled { opacity: 0.6; cursor: default; }
+
+.lesson-lyrics-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px 26px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.lesson-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--moss);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.lesson-toggle:hover { color: var(--clay); }
+.lesson-toggle-wide { margin: 0 0 16px; padding: 4px 0; letter-spacing: 0.04em; }
+
+/* Chunk type filters — per-type color injected as --chip */
+.lesson-chunk-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.lesson-chunk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: color-mix(in srgb, var(--chip) 13%, transparent);
+  color: var(--chip);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.lesson-chunk-chip:hover { border-color: var(--chip); }
+.lesson-chunk-chip.active { background: var(--chip); border-color: var(--chip); color: #fff; }
+.lesson-chunk-chip.is-clear { --chip: var(--muted); background: transparent; border-color: var(--line); }
+
+.lesson-finish-panel { text-align: center; margin-bottom: 32px; }
+.lesson-finish-title {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+}
+.lesson-finish-panel .btn-primary { padding: 12px 32px; }
+
+.lesson-state-card { text-align: center; padding: 40px 32px; }
+.lesson-state-title {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+.lesson-state-body { color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin: 0 0 20px; }
+.lesson-state-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.lesson-state-actions a { text-decoration: none; }
+.lesson-loading { display: flex; align-items: center; gap: 12px; padding: 32px 0; color: var(--muted); }
+
+/* Chunk card — color of the chunk type comes in as --chunk */
+.chunk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--chunk) 28%, transparent);
+  border-left: 4px solid var(--chunk);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 160ms ease, transform 160ms ease, background 140ms ease;
+}
+.chunk-card.is-clickable { cursor: pointer; }
+.chunk-card.is-clickable:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.chunk-card.is-selected {
+  border-color: var(--chunk);
+  background: color-mix(in srgb, var(--chunk) 8%, #fff);
+}
+.chunk-card-type {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chunk);
+}
+.chunk-card-text { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1rem; line-height: 1.2; }
+.chunk-card-why { font-size: 0.76rem; color: var(--muted); line-height: 1.45; margin: 0; }
+.chunk-card-translation { font-size: 0.78rem; font-weight: 600; color: var(--chunk); margin: 0; }
+.chunk-card-example {
+  display: block;
+  font-size: 0.74rem;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 4px;
+  padding-left: 10px;
+  border-left: 2px solid color-mix(in srgb, var(--chunk) 30%, transparent);
+}
+.chunk-card-actions { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.chunk-card-actions .btn-primary,
+.chunk-card-actions .btn-secondary { font-size: 0.72rem; padding: 4px 12px; }
+
+/* Generated learning card internals (shell is .learning-card) */
+.learning-card-word { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1.1rem; margin-bottom: 6px; }
+.learning-card-translation { font-family: Manrope, sans-serif; font-weight: 400; font-size: 0.88rem; color: var(--muted); margin-left: 10px; }
+.learning-card-explanation { font-size: 0.9rem; margin: 0 0 6px; }
+.learning-card-example {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+  border-left: 2px solid var(--clay);
+  padding-left: 10px;
+}
 
 /* ── Legal Pages (/terms, /privacy) ─────────────────────────── */
 .mkt-legal {
@@ -3524,9 +3735,12 @@ h1, h2, h3 {
   color: #fff;
   border-color: var(--clay);
 }
+.badges-count { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+/* auto-fill em vez de 3 fixas: a galeria agora vive na coluna estreita do
+   dash-layout, com o painel de perfil ao lado. */
 .badges-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   gap: 12px;
 }
 .badge-item {
@@ -3609,6 +3823,13 @@ h1, h2, h3 {
   gap: 28px;
   align-items: start;
 }
+/* Painel fechado pelo usuário: a coluna principal estica pra ocupar os 320px.
+   Estado guardado em localStorage pelo ProfileSidePanel. */
+.dash-layout:has(.dash-side.is-collapsed) { grid-template-columns: minmax(0, 1fr); }
+/* `display: contents` não gera caixa nenhuma: o aside some do grid (sem sobrar
+   uma linha vazia com o gap), mas o botão fixo dentro dele continua pintando. */
+.dash-side.is-collapsed { display: contents; }
+
 .dash-main { min-width: 0; }
 .dash-side {
   position: sticky;
@@ -3771,7 +3992,52 @@ h1, h2, h3 {
 .profile-panel--top {
   background: linear-gradient(160deg, #faece6 0%, #fff 45%);
 }
-.profile-panel-head { margin-bottom: 14px; }
+.profile-panel-head {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.profile-panel-close {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.profile-panel-close:hover { background: var(--clay); border-color: var(--clay); color: #fff; }
+
+/* Aba de volta, quando o painel está escondido. Fica presa na borda direita,
+   longe do FAB do tradutor (canto inferior). */
+.profile-panel-restore {
+  position: fixed;
+  top: 104px;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: #fff;
+  color: var(--muted);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, width 140ms ease;
+}
+.profile-panel-restore:hover { background: var(--clay); color: #fff; width: 36px; }
 .profile-avatar-lg {
   width: 56px;
   height: 56px;
@@ -3850,12 +4116,124 @@ h1, h2, h3 {
 }
 .top-learner-rank.me { background: var(--clay); color: #fff; }
 
+/* ── Leaderboard ──────────────────────────────────────────────
+   `--medal` (ouro/prata/bronze) e `--avatar-size` entram pelo componente. */
+.lb-avatar {
+  width: var(--avatar-size, 36px);
+  height: var(--avatar-size, 36px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 900;
+  font-size: calc(var(--avatar-size, 36px) * 0.38);
+  background: var(--sage);
+  color: var(--moss);
+  border: 2px solid transparent;
+}
+.lb-avatar.is-me { background: var(--clay); color: #fff; border-color: var(--clay-bright); }
+
+.lb-podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 28px; }
+.lb-podium-gap { flex: 1; }
+.lb-podium-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 10px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--medal) 9%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--medal) 30%, transparent);
+  box-shadow: var(--shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.lb-podium-card.is-first {
+  padding: 24px 12px 20px;
+  transform: translateY(-14px);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--medal) 25%, transparent);
+}
+.lb-podium-rank {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--medal);
+  margin-bottom: 8px;
+}
+.lb-podium-card.is-first .lb-podium-rank { font-size: 2rem; }
+.lb-podium-name {
+  margin-top: 8px;
+  max-width: 100%;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-podium-xp {
+  margin-top: 4px;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: var(--medal);
+}
+.lb-podium-card.is-first .lb-podium-xp { font-size: 1.05rem; }
+.lb-unit { font-size: 0.62rem; font-weight: 800; color: var(--muted); margin-top: 2px; }
+.lb-rank-badge { margin-top: 8px; font-size: 0.65rem; padding: 3px 10px; }
+.lb-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.lb-streak svg { color: var(--clay); }
+
+.lb-rows { display: flex; flex-direction: column; gap: 8px; }
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+.lb-row:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.lb-row.is-me { border-color: rgba(200, 111, 74, 0.35); background: rgba(200, 111, 74, 0.06); }
+.lb-row-rank { width: 30px; flex-shrink: 0; text-align: right; font-size: 0.85rem; font-weight: 900; color: var(--muted); }
+.lb-row-body { flex: 1; min-width: 0; }
+.lb-row-name { font-size: 0.88rem; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-row.is-me .lb-row-name { color: var(--clay); font-weight: 900; }
+.lb-row-rank-label { font-size: 0.66rem; font-weight: 800; }
+.lb-row-score { flex-shrink: 0; text-align: right; }
+.lb-row-xp { font-family: Fraunces, Georgia, serif; font-size: 0.92rem; font-weight: 900; color: var(--ink); }
+.lb-row-score .lb-unit { margin-top: 0; }
+.lb-row-streak { flex-shrink: 0; margin: 0 0 0 4px; font-size: 0.72rem; }
+
+.lb-skeletons { display: flex; flex-direction: column; gap: 8px; }
+.lb-skeleton-row { height: 58px; border-radius: 16px; }
+
 @media (max-width: 900px) {
   .dash-layout { grid-template-columns: 1fr; }
   .dash-side { position: static; }
 }
 @media (max-width: 640px) {
   .stat-pill-row { grid-template-columns: 1fr; }
+  /* Pódio empilhado não faz sentido — encolhe e mantém os 3 lado a lado. */
+  .lb-podium { gap: 6px; }
+  .lb-podium-card { padding: 12px 6px; border-radius: 14px; }
+  .lb-podium-card.is-first { padding: 18px 8px 14px; transform: translateY(-8px); }
+  .lb-rank-badge { font-size: 0.58rem; padding: 3px 7px; }
+  .lb-row { padding: 10px 12px; gap: 9px; }
+  .lb-row-streak { display: none; }
 }
 
 /* ── Personal Music Studio ─────────────────────────────────── */
@@ -3966,8 +4344,8 @@ h1, h2, h3 {
 .music-lyrics-grid article > span { color: var(--clay); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.09em; text-transform: uppercase; }
 .music-lyrics-grid article > p { margin: 7px 0 0; white-space: pre-line; font-family: Fraunces, Georgia, serif; font-size: 1rem; line-height: 1.65; }
 
-.music-azure-notice { display: flex; flex-direction: column; gap: 2px; padding: 12px 15px; border-radius: 12px; background: rgba(190, 220, 235, 0.35); color: #285a6c; font-size: 0.78rem; margin-bottom: 16px; }
-.music-azure-notice strong { font-size: 0.8rem; }
+.music-analysis-notice { display: flex; flex-direction: column; gap: 2px; padding: 12px 15px; border-radius: 12px; background: rgba(190, 220, 235, 0.35); color: #285a6c; font-size: 0.78rem; margin-bottom: 16px; }
+.music-analysis-notice strong { font-size: 0.8rem; }
 .music-section-tabs { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 7px; margin-bottom: 13px; }
 .music-section-tabs button {
   min-width: 56px;
@@ -3990,6 +4368,11 @@ h1, h2, h3 {
 .music-practice-script > p { font-family: Fraunces, Georgia, serif; font-size: clamp(1.05rem, 2.5vw, 1.35rem); line-height: 1.7; white-space: pre-line; margin: 8px 0 19px; }
 .music-practice-script > small { display: block; color: var(--muted); margin-top: 10px; font-size: 0.68rem; }
 .music-practice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.music-practice-playback { display: grid; grid-template-columns: minmax(135px, 0.55fr) minmax(180px, 1fr); align-items: center; gap: 12px; margin-top: 14px; padding: 12px; border: 1px solid rgba(24, 33, 29, 0.09); border-radius: 12px; background: rgba(255,255,255,0.72); }
+.music-practice-playback > div { display: flex; flex-direction: column; gap: 2px; }
+.music-practice-playback strong { font-size: 0.75rem; }
+.music-practice-playback span { color: var(--muted); font-size: 0.62rem; }
+.music-practice-playback audio { width: 100%; min-width: 0; height: 34px; }
 .music-record-stop { border: 0; border-radius: 999px; padding: 10px 18px; background: #b84335; color: #fff; font-weight: 900; cursor: pointer; }
 .music-record-stop span { display: inline-block; width: 9px; height: 9px; background: #fff; border-radius: 2px; margin-right: 7px; }
 .music-practice-result, .music-practice-empty { padding: 22px; display: flex; flex-direction: column; justify-content: center; background: #fff; }
@@ -4014,12 +4397,19 @@ h1, h2, h3 {
 .music-sound-wave i:nth-child(3) { height: 40px; }
 
 .music-consent { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #fffaf2; color: var(--muted); font-size: 0.75rem; margin-bottom: 16px; cursor: pointer; }
+.music-backing-monitor { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .music-consent input { margin-top: 3px; accent-color: var(--moss); }
+.music-bluetooth-note { display: flex; align-items: flex-start; gap: 6px; margin: -7px 2px 16px; color: var(--muted); font-size: 0.64rem; line-height: 1.45; }
+.music-bluetooth-note > span { color: var(--clay); font-weight: 900; }
 .music-live-stage { padding: 24px; border-radius: 18px; color: #fff; background: radial-gradient(circle at 80% 10%, rgba(200,111,74,0.35), transparent 35%), var(--ink); }
 .music-live-meta { display: flex; justify-content: space-between; align-items: center; }
 .music-live-meta > span { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.09em; text-transform: uppercase; }
 .music-live-meta > span.is-recording::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #ff6f61; animation: music-pulse 1s infinite; }
 .music-live-meta button { border: 1px solid rgba(255,255,255,0.25); background: transparent; color: #fff; border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.music-live-ready { min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+.music-live-ready strong { font-family: Fraunces, Georgia, serif; font-size: clamp(1.2rem, 3vw, 1.7rem); }
+.music-live-ready span { color: rgba(255,255,255,0.68); font-size: 0.75rem; }
+.music-live-ready .btn-primary { margin-top: 10px; }
 .music-live-lyrics { min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .music-live-lyrics small { color: var(--clay-bright, #df8a66); font-weight: 900; text-transform: uppercase; letter-spacing: 0.09em; }
 .music-live-lyrics p { margin: 8px 0; white-space: pre-line; font-family: Fraunces, Georgia, serif; font-size: clamp(1.25rem, 4vw, 2rem); line-height: 1.5; }
@@ -4029,6 +4419,39 @@ h1, h2, h3 {
 .music-final-preview, .music-completed-card { display: grid; grid-template-columns: minmax(130px, 0.55fr) minmax(220px, 1fr) auto; align-items: center; gap: 16px; margin-top: 16px; padding: 16px; border-radius: 15px; background: var(--sage); }
 .music-final-preview > div, .music-completed-card > div { display: flex; flex-direction: column; }
 .music-final-preview audio, .music-completed-card audio { width: 100%; min-width: 0; }
+.music-final-analysis-loading { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 16px; border: 1px solid rgba(190,220,235,0.65); border-radius: 15px; background: rgba(190,220,235,0.24); }
+.music-final-analysis-loading > div { display: flex; flex-direction: column; gap: 2px; }
+.music-final-analysis-loading strong { font-size: 0.8rem; }
+.music-final-analysis-loading span:not(.spinner) { color: var(--muted); font-size: 0.68rem; }
+.music-final-assessment { margin-top: 16px; padding: 22px; border: 1px solid rgba(24,33,29,0.1); border-radius: 18px; background: #fffaf2; box-shadow: var(--shadow-sm); }
+.music-final-assessment-head { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: start; gap: 20px; }
+.music-final-assessment-head h4 { margin: 4px 0 7px; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; }
+.music-final-assessment-head p { max-width: 720px; margin: 0; color: var(--muted); font-size: 0.76rem; line-height: 1.55; }
+.music-final-score { width: 82px; height: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid currentColor; border-radius: 50%; background: #fff; }
+.music-final-score strong { font-family: Fraunces, Georgia, serif; font-size: 2rem; line-height: 1; }
+.music-final-score span { font-size: 0.58rem; font-weight: 900; text-transform: uppercase; }
+.music-final-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 18px 0; }
+.music-final-metrics > span { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 11px; background: rgba(24,33,29,0.045); }
+.music-final-metrics small { color: var(--muted); font-size: 0.58rem; font-weight: 800; }
+.music-final-metrics strong { font-size: 0.92rem; }
+.music-final-sections { display: grid; grid-template-columns: repeat(7,minmax(84px,1fr)); gap: 7px; overflow-x: auto; padding-bottom: 4px; }
+.music-final-sections > div { min-width: 84px; padding: 9px; border-radius: 11px; background: #fff; }
+.music-final-sections span, .music-final-sections small { display: block; color: var(--muted); font-size: 0.57rem; }
+.music-final-sections strong { font-size: 0.8rem; }
+.music-final-sections > div > div { height: 4px; margin: 5px 0; overflow: hidden; border-radius: 99px; background: rgba(24,33,29,0.08); }
+.music-final-sections i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--clay),var(--moss)); }
+.music-final-transcript { margin: 16px 0; padding: 14px; border-left: 3px solid var(--clay); border-radius: 0 11px 11px 0; background: rgba(200,111,74,0.07); }
+.music-final-transcript > span { color: var(--clay); font-size: 0.61rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }
+.music-final-transcript p { margin: 5px 0 0; font-size: 0.76rem; line-height: 1.55; }
+.music-final-word-groups { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px; }
+.music-final-word-groups > div { min-width: 0; }
+.music-final-word-groups > div:last-child { display: flex; flex-direction: column; }
+.music-final-word-groups > div:last-child > div { display: flex; flex: 1; flex-direction: column; }
+.music-final-word-groups > div > strong { display: block; margin-bottom: 8px; font-size: 0.72rem; }
+.music-final-word-groups > div > p { margin: 0; color: var(--moss); font-size: 0.72rem; }
+.music-speaking-save { display: flex; align-items: center; justify-content: flex-end; gap: 9px; flex-wrap: wrap; margin-top: auto; padding-top: 12px; }
+.music-speaking-save .btn-primary, .music-speaking-save .btn-secondary { min-height: 38px; padding: 8px 13px; font-size: 0.7rem; text-decoration: none; }
+.music-speaking-save > span { color: var(--moss); font-size: 0.7rem; font-weight: 800; }
 .music-completed-card { background: linear-gradient(135deg, var(--sage), rgba(190,220,235,0.45)); }
 .music-completed-card > div span { color: var(--moss); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; }
 .music-completed-card > p { margin: 0; color: var(--muted); font-size: 0.7rem; }
@@ -4048,8 +4471,64 @@ h1, h2, h3 {
   .music-vinyl { width: 150px; height: 150px; grid-row: 1; }
   .music-practice-card { grid-template-columns: 1fr; }
   .music-final-preview, .music-completed-card { grid-template-columns: 1fr; }
+  .music-final-word-groups { grid-template-columns: 1fr; }
   .music-next-song { align-items: flex-start; flex-direction: column; }
   .music-history-list > div { grid-template-columns: 1fr; }
+}
+
+/* ── AI speaking review ───────────────────────────────────── */
+.speaking-review-intro { margin: 24px 0 18px; }
+.speaking-review-intro p { margin: 7px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+.speaking-review-stats { margin-top: 0; }
+.speaking-review-loading { display: flex; align-items: center; justify-content: center; min-height: 260px; color: var(--muted); font-size: 0.82rem; }
+.speaking-review-session { max-width: 760px; margin: 0 auto 36px; }
+.speaking-review-progress { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; color: var(--muted); font-size: 0.69rem; font-weight: 800; }
+.speaking-review-progress > div { flex: 1; height: 5px; overflow: hidden; border-radius: 99px; background: rgba(24,33,29,0.08); }
+.speaking-review-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--clay), var(--moss)); }
+.speaking-review-card { position: relative; overflow: hidden; padding: 38px 42px 22px; border: 1px solid rgba(24,33,29,0.13); border-radius: 24px; background: linear-gradient(145deg, #fffdf8 0%, #fff9f0 62%, rgba(216,231,211,0.3) 140%); box-shadow: 0 18px 45px rgba(62,44,30,0.09); text-align: center; }
+.speaking-review-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--clay), #e6a36f 48%, var(--moss)); }
+.speaking-review-card > .mini-label { display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 99px; background: rgba(200,111,74,0.1); color: var(--clay); letter-spacing: 0.08em; }
+.speaking-review-card h2 { margin: 14px 0 5px; font-family: Fraunces, Georgia, serif; font-size: clamp(2.7rem,7vw,4.5rem); line-height: 0.95; color: var(--ink); letter-spacing: -0.025em; }
+.speaking-review-card > p { max-width: 510px; margin: 16px auto 24px; color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
+.speaking-review-actions { display: flex; justify-content: center; align-items: center; gap: 9px; flex-wrap: wrap; }
+.speaking-review-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 148px; box-shadow: 0 7px 18px rgba(62,44,30,0.06); }
+.speaking-review-record { min-width: 178px !important; }
+.speaking-review-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 28px; padding-top: 17px; border-top: 1px solid rgba(24,33,29,0.09); text-align: left; }
+.speaking-review-privacy { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 0.6rem; line-height: 1.4; }
+.speaking-review-privacy svg { flex: 0 0 auto; color: var(--moss); }
+.speaking-review-skip { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; min-width: 132px; border: 1px solid rgba(200,111,74,0.25); border-radius: 12px; background: rgba(200,111,74,0.07); color: var(--clay); padding: 8px 11px; font: inherit; cursor: pointer; box-shadow: 0 5px 14px rgba(62,44,30,0.05); transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease; }
+.speaking-review-skip > span { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.speaking-review-skip strong { font-size: 0.68rem; }
+.speaking-review-skip small { margin-top: 2px; color: var(--muted); font-size: 0.55rem; font-weight: 700; }
+.speaking-review-skip:hover { transform: translateY(-1px); border-color: rgba(200,111,74,0.5); background: rgba(200,111,74,0.12); box-shadow: 0 8px 18px rgba(62,44,30,0.08); }
+.speaking-review-skip:disabled { opacity: 0.5; cursor: not-allowed; }
+.speaking-review-playback { display: grid; grid-template-columns: auto minmax(180px,1fr); align-items: center; gap: 12px; max-width: 520px; margin: 18px auto 0; padding: 11px 13px; border-radius: 13px; background: rgba(24,33,29,0.045); text-align: left; }
+.speaking-review-playback span { color: var(--muted); font-size: 0.68rem; font-weight: 800; }
+.speaking-review-playback audio { width: 100%; height: 36px; }
+.speaking-review-result { display: grid; grid-template-columns: 46px minmax(0,1fr); gap: 12px; max-width: 570px; margin: 20px auto 0; padding: 15px; border: 1px solid; border-radius: 15px; text-align: left; }
+.speaking-review-result.understood { border-color: rgba(70,98,74,0.35); background: rgba(70,98,74,0.08); color: var(--moss); }
+.speaking-review-result.retry { border-color: rgba(200,111,74,0.4); background: rgba(200,111,74,0.08); color: #91462d; }
+.speaking-review-result-icon { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.7); font-size: 1.25rem; font-weight: 900; }
+.speaking-review-result > div:last-child { display: flex; flex-direction: column; min-width: 0; }
+.speaking-review-result strong { font-size: 0.86rem; }
+.speaking-review-result span { margin-top: 2px; color: var(--ink); font-size: 0.76rem; font-weight: 800; overflow-wrap: anywhere; }
+.speaking-review-result p { margin: 6px 0 0; color: var(--muted); font-size: 0.7rem; line-height: 1.45; }
+.speaking-review-next { margin-top: 16px; }
+.speaking-review-empty { margin: 0 auto 36px; padding: 45px 30px; max-width: 760px; border: 1px solid var(--line); border-radius: 22px; background: #fff; box-shadow: var(--shadow-sm); text-align: center; }
+.speaking-review-empty-icon { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border-radius: 50%; background: var(--sage); color: var(--moss); font-size: 1.45rem; font-weight: 900; }
+.speaking-review-empty h2 { margin: 0 0 8px; font-family: Fraunces, Georgia, serif; font-size: 1.5rem; }
+.speaking-review-empty p { max-width: 500px; margin: 0 auto 20px; color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
+.speaking-review-empty .btn-primary { text-decoration: none; }
+
+@media (max-width: 560px) {
+  .speaking-review-card { padding: 25px 17px; border-radius: 18px; }
+  .speaking-review-actions { flex-direction: column; }
+  .speaking-review-actions button { width: 100%; }
+  .speaking-review-playback { grid-template-columns: 1fr; }
+  .speaking-review-result { grid-template-columns: 38px minmax(0,1fr); padding: 12px; }
+  .speaking-review-result-icon { width: 38px; height: 38px; }
+  .speaking-review-card-footer { align-items: stretch; flex-direction: column; }
+  .speaking-review-skip { align-self: flex-end; }
 }
 
 @media (max-width: 560px) {
@@ -4059,5 +4538,9 @@ h1, h2, h3 {
   .music-lyrics-grid { grid-template-columns: 1fr; }
   .music-practice-script, .music-practice-result, .music-practice-empty { padding: 18px; }
   .music-practice-actions .btn-primary, .music-practice-actions .btn-secondary, .music-record-stop { width: 100%; }
+  .music-practice-playback { grid-template-columns: 1fr; }
+  .music-final-assessment { padding: 17px; }
+  .music-final-assessment-head { grid-template-columns: 1fr; }
+  .music-final-score { width: 72px; height: 72px; }
   .music-performance-actions > button { width: 100%; }
 }

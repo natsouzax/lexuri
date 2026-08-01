@@ -277,3 +277,39 @@ export function GlobeIcon({ size = 18, className, style }: IconProps) {
     </svg>
   )
 }
+
+// Collapse/expand toggles — replaces the ▲ / ▼ text arrows.
+const CHEVRON_ROTATION = { down: 0, left: 90, up: 180, right: 270 } as const
+
+export function ChevronIcon({ direction = 'down', size = 18, className, style }: IconProps & { direction?: keyof typeof CHEVRON_ROTATION }) {
+  const deg = CHEVRON_ROTATION[direction]
+  return (
+    <svg
+      {...base(size)}
+      className={className}
+      style={{ ...style, transform: deg ? `rotate(${deg}deg)` : undefined, transition: 'transform 160ms ease' }}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  )
+}
+
+export function CloseIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  )
+}
+
+export function SyncIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M21 12a9 9 0 0 1-15.2 6.5L3 16" />
+      <path d="M3 12a9 9 0 0 1 15.2-6.5L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M3 21v-5h5" />
+    </svg>
+  )
+}

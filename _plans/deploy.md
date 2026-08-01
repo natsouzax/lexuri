@@ -19,7 +19,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | Banco + Auth |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Cliente Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Rotas server-side |
-| `OPENAI_API_KEY` | Traduzir/definir palavra (tap-to-translate, tradutor flutuante) |
+| `OPENAI_API_KEY` | Tradução, geração da música e transcrição do treino e da performance completa |
 
 O `lrclib.net` (usado só nos scripts locais de geração de lição) **não** é
 necessário em produção — as lições são estáticas em `data/featured-lessons/`.

@@ -31,7 +31,7 @@ export const LANG_OPTIONS: Array<{ id: Lang; label: string; flag: string }> = [
 // Nome do idioma pro prompt de tradução da IA.
 export const NATIVE_LANG_NAME: Record<Lang, string> = {
   en: 'English',
-  pt: 'Portuguese',
+  pt: 'Brazilian Portuguese',
   es: 'Spanish',
   fr: 'French',
   de: 'German',
@@ -76,8 +76,10 @@ const DICT = {
     'nav.songs': 'Songs',
     'nav.albums': 'Albums',
     'nav.review': 'Review',
+    'nav.speaking': 'Speak',
     'nav.library': 'Library',
-    'nav.overview': 'Overview',
+    'nav.overview': 'Dashboard',
+    'nav.feedback': 'Feedback',
     // level
     'level.title': "What's your English level?",
     'level.subtitle': "We'll open a real song that matches where you're at.",
