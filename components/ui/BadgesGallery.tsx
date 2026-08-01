@@ -15,7 +15,7 @@ interface BadgeDef {
   condition: string
 }
 
-const BADGES: BadgeDef[] = [
+export const BADGES: BadgeDef[] = [
   // Streak
   { id: 'streak_1',   name: 'First Fire',       description: 'Keep a 1-day streak',       icon: 'fire', category: 'streak',      condition: 'Start a streak' },
   { id: 'streak_7',   name: 'Week Warrior',      description: '7-day streak',               icon: 'fire', category: 'streak',      condition: '7 days in a row' },
@@ -47,6 +47,21 @@ interface Props {
   unlockedIds: string[]
   totalReviews?: number
   streak?: number
+}
+
+// Streak e reviews desbloqueiam badges por limiar, sem persistir nada. Exposto
+// porque a página de conquistas mostra a contagem no stat pill do topo.
+export function deriveUnlockedIds(unlockedIds: string[], totalReviews = 0, streak = 0): Set<string> {
+  const derived = new Set(unlockedIds)
+  if (streak >= 1)   derived.add('streak_1')
+  if (streak >= 7)   derived.add('streak_7')
+  if (streak >= 30)  derived.add('streak_30')
+  if (streak >= 100) derived.add('streak_100')
+  if (totalReviews >= 1)   derived.add('review_1')
+  if (totalReviews >= 10)  derived.add('review_10')
+  if (totalReviews >= 50)  derived.add('review_50')
+  if (totalReviews >= 100) derived.add('review_100')
+  return derived
 }
 
 function Badge({ badge, unlocked, i }: { badge: BadgeDef; unlocked: boolean; i: number }) {
@@ -81,7 +96,7 @@ function Badge({ badge, unlocked, i }: { badge: BadgeDef; unlocked: boolean; i: 
             transition={{ duration: 0.18, ease: EASE_OUT }}
           >
             <strong>{badge.name}</strong>
-            <span>{unlocked ? badge.description : `Para desbloquear: ${badge.condition}`}</span>
+            <span>{unlocked ? badge.description : `To unlock: ${badge.condition}`}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -92,15 +107,7 @@ function Badge({ badge, unlocked, i }: { badge: BadgeDef; unlocked: boolean; i: 
 export default function BadgesGallery({ unlockedIds, totalReviews = 0, streak = 0 }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>('all')
 
-  const derived = new Set(unlockedIds)
-  if (streak >= 1)   derived.add('streak_1')
-  if (streak >= 7)   derived.add('streak_7')
-  if (streak >= 30)  derived.add('streak_30')
-  if (streak >= 100) derived.add('streak_100')
-  if (totalReviews >= 1)   derived.add('review_1')
-  if (totalReviews >= 10)  derived.add('review_10')
-  if (totalReviews >= 50)  derived.add('review_50')
-  if (totalReviews >= 100) derived.add('review_100')
+  const derived = deriveUnlockedIds(unlockedIds, totalReviews, streak)
 
   const categories = ['all', 'streak', 'review', 'creation', 'exploration']
   const filtered = activeCategory === 'all' ? BADGES : BADGES.filter((b) => b.category === activeCategory)
@@ -111,10 +118,8 @@ export default function BadgesGallery({ unlockedIds, totalReviews = 0, streak = 
       {/* Header */}
       <div className="badges-header">
         <div>
-          <div className="section-title" style={{ margin: 0 }}>Conquistas</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 4 }}>
-            {unlockedCount} / {BADGES.length} desbloqueados
-          </div>
+          <div className="section-title" style={{ margin: 0 }}>Badges</div>
+          <div className="badges-count">{unlockedCount} of {BADGES.length} unlocked</div>
         </div>
 
         {/* Progress bar */}
@@ -141,7 +146,7 @@ export default function BadgesGallery({ unlockedIds, totalReviews = 0, streak = 
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            {cat === 'all' ? 'Todos' : CATEGORY_LABELS[cat]}
+            {cat === 'all' ? 'All' : CATEGORY_LABELS[cat]}
           </motion.button>
         ))}
       </div>
