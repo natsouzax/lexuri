@@ -25,6 +25,7 @@
 - [ ] Fornecer Terms/Privacy e destacar que microfone é opcional.
 - [ ] Confirmar responsável pelo atendimento de solicitações LGPD no e-mail publicado.
 - [ ] Testar uma exclusão real e uma solicitação de exportação antes do primeiro convite.
+- [ ] Configurar SMTP transacional próprio, testar confirmação com endereço externo e incluir o operador de e-mail na Privacy Policy/revisão de operadores.
 
 ## Antes de cobrar ou abrir ao público
 

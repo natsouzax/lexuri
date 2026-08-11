@@ -8,6 +8,8 @@
 - [ ] `supabase migration list` shows local and remote through migration 0034.
 - [ ] The release is committed and tagged before production deployment.
 - [ ] Supabase Auth allows email/password signup and lists the canonical callback URL.
+- [ ] Custom SMTP is enabled in Supabase Auth and a real address outside the project team receives and completes the confirmation link. The built-in sender is limited to team addresses and 2 emails/hour, so it cannot support the cohort.
+- [ ] Supabase Auth email rate limits are sized for the planned invite batch after custom SMTP is enabled.
 - [ ] OpenAI project spend alerts/hard limit are configured in the OpenAI dashboard.
 - [ ] One disposable account completes the internal smoke test below.
 
@@ -40,6 +42,7 @@ This is a product-direction pilot, not a statistically powered experiment. Use a
 ## Cohort operations
 
 - Invite only the agreed teacher/students; do not publish broadly during the first cycle.
+- Do not send invitations while the signup confirmation test or custom SMTP check is failing.
 - For participants aged 13–17, obtain guardian authorization through the school/test process before sending the account link.
 - Provide the privacy/terms links and explain that microphone exercises are optional.
 - Give testers one support channel and a response expectation.

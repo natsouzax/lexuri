@@ -30,6 +30,22 @@ Preview and Development environments are separate in Vercel. If using a preview
 deployment, configure its environment variables and add that exact callback URL
 to Supabase Auth; preferably use an isolated Supabase project for destructive E2E tests.
 
+## Authentication email gate
+
+Before inviting any tester, configure a custom transactional SMTP provider in
+Supabase Auth and verify signup plus confirmation with an address outside the
+Supabase organization. The built-in sender is for demonstrations only: it is
+restricted to organization-team addresses and currently limited to 2 messages
+per hour. See the [official Supabase SMTP guide](https://supabase.com/docs/guides/auth/auth-smtp).
+
+After adding the provider:
+
+1. Set the verified sender address/name and SMTP credentials in Supabase Auth.
+2. Confirm `https://lexuri-validacao.vercel.app/api/auth/callback` is allowed.
+3. Raise the Auth email rate limit only to the expected closed-cohort volume.
+4. Complete one real signup/confirmation/logout/login cycle.
+5. Add the chosen email operator to the Privacy Policy and legal processor review before invitations.
+
 ## Release commands
 
 ```bash
@@ -63,6 +79,6 @@ forward migration if database behavior must change.
 
 ## External dashboard checks
 
-- Supabase Auth: canonical Redirect URL and intended email-confirmation setting.
+- Supabase Auth: custom SMTP, canonical Redirect URL, email-confirmation setting, and cohort-sized rate limit.
 - OpenAI project: enforced spend limit and alerts.
 - Vercel: Production environment names, Node runtime, logs, and deployment alias.
