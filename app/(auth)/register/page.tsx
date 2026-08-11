@@ -61,6 +61,7 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
 
   const strength = getPasswordStrength(password)
   const strengthBars = [1, 2, 3, 4, 5]
@@ -108,7 +109,30 @@ export default function RegisterPage() {
       return
     }
 
-    router.push('/level')
+    setAwaitingConfirmation(true)
+    setLoading(false)
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card auth-success-block">
+          <span className="auth-success-icon" aria-hidden="true">✉️</span>
+          <h1 className="auth-title">Check your email</h1>
+          <p className="auth-subtitle">
+            We sent a confirmation link to <strong>{email}</strong>. Open it to activate your account,
+            then sign in to start learning.
+          </p>
+          <p className="auth-field-ok" role="status">
+            Your account and consent preferences were saved.
+          </p>
+          <p className="auth-switch">
+            Didn&apos;t see it? Check your spam folder, then return to{' '}
+            <Link href="/login" className="auth-link">sign in</Link>.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
