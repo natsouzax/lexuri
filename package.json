@@ -9,10 +9,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "check:release": "npm test && npm run build && npm audit --omit=dev",
     "db:migrate": "supabase db push",
     "db:status": "supabase migration list",
     "generate:lessons": "node --env-file=.env.local --import=tsx/esm scripts/generate-featured-lessons.ts",
-    "deploy": "vercel --prod",
+    "deploy": "npm run check:release && vercel --prod",
     "resync:batch3": "node --env-file=.env.local --import=tsx scripts/resync-batch3.ts",
     "regen:chunks": "node --env-file=.env.local --import=tsx scripts/regenerate-chunks-only.ts",
     "check:albums": "node --import=tsx scripts/check-albums.ts",
@@ -22,13 +23,13 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "framer-motion": "^12.40.0",
-    "next": "16.2.6",
+    "next": "16.3.0",
     "openai": "^6.39.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

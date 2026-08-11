@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { getNativeLangName } from '@/lib/i18n'
+import { awardXP } from '@/lib/xp'
 import {
   recordedBlobToPcmWav,
   supportedRecordingMimeType,
@@ -229,7 +230,11 @@ export default function MusicStudio() {
     setGenerating(true)
     setError('')
     try {
-      setData(await apiFetch<MusicStudioData>('/api/user-songs', { method: 'POST' }))
+      const created = await apiFetch<MusicStudioData>('/api/user-songs', { method: 'POST' })
+      setData(created)
+      if (created.song) {
+        void awardXP('personal_song_created', `personal-song:${created.song.id}:created`, { songId: created.song.id })
+      }
     } catch (generateError) {
       setError(generateError instanceof Error ? generateError.message : String(generateError))
     } finally {
@@ -302,6 +307,7 @@ export default function MusicStudio() {
         body: form,
       })
       setLiveResults((current) => ({ ...current, [section.id]: result }))
+      void awardXP('speaking_practiced', `section-attempt:${result.attemptId}`, { songId: section.song_id, sectionId: section.id })
       await load()
     } catch (analysisError) {
       setError(analysisError instanceof Error ? analysisError.message : String(analysisError))
@@ -617,6 +623,7 @@ export default function MusicStudio() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recordingPath: path, mimeType: uploadMimeType, consent: true }),
       })
+      void awardXP('personal_song_recorded', `personal-song:${data.song.id}:recorded`, { songId: data.song.id })
       await load()
       clearFinalPreview()
       setFinalAssessmentOverride(undefined)

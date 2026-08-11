@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { playSoft, playSuccess, playFanfare } from '@/lib/sfx'
 import type { Flashcard } from '@/lib/types'
 import { SoundOnIcon } from '@/components/ui/Icons'
+import { announceXP, type XPAwardResult } from '@/lib/xp'
 
 interface Props {
   cards: Flashcard[]
@@ -47,11 +48,15 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
     if (quality >= 4) playSuccess(); else playSoft()
     setSubmitting(true)
     try {
-      await apiFetch(`/api/flashcards/${card.id}/review`, {
+      const result = await apiFetch<{ gamification?: XPAwardResult }>(`/api/flashcards/${card.id}/review`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quality }),
-      }).catch(() => {})
+        body: JSON.stringify({
+          quality,
+          event_id: `review:${card.id}:${card.last_reviewed ?? 'first'}`,
+        }),
+      }).catch(() => null)
+      announceXP('flashcard_review', result?.gamification)
       if (isLast) {
         playFanfare()
         onDone()
@@ -67,52 +72,32 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
   if (!card) return null
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 12 }}>
-        {index + 1} / {cards.length}
-      </div>
+    <div className="review-stack">
+      <div className="review-progress">{index + 1} / {cards.length}</div>
 
-      <div className="panel" style={{ textAlign: 'center', padding: '32px 24px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.6rem' }}>
-            {card.word}
-          </span>
-          <button
-            onClick={() => playAudio(card.word)}
-            aria-label="Listen"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--ink)' }}
-          >
+      <div className="panel review-card">
+        <div className="review-word-row">
+          <span className="review-word">{card.word}</span>
+          <button type="button" className="review-speak" onClick={() => playAudio(card.word)} aria-label="Listen">
             <SoundOnIcon size={17} />
           </button>
         </div>
 
         {revealed && (
           <>
-            <div style={{ fontSize: '1.05rem', color: 'var(--clay)', fontWeight: 700, margin: '10px 0 14px' }}>
-              {card.translation}
-            </div>
-            {card.explanation && (
-              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 10px' }}>
-                {card.explanation}
-              </p>
-            )}
-            {card.example && (
-              <p style={{ fontSize: '0.85rem', color: 'var(--ink)', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
-                “{card.example}”
-              </p>
-            )}
+            <div className="review-translation">{card.translation}</div>
+            {card.explanation && <p className="review-explanation">{card.explanation}</p>}
+            {card.example && <p className="review-example">&ldquo;{card.example}&rdquo;</p>}
           </>
         )}
       </div>
 
       {!revealed ? (
-        <div style={{ textAlign: 'center' }}>
-          <button className="btn-primary" onClick={() => setRevealed(true)} style={{ padding: '10px 32px' }}>
-            Show answer
-          </button>
+        <div className="review-actions">
+          <button className="btn-primary" onClick={() => setRevealed(true)}>Show answer</button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="rate-btns">
           {/* Termos de imersão — sempre em inglês */}
           {[
             { q: 0, label: 'Again', color: '#dc2626' },
@@ -122,19 +107,11 @@ export default function Day1Read({ cards, onDone, finishing }: Props) {
           ].map(({ q, label, color }) => (
             <button
               key={q}
+              type="button"
+              className="rate-btn"
+              style={{ '--rate': color } as React.CSSProperties}
               onClick={() => handleRate(q)}
               disabled={submitting || finishing}
-              style={{
-                padding: '9px 20px',
-                borderRadius: 999,
-                border: `1.5px solid ${color}`,
-                background: 'transparent',
-                color,
-                fontWeight: 800,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                opacity: submitting || finishing ? 0.5 : 1,
-              }}
             >
               {label}
             </button>

@@ -13,7 +13,10 @@
 | [decisions.md](./decisions.md) | Log de decisões arquiteturais |
 | [deploy.md](./deploy.md) | Como colocar o MVP no ar (Vercel + Supabase) |
 | [album-module.md](./album-module.md) | Proposta do módulo Álbum (não implementado) |
+| [personal-glossary-review.md](./personal-glossary-review.md) | Proposta de perguntas pessoais e "My own examples" no Glossary |
 | [legal-checklist.md](./legal-checklist.md) | Checklist de compliance LGPD |
+| [beta-test-runbook.md](./beta-test-runbook.md) | Gate, smoke test e operação do grupo de validação |
+| [beta-metrics.sql](./beta-metrics.sql) | Funil agregado de ativação e retorno do beta |
 
 ## Documentação Técnica
 

@@ -85,3 +85,27 @@
 ### Erros de API legíveis
 **Decisão:** `lib/http.ts:errorMessage()` em todas as rotas — nunca mais "[object Object]".
 **Contexto:** O erro real era a migration 0024 não aplicada (song_progress inexistente), mascarado pela serialização ruim.
+
+---
+
+## 2026-08-11 — Gate de beta, segurança e privacidade
+
+### Runtime suportado e gate obrigatório
+**Decisão:** Node 24.x + Next.js 16.3.0; `npm run deploy` executa testes, build e audit de produção antes da Vercel.
+**Motivo:** Node 20 chegou ao fim de suporte e o Next 16.2.6 tinha advisories altos no runtime.
+
+### Proxy do Next 16
+**Decisão:** O ponto de entrada de autenticação é `proxy.ts`, com export nomeado `proxy`; `middleware.ts` foi removido.
+**Motivo:** Convenção oficial do Next 16 e remoção do aviso de depreciação.
+
+### Consentimento auditável e exclusão self-service
+**Decisão:** A versão/data de Terms e Privacy é gravada em `legal_consents`; perfil, marketing e exclusão ficam em `/settings`.
+**Motivo:** Os documentos anteriores prometiam controles que não existiam. A exclusão agora inclui banco, feedback/analytics vinculados e gravações privadas.
+
+### Feedback somente autenticado
+**Decisão:** Feedback exige conta e limite diário; a policy de insert anônimo foi removida.
+**Motivo:** Evitar spam direto pela anon key e permitir remoção confiável junto da conta.
+
+### Métricas sem rastreador de terceiros
+**Decisão:** O piloto usa registros funcionais (`song_progress`, `flashcards`, `takeaways`, `glossary_examples`) e consultas agregadas de `_plans/beta-metrics.sql`.
+**Motivo:** Medir ativação/retorno sem adicionar cookies ou SDK de analytics ao beta fechado.

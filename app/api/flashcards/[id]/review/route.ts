@@ -21,6 +21,28 @@ export async function PUT(
     const stored = cards.find((c) => c.id === id)
     if (!stored) return NextResponse.json({ error: 'Card not found.' }, { status: 404 })
 
+    const admin = getAdminClient()
+    const suppliedEventId = body.event_id?.trim().slice(0, 240)
+    const eventId = suppliedEventId
+      ? `review:${user.id}:${suppliedEventId}`
+      : `review:${user.id}:${id}:${Date.now()}`
+
+    // A lost response can make the client retry the same rating. In that case,
+    // do not advance the spaced-repetition schedule or award points twice.
+    if (suppliedEventId) {
+      const { data: existingEvent } = await admin
+        .from('points_history')
+        .select('id')
+        .eq('event_id', eventId)
+        .maybeSingle()
+      if (existingEvent) {
+        return NextResponse.json({
+          ...stored,
+          gamification: { points: 0, newTotal: 0, badgesAwarded: [], duplicate: true },
+        })
+      }
+    }
+
     const srsCard = flashcardToSRSCard(stored)
     const updated = updateCard(srsCard, body.quality)
 
@@ -34,8 +56,6 @@ export async function PUT(
 
     // Pontos server-side (idempotente por event_id) — alimenta XP, streak,
     // missões e badges do dashboard.
-    const admin = getAdminClient()
-    const eventId = body.event_id ?? `review:${id}:${Date.now()}`
     const gamification = await awardReviewPoints(admin, user.id, {
       quality:         body.quality,
       responseTimeSec: body.response_time_sec,

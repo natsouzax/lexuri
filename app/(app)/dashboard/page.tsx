@@ -7,6 +7,7 @@ import { EASE_OUT } from '@/lib/easing'
 import { createClient } from '@/lib/supabase-browser'
 import FeedItemCard from '@/components/FeedItemCard'
 import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
+import DailyMissions from '@/components/ui/DailyMissions'
 import { StarIcon, FlameIcon } from '@/components/ui/Icons'
 import { getSavedItemIds, saveItem, unsaveItem } from '@/lib/storage/local'
 import { playSelect, playTap } from '@/lib/sfx'
@@ -51,6 +52,15 @@ const EVENT_LABELS: Record<string, string> = {
   video_studied: 'Studied a YouTube lesson',
   music_studied: 'Completed a Music Lab session',
   word_looked_up: 'Looked up a word',
+  lesson_completed: 'Completed a lesson',
+  song_review_completed: 'Completed a song review',
+  takeaway_created: 'Added a Glossary learning',
+  glossary_example_created: 'Created a personal example',
+  personal_song_created: 'Created a personal song',
+  personal_song_recorded: 'Saved a personal performance',
+  speaking_practiced: 'Practised speaking',
+  album_review_completed: 'Completed an album review',
+  album_completed: 'Completed an album',
   streak_bonus: 'Protected your streak',
   mission_complete: 'Completed a mission',
 }
@@ -62,6 +72,15 @@ const EVENT_BADGES: Record<string, { label: string; bg: string; color: string }>
   video_studied:    { label: 'Study',   bg: 'rgba(190,220,235,0.55)',         color: '#2b6a83' },
   music_studied:    { label: 'Study',   bg: 'rgba(190,220,235,0.55)',         color: '#2b6a83' },
   word_looked_up:   { label: 'Vocab',   bg: 'rgba(246,202,95,0.32)',          color: '#8a6510' },
+  lesson_completed: { label: 'Lesson', bg: 'rgba(190,220,235,0.55)', color: '#2b6a83' },
+  song_review_completed: { label: 'Review', bg: 'var(--sage)', color: 'var(--moss)' },
+  takeaway_created: { label: 'Glossary', bg: 'rgba(246,202,95,0.32)', color: '#8a6510' },
+  glossary_example_created: { label: 'Personal', bg: 'rgba(200,111,74,0.14)', color: 'var(--clay)' },
+  personal_song_created: { label: 'My Song', bg: 'rgba(126,87,194,0.14)', color: '#7E57C2' },
+  personal_song_recorded: { label: 'My Song', bg: 'rgba(126,87,194,0.14)', color: '#7E57C2' },
+  speaking_practiced: { label: 'Speaking', bg: 'rgba(190,220,235,0.55)', color: '#2b6a83' },
+  album_review_completed: { label: 'Album', bg: 'var(--sage)', color: 'var(--moss)' },
+  album_completed: { label: 'Album', bg: 'var(--sage)', color: 'var(--moss)' },
   streak_bonus:     { label: 'Streak',  bg: 'rgba(200,111,74,0.14)',          color: 'var(--clay)' },
   mission_complete: { label: 'Mission', bg: 'var(--sage)',                    color: 'var(--moss)' },
 }
@@ -300,6 +319,8 @@ export default function DashboardPage() {
               </Link>
             </motion.div>
           </div>
+
+          <DailyMissions missions={stats?.missionsToday ?? []} loading={!stats} />
 
           {/* ── Continue Watching ── */}
           <div className="cw-head">

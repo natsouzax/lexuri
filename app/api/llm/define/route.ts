@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient, safeJsonParse } from '@/lib/openai'
 import { createClient } from '@/lib/supabase-server'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 
 interface WordDef {
@@ -23,6 +24,8 @@ export async function POST(request: Request) {
     if (!word?.trim()) {
       return NextResponse.json({ error: 'Word is required.' }, { status: 400 })
     }
+
+    await enforceDailyQuota(user.id, 'define')
 
     // Idioma vem da escolha do popup (client); fallback Portuguese.
     const nativeLang = body.native_lang?.trim() || 'Portuguese'
@@ -62,6 +65,9 @@ Return exactly this JSON, keeping every field as short as possible (definition â
 
     return NextResponse.json(parsed)
   } catch (e) {
+    if (e instanceof QuotaExceededError) {
+      return NextResponse.json({ error: e.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

@@ -133,7 +133,11 @@ export default function LessonView({ feedItemId: propId }: Props) {
       })
       setSavedChunks((prev) => new Set(prev).add(chunk.text))
       setGeneratedCards((prev) => [card, ...prev.filter((c) => c.id !== card.id)])
-      awardXP('chunk_saved')
+      void awardXP(
+        'chunk_saved',
+        `lesson:${id}:chunk:${chunk.text.trim().toLocaleLowerCase('en-US')}`,
+        { songId: id, chunk: chunk.text },
+      )
     } catch (e) {
       setError(String(e))
     } finally {
@@ -143,6 +147,7 @@ export default function LessonView({ feedItemId: propId }: Props) {
 
   async function handleFinish() {
     setFinishing(true)
+    void awardXP('lesson_completed', `lesson:${id}:completed`, { songId: id })
     router.push(`/review/${id}`)
   }
 

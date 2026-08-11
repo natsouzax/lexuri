@@ -11,9 +11,13 @@ import type {
   SongPerformanceSectionResult,
 } from '@/lib/music/types'
 import { createClient } from '@/lib/supabase-server'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 
-const MAX_AUDIO_BYTES = 25 * 1024 * 1024
+// A performance final tem ~80s (BACKING_TOTAL_SECONDS). 4 MB dão folga de
+// sobra até pra encoding generoso; o limite antigo de 25 MB aceitava ~50min de
+// áudio comprimido, e a transcrição é cobrada por minuto.
+const MAX_AUDIO_BYTES = 4 * 1024 * 1024
 const ALLOWED_AUDIO_TYPES = new Set([
   'audio/mp3',
   'audio/mp4',
@@ -74,7 +78,7 @@ export async function POST(request: Request) {
     const mimeType = file.type.split(';')[0].toLowerCase()
     if (!ALLOWED_AUDIO_TYPES.has(mimeType) || file.size < 1_000 || file.size > MAX_AUDIO_BYTES) {
       return NextResponse.json({
-        error: 'The performance must be a supported audio file smaller than 25 MB.',
+        error: 'The performance must be a supported audio file smaller than 4 MB.',
       }, { status: 400 })
     }
 
@@ -91,6 +95,8 @@ export async function POST(request: Request) {
     if (sections.length === 0) {
       return NextResponse.json({ error: 'This song has no lyrics to assess.' }, { status: 400 })
     }
+
+    await enforceDailyQuota(user.id, 'performance')
 
     const referenceText = sections.map((section) => section.lyrics.replace(/\s+/g, ' ').trim()).join(' ')
     const result = await assessSpeechIntelligibility(
@@ -125,6 +131,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(assessment)
   } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      return NextResponse.json({ error: error.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     const message = errorMessage(error)
     const status = error instanceof SpeechAnalysisServiceError ? 502 : 400
     return NextResponse.json({ error: message }, { status })

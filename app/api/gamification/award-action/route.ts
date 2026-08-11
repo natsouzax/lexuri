@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { getAdminClient } from '@/lib/supabase'
-import { XP_REWARDS, streakBonus, type ActionEvent } from '@/lib/gamification'
+import {
+  DAILY_POINT_CAP,
+  XP_REWARDS,
+  awardCompletedMissionBonuses,
+  checkAndAwardBadges,
+  streakBonus,
+  type ActionEvent,
+} from '@/lib/gamification'
 import { createHash } from 'crypto'
 
 function makeEventId(...parts: string[]): string {
@@ -13,6 +20,9 @@ const DAILY_EVENTS: ActionEvent[] = ['chunk_analyzed', 'video_studied', 'music_s
 const DAILY_CAPS: Partial<Record<ActionEvent, number>> = {
   chunk_saved:    8 * 20,
   word_looked_up: 5 * 30,
+  takeaway_created: 15 * 10,
+  glossary_example_created: 30 * 10,
+  speaking_practiced: 15 * 20,
 }
 
 export async function POST(request: Request) {
@@ -21,7 +31,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = (await request.json()) as { event: ActionEvent; eventId?: string }
+    const body = (await request.json()) as { event: ActionEvent; eventId?: string; metadata?: Record<string, unknown> }
     const { event } = body
 
     if (!event || !(event in XP_REWARDS)) {
@@ -32,8 +42,10 @@ export async function POST(request: Request) {
     const now = new Date()
     const todayStr = now.toISOString().slice(0, 10)
 
-    const eventId = body.eventId ??
-      (DAILY_EVENTS.includes(event)
+    const suppliedEventId = body.eventId?.trim().slice(0, 240)
+    const eventId = suppliedEventId
+      ? makeEventId(user.id, event, suppliedEventId)
+      : (DAILY_EVENTS.includes(event)
         ? makeEventId(user.id, event, todayStr)
         : makeEventId(user.id, event, now.toISOString()))
 
@@ -52,7 +64,17 @@ export async function POST(request: Request) {
       }
     }
 
-    const points = XP_REWARDS[event]
+    const { data: todayPointRows } = await admin
+      .from('points_history')
+      .select('points')
+      .eq('user_id', user.id)
+      .gte('event_ts', `${todayStr}T00:00:00Z`)
+    const earnedToday = ((todayPointRows ?? []) as { points: number }[])
+      .reduce((sum, row) => sum + row.points, 0)
+    const points = Math.min(XP_REWARDS[event], Math.max(0, DAILY_POINT_CAP - earnedToday))
+    if (points <= 0) {
+      return NextResponse.json({ points: 0, newTotal: 0, badgesAwarded: [], capped: true })
+    }
 
     const { error: insertError } = await admin
       .from('points_history')
@@ -60,7 +82,7 @@ export async function POST(request: Request) {
         user_id:    user.id,
         event_type: event,
         points,
-        metadata:   {},
+        metadata:   body.metadata && typeof body.metadata === 'object' ? body.metadata : {},
         event_id:   eventId,
         event_ts:   now.toISOString(),
       })
@@ -110,7 +132,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const newTotal = prevPoints + points + bonusPoints
+    const missionBonus = await awardCompletedMissionBonuses(admin, user.id, event, todayStr)
+    const newTotal = prevPoints + points + bonusPoints + missionBonus.points
 
     await admin.from('user_stats').upsert({
       user_id:       user.id,
@@ -120,7 +143,18 @@ export async function POST(request: Request) {
       last_active:   now.toISOString(),
     }, { onConflict: 'user_id' })
 
-    return NextResponse.json({ points: points + bonusPoints, newTotal, badgesAwarded: [] })
+    const badgesAwarded = await checkAndAwardBadges(admin, user.id, {
+      points: newTotal,
+      streak: newStreak,
+      totalReviews: prevTotalReviews,
+    })
+
+    return NextResponse.json({
+      points: points + bonusPoints + missionBonus.points,
+      newTotal,
+      badgesAwarded,
+      missionsCompleted: missionBonus.missionIds,
+    })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

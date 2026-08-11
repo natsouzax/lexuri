@@ -67,6 +67,16 @@ export default function UserDropdown({ user }: Props) {
 
           <div className="user-dropdown-divider" />
 
+          <Link
+            href="/settings"
+            className="user-dropdown-item"
+            onClick={() => setOpen(false)}
+            role="menuitem"
+          >
+            <SettingsIcon />
+            Settings
+          </Link>
+
           <button
             className="user-dropdown-item user-dropdown-signout"
             onClick={handleSignOut}
@@ -79,6 +89,15 @@ export default function UserDropdown({ user }: Props) {
         </div>
       )}
     </div>
+  )
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.37.34.7.6 1 .3.3.68.43 1.1.4H21v4h-.09A1.7 1.7 0 0 0 19.4 15z" />
+    </svg>
   )
 }
 

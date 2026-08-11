@@ -7,11 +7,12 @@ import Day1Read from '@/components/review/Day1Read'
 import Day2Memory from '@/components/review/Day2Memory'
 import Day3Gaps from '@/components/review/Day3Gaps'
 import { getFeedItem } from '@/lib/feed'
-import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
-import { MoonIcon } from '@/components/ui/Icons'
+import { nextReviewStep, type SongProgress } from '@/lib/mvp'
+import { CardsIcon, DayIcon, LevelIcon, MoonIcon } from '@/components/ui/Icons'
 import type { Flashcard, TranscriptSegment } from '@/lib/types'
 import type { LessonData } from '@/components/LessonView'
 import { useLang, type DictKey } from '@/lib/i18n'
+import { awardXP } from '@/lib/xp'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -69,6 +70,7 @@ export default function ReviewSongPage() {
         body: JSON.stringify({ song_id: songId, action: `day${day}` }),
       })
       setProgress(updated)
+      void awardXP('song_review_completed', `song:${songId}:day:${day}`, { songId, day })
     } catch (e) {
       setError(String(e))
     } finally {
@@ -79,7 +81,7 @@ export default function ReviewSongPage() {
   async function handleTakeaways(texts: string[]) {
     setFinishing(true)
     try {
-      const res = await apiFetch<{ newVerses: string[] }>('/api/takeaways', {
+      const res = await apiFetch<{ saved: number; newVerses: string[] }>('/api/takeaways', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ song_id: songId, texts }),
@@ -90,6 +92,10 @@ export default function ReviewSongPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ song_id: songId, action: 'day3' }),
       })
+      if (res.saved > 0) {
+        void awardXP('takeaway_created', `takeaways:${songId}:day3`, { songId, count: res.saved })
+      }
+      void awardXP('song_review_completed', `song:${songId}:day:3`, { songId, day: 3 })
     } finally {
       setFinishing(false)
     }
@@ -97,16 +103,18 @@ export default function ReviewSongPage() {
 
   if (!item) {
     return (
-      <div style={{ padding: 48 }}>
-        <div className="alert-error">{t('lesson.notFound')}</div>
-        <Link href="/review" className="btn-secondary" style={{ marginTop: 16, display: 'inline-block' }}>{t('runner.back')}</Link>
+      <div className="card lesson-state-card">
+        <p className="lesson-state-title">{t('lesson.notFound')}</p>
+        <div className="lesson-state-actions">
+          <Link href="/review" className="btn-secondary">{t('runner.back')}</Link>
+        </div>
       </div>
     )
   }
 
   if (!loaded) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '48px 0', color: 'var(--muted)' }}>
+      <div className="lesson-loading">
         <span className="spinner" />
         <span>{t('runner.preparing')}</span>
       </div>
@@ -122,11 +130,21 @@ export default function ReviewSongPage() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <Link href="/review" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--muted)', textDecoration: 'none' }}>{t('runner.back')}</Link>
-      </div>
+      <div className="app-hero promo-banner">
+        <span className="promo-sparkle promo-sparkle-1">✦</span>
+        <span className="promo-sparkle promo-sparkle-2">✦</span>
+        <span className="promo-sparkle promo-sparkle-3">✦</span>
 
-      <div className="app-hero" style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div className="lesson-meta-row">
+          <Link href="/review" className="lesson-meta-chip">{t('runner.back')}</Link>
+          {step !== 'done' && (
+            <span className="lesson-meta-chip">
+              <DayIcon day={step.day} size={13} /> Day {step.day}
+            </span>
+          )}
+          <span className="lesson-meta-chip is-muted">{item.title}</span>
+        </div>
+
         <h1 className="app-hero-title">
           {step === 'done' ? `${item.title} — ${t('runner.cycleDone')}` : t(`day${step.day}.title` as DictKey)}
         </h1>
@@ -135,39 +153,63 @@ export default function ReviewSongPage() {
         </p>
       </div>
 
+      <div className="stat-pill-row">
+        <div className="stat-pill">
+          <span className="stat-pill-icon clay">
+            {step === 'done' ? <DayIcon day={3} size={17} /> : <DayIcon day={step.day} size={17} />}
+          </span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{step === 'done' ? 'Complete' : `Day ${step.day} of 3`}</span>
+            <span className="stat-pill-label">Review cycle</span>
+          </span>
+        </div>
+        <div className="stat-pill">
+          <span className="stat-pill-icon butter"><CardsIcon size={17} /></span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{cards?.length ?? 0} words</span>
+            <span className="stat-pill-label">Saved from this song</span>
+          </span>
+        </div>
+        <div className="stat-pill">
+          <span className="stat-pill-icon" style={{ background: 'var(--sage)', color: 'var(--moss)' }}>
+            <LevelIcon level={item.level.startsWith('A') ? 'beginner' : item.level.startsWith('B') ? 'intermediate' : 'advanced'} size={17} />
+          </span>
+          <span className="stat-pill-text">
+            <span className="stat-pill-value">{item.level}</span>
+            <span className="stat-pill-label">Song level</span>
+          </span>
+        </div>
+      </div>
+
       {error && <div className="alert-error">{error}</div>}
 
       {step === 'done' && newVerses.length === 0 && (
-        <div style={{ textAlign: 'center' }}>
-          <Link href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.nextSong')}</Link>
+        <div className="review-actions">
+          <Link href="/feed" className="btn-primary">{t('runner.nextSong')}</Link>
         </div>
       )}
 
       {step !== 'done' && !step.available && (
-        <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
+        <div className="card lesson-state-card">
           <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)', marginBottom: 8 }}><MoonIcon size={32} /></div>
-          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            {t('runner.locked.title')}
-          </p>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
+          <p className="lesson-state-title">{t('runner.locked.title')}</p>
+          <p className="lesson-state-body">
             {t('runner.locked.body')} {t(`day${step.day}.title` as DictKey)}.
           </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/feed" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('runner.locked.back')}</Link>
+          <div className="lesson-state-actions">
+            <Link href="/feed" className="btn-secondary">{t('runner.locked.back')}</Link>
             <button className="btn-primary" onClick={() => setSkipWait(true)}>{t('runner.skipWait')}</button>
           </div>
         </div>
       )}
 
       {step !== 'done' && step.available && noCards && (
-        <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>
-          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 8 }}>
-            {t('runner.noWords.title')}
-          </p>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-            {t('runner.noWords.body')}
-          </p>
-          <Link href={`/feed/${songId}`} className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.noWords.cta')}</Link>
+        <div className="card lesson-state-card">
+          <p className="lesson-state-title">{t('runner.noWords.title')}</p>
+          <p className="lesson-state-body">{t('runner.noWords.body')}</p>
+          <div className="lesson-state-actions">
+            <Link href={`/feed/${songId}`} className="btn-primary">{t('runner.noWords.cta')}</Link>
+          </div>
         </div>
       )}
 

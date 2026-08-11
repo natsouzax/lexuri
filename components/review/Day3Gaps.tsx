@@ -95,27 +95,21 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
 
   if (phase === 'done') {
     return (
-      <div style={{ maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.3rem', marginBottom: 8 }}>
-          {t('act.done.title')}
-        </p>
-        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 20 }}>
-          {t('act.done.body')}
-        </p>
+      <div className="review-stack" style={{ textAlign: 'center' }}>
+        <p className="review-done-title">{t('act.done.title')}</p>
+        <p className="review-done-body">{t('act.done.body')}</p>
         {newVerses.length > 0 && (
-          <div className="panel" style={{ marginBottom: 20, textAlign: 'center' }}>
+          <div className="panel" style={{ marginBottom: 20 }}>
             <span className="mini-label">{t('act.done.verse')}</span>
             {newVerses.map((v, i) => (
-              <p key={i} style={{ fontFamily: 'Fraunces, Georgia, serif', fontStyle: 'italic', fontSize: '1.05rem', lineHeight: 1.7, whiteSpace: 'pre-line', margin: '10px 0 0' }}>
-                {v}
-              </p>
+              <p key={i} className="review-verse">{v}</p>
             ))}
           </div>
         )}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/flashcards" className="btn-secondary" style={{ textDecoration: 'none' }}>{t('act.done.glossary')}</a>
-          <a href="/my-song" className="btn-secondary" style={{ textDecoration: 'none' }}>Music Studio</a>
-          <a href="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>{t('runner.nextSong')}</a>
+        <div className="review-actions">
+          <a href="/flashcards" className="btn-secondary">{t('act.done.glossary')}</a>
+          <a href="/my-song" className="btn-secondary">Music Studio</a>
+          <a href="/feed" className="btn-primary">{t('runner.nextSong')}</a>
         </div>
       </div>
     )
@@ -123,38 +117,30 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
 
   if (phase === 'takeaways') {
     return (
-      <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div className="review-stack">
         {gaps.length > 0 && (
-          <div style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 16 }}>
-            {t('act.gotRight', { n: correctCount, total: gaps.length })}
-          </div>
+          <div className="review-score">{t('act.gotRight', { n: correctCount, total: gaps.length })}</div>
         )}
         <div className="panel" style={{ marginBottom: 16 }}>
           <span className="mini-label">{t('act.beforeFinish')}</span>
-          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.1rem', margin: '8px 0 4px' }}>
-            {t('act.takeawayQuestion')}
-          </p>
-          <p className="panel-copy" style={{ marginBottom: 14 }}>
-            {t('act.takeawayHint')}
-          </p>
+          <p className="takeaway-question">{t('act.takeawayQuestion')}</p>
+          <p className="panel-copy" style={{ marginBottom: 14 }}>{t('act.takeawayHint')}</p>
           <input
-            className="input-field"
+            className="input-field takeaway-input"
             placeholder={t('act.takeaway1')}
             value={t1}
             onChange={(e) => setT1(e.target.value)}
-            style={{ marginBottom: 10, width: '100%' }}
           />
           <input
-            className="input-field"
+            className="input-field takeaway-input"
             placeholder={t('act.takeaway2')}
             value={t2}
             onChange={(e) => setT2(e.target.value)}
-            style={{ width: '100%' }}
           />
         </div>
         {error && <div className="alert-error">{error}</div>}
-        <div style={{ textAlign: 'center' }}>
-          <button className="btn-primary" onClick={handleSubmit} disabled={finishing} style={{ padding: '10px 28px' }}>
+        <div className="review-actions">
+          <button className="btn-primary" onClick={handleSubmit} disabled={finishing}>
             {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay3')}
           </button>
         </div>
@@ -163,50 +149,40 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 16 }}>
-        {t('act.fillTitle')}
-      </div>
+    <div className="review-stack-wide">
+      <div className="review-progress">{t('act.fillTitle')}</div>
 
       {gaps.map((gap, i) => {
         const chosen = answers[i]
+        const chosenIsRight = chosen !== undefined && chosen.toLowerCase() === gap.answer.toLowerCase()
         return (
-          <div key={i} className="panel" style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: '0.95rem', lineHeight: 1.7, margin: '0 0 12px', fontStyle: 'italic' }}>
-              “{gap.before}
-              <span style={{ display: 'inline-block', minWidth: 80, borderBottom: '2px dashed var(--clay)', textAlign: 'center', fontWeight: 800, fontStyle: 'normal', color: chosen ? (chosen.toLowerCase() === gap.answer.toLowerCase() ? 'var(--moss)' : '#dc2626') : 'transparent' }}>
+          <div key={i} className="panel gap-panel">
+            <p className="gap-line">
+              &ldquo;{gap.before}
+              <span className={`gap-blank${chosen === undefined ? '' : chosenIsRight ? ' is-correct' : ' is-wrong'}`}>
                 {chosen ?? '____'}
               </span>
-              {gap.after}”
+              {gap.after}&rdquo;
             </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="gap-options">
               {gap.options.map((opt) => {
-                const isChosen = chosen === opt
+                const showState = chosen === opt
                 const isCorrect = opt.toLowerCase() === gap.answer.toLowerCase()
-                const showState = chosen !== undefined && isChosen
                 return (
                   <button
                     key={opt}
+                    type="button"
+                    className={`gap-option${showState ? (isCorrect ? ' is-correct' : ' is-wrong') : ''}`}
                     onClick={() => chosen === undefined && setAnswers((a) => ({ ...a, [i]: opt }))}
                     disabled={chosen !== undefined}
-                    style={{
-                      padding: '7px 16px',
-                      borderRadius: 999,
-                      border: `1.5px solid ${showState ? (isCorrect ? 'var(--moss)' : '#dc2626') : 'var(--line)'}`,
-                      background: showState ? (isCorrect ? 'rgba(70,98,74,0.1)' : 'rgba(220,38,38,0.08)') : '#fff',
-                      color: showState ? (isCorrect ? 'var(--moss)' : '#dc2626') : 'var(--ink)',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      cursor: chosen === undefined ? 'pointer' : 'default',
-                    }}
                   >
                     {opt}
                   </button>
                 )
               })}
             </div>
-            {chosen !== undefined && chosen.toLowerCase() !== gap.answer.toLowerCase() && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '8px 0 0' }}>
+            {chosen !== undefined && !chosenIsRight && (
+              <p className="gap-answer">
                 {t('act.correctAnswer')} <strong>{gap.answer}</strong>
               </p>
             )}
@@ -215,10 +191,8 @@ export default function Day3Gaps({ cards, segments, onSubmitTakeaways, finishing
       })}
 
       {allAnswered && (
-        <div style={{ textAlign: 'center', marginTop: 8 }}>
-          <button className="btn-primary" onClick={() => setPhase('takeaways')} style={{ padding: '10px 28px' }}>
-            {t('act.continue')}
-          </button>
+        <div className="review-actions" style={{ marginTop: 8 }}>
+          <button className="btn-primary" onClick={() => setPhase('takeaways')}>{t('act.continue')}</button>
         </div>
       )}
     </div>

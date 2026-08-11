@@ -7,7 +7,8 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase-browser'
 import UserDropdown from '@/components/auth/UserDropdown'
 import type { User } from '@supabase/supabase-js'
-import type { Rank, XPProgressInfo } from '@/lib/gamification'
+import { getXPProgress, type Rank, type XPProgressInfo } from '@/lib/gamification'
+import { XP_AWARDED_EVENT, type XPAwardDetail } from '@/lib/xp'
 import { useLang, type DictKey } from '@/lib/i18n'
 
 interface AppStats {
@@ -49,6 +50,16 @@ export default function AppTopNav({ sidebarOpen, onToggleSidebar, hidden }: Prop
       .catch(() => {})
 
     return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    function updateVisibleXP(event: Event) {
+      const { newTotal } = (event as CustomEvent<XPAwardDetail>).detail
+      const xpProgress = getXPProgress(newTotal)
+      setStats({ points: newTotal, rank: xpProgress.rank, xpProgress })
+    }
+    window.addEventListener(XP_AWARDED_EVENT, updateVisibleXP)
+    return () => window.removeEventListener(XP_AWARDED_EVENT, updateVisibleXP)
   }, [])
 
   useEffect(() => {

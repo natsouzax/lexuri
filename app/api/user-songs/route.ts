@@ -19,6 +19,7 @@ import type {
   SongPerformanceAssessment,
   SongPerformanceSectionResult,
 } from '@/lib/music/types'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -168,6 +169,8 @@ export async function POST() {
       .update(sources.map((source) => source.id).join('|'))
       .digest('hex')
 
+    await enforceDailyQuota(user.id, 'generate')
+
     const raw = await callLLM(buildSongPrompt(sources))
     const generated = validateGeneratedSong(safeJsonParse(raw)) ?? buildFallbackSong(sources)
 
@@ -210,6 +213,9 @@ export async function POST() {
 
     return NextResponse.json(await studioPayload(supabase, user.id), { status: 201 })
   } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      return NextResponse.json({ error: error.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     return NextResponse.json({ error: errorMessage(error) }, { status: 500 })
   }
 }

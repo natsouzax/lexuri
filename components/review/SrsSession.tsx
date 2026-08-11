@@ -5,6 +5,7 @@ import { getDueCards, type SRSCard } from '@/lib/srs'
 import { playSuccess, playSoft, playTap } from '@/lib/sfx'
 import { useLang } from '@/lib/i18n'
 import type { Flashcard } from '@/lib/types'
+import { announceXP, type XPAwardResult } from '@/lib/xp'
 import { SoundOnIcon } from '@/components/ui/Icons'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -53,11 +54,15 @@ export default function SrsSession() {
     setSubmitting(true)
     setError('')
     try {
-      await apiFetch(`/api/flashcards/${card.id}/review`, {
+      const result = await apiFetch<{ gamification?: XPAwardResult }>(`/api/flashcards/${card.id}/review`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quality }),
+        body: JSON.stringify({
+          quality,
+          event_id: `review:${card.id}:${card.last_reviewed?.toISOString() ?? 'first'}`,
+        }),
       })
+      announceXP('flashcard_review', result.gamification)
       setReviewed((n) => n + 1)
       setQueue((q) => (q ? q.slice(1) : q))
       setRevealed(false)
@@ -94,39 +99,31 @@ export default function SrsSession() {
       )}
 
       {queue.length > 0 && started && card && (
-        <div style={{ maxWidth: 440, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 10 }}>
-            {reviewed + 1} / {reviewed + queue.length}
-          </div>
+        <div className="review-stack">
+          <div className="review-progress">{reviewed + 1} / {reviewed + queue.length}</div>
 
-          <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 16, padding: '26px 20px', marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <span style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.45rem' }}>
-                {card.word}
-              </span>
-              <button onClick={() => speak(card.word)} aria-label="Play" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--ink)' }}><SoundOnIcon size={16} /></button>
+          <div className="card review-card">
+            <div className="review-word-row">
+              <span className="review-word">{card.word}</span>
+              <button type="button" className="review-speak" onClick={() => speak(card.word)} aria-label="Listen">
+                <SoundOnIcon size={16} />
+              </button>
             </div>
             {revealed && (
               <>
-                <div style={{ fontSize: '1rem', color: 'var(--clay)', fontWeight: 700, margin: '10px 0 8px' }}>
-                  {card.translation}
-                </div>
-                {card.definition && (
-                  <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.55, margin: '0 0 8px' }}>{card.definition}</p>
-                )}
-                {card.example && (
-                  <p style={{ fontSize: '0.84rem', fontStyle: 'italic', lineHeight: 1.55, margin: 0 }}>“{card.example}”</p>
-                )}
+                <div className="review-translation">{card.translation}</div>
+                {card.definition && <p className="review-explanation">{card.definition}</p>}
+                {card.example && <p className="review-example">&ldquo;{card.example}&rdquo;</p>}
               </>
             )}
           </div>
 
           {!revealed ? (
-            <button className="btn-primary" onClick={() => { playTap(); setRevealed(true) }} style={{ padding: '10px 32px' }}>
-              Show answer
-            </button>
+            <div className="review-actions">
+              <button className="btn-primary" onClick={() => { playTap(); setRevealed(true) }}>Show answer</button>
+            </div>
           ) : (
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div className="rate-btns">
               {/* Termos de imersão — sempre em inglês, mesmo com UI traduzida */}
               {[
                 { q: 0, label: 'Again', color: '#dc2626' },
@@ -136,19 +133,11 @@ export default function SrsSession() {
               ].map(({ q, label, color }) => (
                 <button
                   key={q}
+                  type="button"
+                  className="rate-btn"
+                  style={{ '--rate': color } as React.CSSProperties}
                   onClick={() => handleRate(q)}
                   disabled={submitting}
-                  style={{
-                    padding: '9px 20px',
-                    borderRadius: 999,
-                    border: `1.5px solid ${color}`,
-                    background: 'transparent',
-                    color,
-                    fontWeight: 800,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                    opacity: submitting ? 0.5 : 1,
-                  }}
                 >
                   {label}
                 </button>

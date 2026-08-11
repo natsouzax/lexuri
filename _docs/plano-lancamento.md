@@ -1,68 +1,40 @@
-# Plano de Lançamento — Lexuri
+# Plano de lançamento — Lexuri beta
 
-> Análise de pré-lançamento para grupo de teste (professora + alunos).
-> Gerado em 07/06/2026
+> Checklist operacional revisado em 2026-08-11. A fonte executável é
+> [`../_plans/beta-test-runbook.md`](../_plans/beta-test-runbook.md).
 
----
+## Estado técnico
 
-## Status do Middleware (RESOLVIDO)
+- Host: Vercel, projeto `lexuri-validacao`.
+- URL canônica: <https://lexuri-validacao.vercel.app>.
+- Runtime: Node 24.x, Next.js 16.3.0.
+- Banco: Supabase com migrations 0001–0034.
+- Deploy: CLI Vercel; `npm run deploy` executa o gate local antes de publicar.
+- Runtime obrigatório: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`.
 
-`middleware.ts` criado na raiz re-exportando `proxy.ts`. Proteção de rotas ativa.
+## Gate obrigatório
 
----
+- [ ] Working tree revisada, commit e tag de beta criados.
+- [ ] `npm run check:release` aprovado.
+- [ ] `supabase migration list` alinhado até 0034.
+- [ ] Redirect URL canônica conferida no Supabase Auth.
+- [ ] Signup por e-mail e configuração de confirmação testados.
+- [ ] Limite/alertas de gasto configurados no projeto da OpenAI.
+- [ ] Smoke test completo com conta descartável.
+- [ ] Autorização de responsável/escola organizada para participantes de 13–17 anos.
+- [ ] Métricas e canal de suporte definidos.
 
-## Checklist mínimo para lançar
+## Ordem de publicação
 
-- [x] Criar `middleware.ts` na raiz
-- [ ] Fazer push para GitHub e conectar ao Vercel
-- [ ] Configurar variáveis de ambiente no Vercel
-- [ ] Atualizar `NEXT_PUBLIC_APP_URL` com URL real do Vercel
-- [ ] Adicionar URL do Vercel no Supabase → Authentication → Redirect URLs
-- [ ] Verificar/aplicar as 9 migrations no Supabase
-- [ ] Testar build (`npm run build`) localmente antes do push
-- [x] Criar páginas `/terms` e `/privacy`
+1. Backup/recovery do Supabase conferido.
+2. Aplicar migrations com `npm run db:migrate`.
+3. Repetir `npm run check:release`.
+4. Publicar com `npm run deploy`.
+5. Validar rotas públicas, redirecionamento de rota protegida e APIs autenticadas.
+6. Executar o smoke test do runbook antes de enviar convites.
 
----
+## Rollback
 
-## Variáveis de Ambiente (deploy Vercel)
-
-| Variável | Status |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ |
-| `OPENAI_API_KEY` | ✅ |
-| `NEXT_PUBLIC_APP_URL` | ⚠️ Atualizar para URL do Vercel |
-| `RESEND_API_KEY` | ✅ |
-| `GENIUS_API_KEY` | ✅ |
-| `STRIPE_SECRET_KEY` | ⚠️ Modo test |
-| `STRIPE_WEBHOOK_SECRET` | ⚠️ Necessita webhook ativo |
-
----
-
-## Banco de Dados — 9 Migrations
-
-Todas com RLS ativo. Verificar se foram aplicadas no Supabase:
-`Database → Migrations` no dashboard.
-
-**Atenção:** Habilitar Realtime para notificações:
-```sql
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-```
-
----
-
-## Build de Produção
-
-Se `ytdl-core` causar falha no build, adicionar ao `next.config.ts`:
-```ts
-const nextConfig: NextConfig = {
-  serverExternalPackages: ['@distube/ytdl-core', 'youtubei.js'],
-}
-```
-
----
-
-## Estimativa
-
-Com o checklist acima, app online para o grupo de teste em **1–2 horas de trabalho**.
+Promover o deployment anterior em Vercel → Deployments. As migrations 0031–0034
+são aditivas, exceto pela troca da policy pública de feedback por uma policy
+autenticada; não fazer rollback de banco sem uma migration explícita.

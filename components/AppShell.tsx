@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import AppTopNav from './AppTopNav'
 import Sidebar from './Sidebar'
 import FloatingTranslator from './FloatingTranslator'
+import XPToast from './ui/XPToast'
 import { MarketingFooter } from './marketing/MarketingChrome'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 
@@ -17,10 +18,12 @@ function isOverview(pathname: string) {
 // gradiente para na borda da sidebar em vez de correr por trás dela.
 const FULL_BLEED_HERO_ROUTES = new Set(['/dashboard', '/feed', '/albums', '/review', '/speaking-review', '/flashcards', '/my-song', '/leaderboard', '/achievements'])
 
-// A tela de uma música (/feed/<id>) tem hero como as demais, mas é rota
-// dinâmica — não dá pra listar no Set acima.
+// Rotas dinâmicas com o mesmo hero, que não dá pra listar no Set acima:
+// a tela de uma música (/feed/<id>) e o ciclo de revisão (/review/<id>).
+const DYNAMIC_HERO_ROUTES = /^\/(feed|review)\/[^/]+$/
+
 function hasFullBleedHero(pathname: string) {
-  return FULL_BLEED_HERO_ROUTES.has(pathname) || /^\/feed\/[^/]+$/.test(pathname)
+  return FULL_BLEED_HERO_ROUTES.has(pathname) || DYNAMIC_HERO_ROUTES.test(pathname)
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -54,6 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <MarketingFooter />
       <FloatingTranslator />
+      <XPToast />
     </div>
   )
 }

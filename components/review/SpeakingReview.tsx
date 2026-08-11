@@ -7,6 +7,7 @@ import {
   supportedRecordingMimeType,
 } from '@/lib/music/audio'
 import { getNativeLangName } from '@/lib/i18n'
+import { awardXP } from '@/lib/xp'
 import type {
   SpeakingReviewAssessment,
   SpeakingReviewData,
@@ -99,10 +100,16 @@ export default function SpeakingReview() {
       const form = new FormData()
       form.append('audio', wav, 'speaking-review.wav')
       form.append('nativeLanguage', getNativeLangName())
-      setResult(await apiFetch<SpeakingReviewAssessment>(
+      const assessment = await apiFetch<SpeakingReviewAssessment>(
         `/api/speaking-review/${item.id}/assess`,
         { method: 'POST', body: form },
-      ))
+      )
+      setResult(assessment)
+      void awardXP(
+        'speaking_practiced',
+        `speaking-review:${item.id}:attempt:${assessment.item.attemptCount}`,
+        { itemId: item.id, understood: assessment.understood },
+      )
     } catch (assessmentError) {
       setError(assessmentError instanceof Error ? assessmentError.message : String(assessmentError))
     } finally {

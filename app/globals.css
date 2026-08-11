@@ -4116,6 +4116,141 @@ a.lesson-meta-chip:hover { background: rgba(255, 250, 240, 0.2); border-color: r
 }
 .top-learner-rank.me { background: var(--clay); color: #fff; }
 
+/* ── Ciclo de revisão (/review/[songId] + Day1/2/3) ──────────
+   Os três dias compartilham a mesma coluna estreita centrada e os mesmos
+   tokens de card; o que muda é só a atividade dentro. */
+.review-stack { max-width: 520px; margin: 0 auto; }
+.review-stack-wide { max-width: 620px; margin: 0 auto; }
+.review-progress {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.review-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.review-actions a { text-decoration: none; }
+
+/* Day 1 — flashcard */
+.review-card { text-align: center; padding: 34px 26px; margin-bottom: 18px; }
+.review-word-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.review-word { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1.7rem; line-height: 1.2; }
+.review-speak {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.review-speak:hover { background: var(--sage); color: var(--moss); }
+.review-translation { font-size: 1.05rem; color: var(--clay); font-weight: 800; margin: 12px 0 14px; }
+.review-explanation { font-size: 0.86rem; color: var(--muted); line-height: 1.6; margin: 0 0 10px; }
+.review-example { font-size: 0.86rem; font-style: italic; line-height: 1.6; margin: 0; }
+
+.rate-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.rate-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--rate);
+  background: transparent;
+  color: var(--rate);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+.rate-btn:hover:not(:disabled) { background: var(--rate); color: #fff; transform: translateY(-1px); }
+.rate-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* Day 2 — jogo da memória */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.memory-tile {
+  min-height: 76px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: var(--sage);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.memory-tile:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.memory-tile.is-up { background: #fff; border-color: var(--clay); }
+.memory-tile.is-matched {
+  background: rgba(70, 98, 74, 0.1);
+  border-color: var(--moss);
+  color: var(--moss);
+  cursor: default;
+  box-shadow: none;
+}
+.memory-done { text-align: center; position: relative; }
+.memory-done-title { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1.2rem; margin: 0 0 14px; }
+
+/* Day 3 — completar a letra + takeaways */
+.gap-panel { margin-bottom: 14px; }
+.gap-line { font-size: 0.95rem; line-height: 1.8; font-style: italic; margin: 0 0 14px; }
+.gap-blank {
+  display: inline-block;
+  min-width: 84px;
+  text-align: center;
+  font-weight: 900;
+  font-style: normal;
+  border-bottom: 2px dashed var(--clay);
+  color: transparent;
+}
+.gap-blank.is-correct { color: var(--moss); border-bottom-color: var(--moss); }
+.gap-blank.is-wrong { color: #dc2626; border-bottom-color: #dc2626; }
+.gap-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.gap-option {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+.gap-option:hover:not(:disabled) { border-color: var(--clay); }
+.gap-option:disabled { cursor: default; }
+.gap-option.is-correct { border-color: var(--moss); background: rgba(70, 98, 74, 0.1); color: var(--moss); }
+.gap-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.08); color: #dc2626; }
+.gap-answer { font-size: 0.78rem; color: var(--muted); margin: 10px 0 0; }
+.gap-answer strong { color: var(--moss); }
+
+.takeaway-question { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1.1rem; margin: 8px 0 4px; }
+.takeaway-input { width: 100%; margin-bottom: 10px; }
+.takeaway-input:last-of-type { margin-bottom: 0; }
+.review-score { text-align: center; font-size: 0.88rem; color: var(--muted); margin-bottom: 16px; }
+
+.review-done-title { font-family: Fraunces, Georgia, serif; font-weight: 900; font-size: 1.35rem; margin: 0 0 8px; }
+.review-done-body { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin: 0 0 20px; }
+.review-verse {
+  font-family: Fraunces, Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  white-space: pre-line;
+  margin: 10px 0 0;
+}
+
 /* ── Leaderboard ──────────────────────────────────────────────
    `--medal` (ouro/prata/bronze) e `--avatar-size` entram pelo componente. */
 .lb-avatar {
@@ -4234,6 +4369,13 @@ a.lesson-meta-chip:hover { background: rgba(255, 250, 240, 0.2); border-color: r
   .lb-rank-badge { font-size: 0.58rem; padding: 3px 7px; }
   .lb-row { padding: 10px 12px; gap: 9px; }
   .lb-row-streak { display: none; }
+
+  /* ── Ciclo de revisão ── */
+  .review-card    { padding: 24px 18px; }
+  .review-word    { font-size: 1.4rem; }
+  .rate-btn       { padding: 10px 16px; flex: 1 1 calc(50% - 8px); }
+  .memory-grid    { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+  .memory-tile    { min-height: 66px; font-size: 0.8rem; }
 }
 
 /* ── Personal Music Studio ─────────────────────────────────── */
@@ -4543,4 +4685,38 @@ a.lesson-meta-chip:hover { background: rgba(255, 250, 240, 0.2); border-color: r
   .music-final-assessment-head { grid-template-columns: 1fr; }
   .music-final-score { width: 72px; height: 72px; }
   .music-performance-actions > button { width: 100%; }
+}
+
+/* ── Account settings ───────────────────────────────────────── */
+.settings-page { max-width: 920px; margin: 0 auto; padding-top: 34px; padding-bottom: 60px; }
+.settings-heading { margin-bottom: 22px; }
+.settings-heading h1 { margin: 7px 0 6px; font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 5vw, 3rem); }
+.settings-heading p { margin: 0; color: var(--muted); line-height: 1.55; }
+.settings-grid { display: grid; gap: 16px; }
+.settings-card { padding: 24px; border: 1px solid var(--line); border-radius: 19px; background: #fffdf8; box-shadow: var(--shadow-sm); }
+.settings-card h2 { margin: 7px 0 10px; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; }
+.settings-card > p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
+.settings-card a { color: var(--clay); font-weight: 800; }
+.settings-form { display: grid; gap: 15px; margin-top: 17px; }
+.settings-form > label, .settings-danger > label { display: grid; gap: 6px; color: var(--ink); font-size: 0.72rem; font-weight: 850; }
+.settings-form input:not([type='checkbox']), .settings-danger input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: #fff; color: var(--ink); font: inherit; }
+.settings-form input:focus, .settings-danger input:focus { outline: 2px solid rgba(200,111,74,0.23); border-color: var(--clay); }
+.settings-form input:disabled { background: rgba(24,33,29,0.04); color: var(--muted); }
+.settings-check { display: flex !important; align-items: flex-start; gap: 10px !important; padding: 13px; border-radius: 12px; background: rgba(216,231,211,0.42); cursor: pointer; }
+.settings-check input { margin-top: 2px; accent-color: var(--moss); }
+.settings-check span { display: flex; flex-direction: column; gap: 2px; }
+.settings-check small { color: var(--muted); font-weight: 600; line-height: 1.4; }
+.settings-actions { display: flex; align-items: center; gap: 12px; }
+.settings-saved { color: var(--moss); font-size: 0.72rem; font-weight: 850; }
+.settings-consent-record { margin-top: 12px !important; padding: 11px 13px; border-radius: 11px; background: rgba(190,220,235,0.25); }
+.settings-danger { border-color: rgba(184,67,53,0.28); background: rgba(184,67,53,0.035); }
+.settings-danger > label { margin-top: 17px; }
+.settings-delete-button { margin-top: 13px; min-height: 42px; padding: 9px 15px; border: 0; border-radius: 11px; background: #b84335; color: #fff; font: inherit; font-size: 0.74rem; font-weight: 900; cursor: pointer; }
+.settings-delete-button:disabled { opacity: 0.45; cursor: not-allowed; }
+.settings-alert { grid-column: 1 / -1; margin: 0; padding: 12px 14px; border-radius: 12px; font-size: 0.76rem; font-weight: 750; }
+.settings-alert-error { border: 1px solid rgba(184,67,53,0.28); background: rgba(184,67,53,0.08); color: #8d3329; }
+
+@media (max-width: 560px) {
+  .settings-page { padding-top: 22px; }
+  .settings-card { padding: 19px; }
 }

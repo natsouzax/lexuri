@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
+import { LEGAL_VERSION } from '@/lib/legal'
 
 type Strength = { score: number; label: string; color: string }
 
@@ -26,6 +27,7 @@ function validate(fields: {
   email: string
   password: string
   confirm: string
+  eligibility: boolean
   tos: boolean
   privacy: boolean
 }): string | null {
@@ -37,6 +39,7 @@ function validate(fields: {
   if (!/[0-9]/.test(fields.password)) return 'Password must contain a number.'
   if (!/[^A-Za-z0-9]/.test(fields.password)) return 'Password must contain a special character.'
   if (fields.password !== fields.confirm) return 'Passwords do not match.'
+  if (!fields.eligibility) return 'Confirm that you meet the age and guardian requirements.'
   if (!fields.tos) return 'You must accept the Terms of Service.'
   if (!fields.privacy) return 'You must agree to the Privacy Policy and consent to data processing.'
   return null
@@ -51,6 +54,7 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [eligibility, setEligibility] = useState(false)
   const [tos, setTos] = useState(false)
   const [privacy, setPrivacy] = useState(false)
   const [marketing, setMarketing] = useState(false)
@@ -65,7 +69,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    const validationError = validate({ fullName, email, password, confirm, tos, privacy })
+    const validationError = validate({ fullName, email, password, confirm, eligibility, tos, privacy })
     if (validationError) { setError(validationError); return }
 
     setLoading(true)
@@ -74,7 +78,14 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName.trim(), marketing_consent: marketing },
+        data: {
+          full_name: fullName.trim(),
+          marketing_consent: marketing,
+          terms_accepted: true,
+          privacy_accepted: true,
+          eligibility_confirmed: true,
+          legal_version: LEGAL_VERSION,
+        },
         emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       },
     })
@@ -230,6 +241,10 @@ export default function RegisterPage() {
           </div>
 
           <div className="auth-checks">
+            <label className="auth-checkbox-label">
+              <input type="checkbox" className="auth-checkbox" checked={eligibility} onChange={(e) => setEligibility(e.target.checked)} required />
+              I am 18 or older, or I am 13–17 and my legal guardian authorized my participation
+            </label>
             <label className="auth-checkbox-label">
               <input type="checkbox" className="auth-checkbox" checked={tos} onChange={(e) => setTos(e.target.checked)} required />
               I accept the{' '}

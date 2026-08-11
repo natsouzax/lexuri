@@ -1,38 +1,47 @@
-# Roadmap — Lexuri Validação (MVP)
+# Roadmap — Lexuri Validação
 
-> Atualizado em: 2026-07-21 · Objetivo único: validar se aprender inglês com músicas gera engajamento e retenção.
+> Atualizado em 2026-08-11. Objetivo: validar se aprender inglês com músicas
+> gera ativação, retorno e produção ativa de linguagem.
 
----
+## Implementado no código
 
-## Pronto (MVP)
+- [x] Landing de pesquisa gratuita, sem venda ou plano premium.
+- [x] Auth por e-mail/senha; OAuth permanece desativado na interface.
+- [x] Cadastro com elegibilidade etária, aceite legal versionado e marketing opcional.
+- [x] Settings com perfil, opt-out de marketing e exclusão completa da conta.
+- [x] Escolha de nível e catálogo curado por nível.
+- [x] Player sincronizado, tradução, definições e biblioteca de palavras.
+- [x] Ciclo Day 1 / Day 2 / Day 3 por música.
+- [x] Takeaways, Glossary ativo, exemplos pessoais e geração de versos.
+- [x] Álbuns e progresso por faixa.
+- [x] Music Studio, gravação final opcional e feedback de pronúncia.
+- [x] Speaking Review com repetição espaçada.
+- [x] Gamificação, streak, missões, badges e leaderboard.
+- [x] Feedback autenticado e limitado por usuário.
+- [x] Quotas diárias para operações pagas de IA.
+- [x] Runbook e consultas agregadas de ativação/retorno do beta.
 
-- [x] Landing de pesquisa (1 página, sem venda)
-- [x] Auth: login, registro, Google/GitHub OAuth
-- [x] /level — escolha de nível em 1 clique (grava study_level)
-- [x] Home por nível — "sua música da semana" + catálogo (13 músicas auditadas)
-- [x] Tela de música: player sincronizado + toque-pra-traduzir + expressões-chave
-- [x] Biblioteca de palavras (com origem por música)
-- [x] Ciclo de revisão: Day 1 leitura · Day 2 jogo da memória · Day 3 complete-a-letra
-- [x] Takeaways → glossário (só entra o que o usuário escreve)
-- [x] Música do usuário: 1 verso a cada 2 takeaways (IA com fallback)
-- [x] Estrutura pra brain mapping (profiles.brain_map jsonb, placeholder)
+## Gate pendente para abrir o grupo
 
-## Pendente pra lançar o teste
+- [ ] Aplicar migrations 0031–0034 no Supabase.
+- [ ] Criar commit/tag da versão beta e publicar via `npm run deploy`.
+- [ ] Conferir Redirect URL e email-confirmation no Supabase Auth.
+- [ ] Configurar limite/alertas de gasto no projeto OpenAI.
+- [ ] Executar `_plans/beta-test-runbook.md` com uma conta descartável.
+- [ ] Organizar autorização de responsáveis se houver alunos de 13–17 anos.
 
-- [ ] Aplicar migration 0024 no Supabase (`npm run db:migrate`)
-- [ ] Deploy Vercel (`npm run deploy`) + conferir redirect URLs no Supabase (lexuri-validacao.vercel.app)
-- [ ] Testar o fluxo completo com 1 usuário real (registro → música → D1 → D2 → D3)
-- [ ] Regenerar lições quebradas se quiser recuperá-las: believer, sweet-child, californication (scripts/)
+## Conteúdo opcional antes/depois do piloto
 
-## Depois da validação (se a hipótese confirmar)
+- [ ] Recuperar músicas fora do catálogo por problemas de legenda: believer, sweet-child e californication.
+- [ ] Brain mapping com lógica real; hoje existe apenas a estrutura de dados.
+- [ ] Lembretes de revisão por e-mail, somente se o piloto mostrar necessidade.
+- [ ] Exportação self-service de dados; durante o beta, portabilidade é atendida por e-mail.
+- [ ] Dashboard administrativo de métricas; durante o beta, usar `beta-metrics.sql`.
 
-- [ ] Gravação de voz + comparação de pronúncia (player já expõe currentTime/segmento)
-- [ ] Músicas do próprio usuário (pipeline dos scripts vira endpoint)
-- [ ] Brain mapping com lógica real
-- [ ] Notificação/e-mail de "sua revisão de hoje"
+## Fora de escopo do beta
 
-## Fora de escopo (removido no pivô de 2026-07-21)
-
-Gamificação, Stripe/planos, Spotify, Music Lab dinâmico, placement tests,
-onboarding longo, analytics, notifications, e-mails, LMS, offline, marketing
-de venda. Ver `decisions.md`.
+- Cobrança, Stripe e planos premium.
+- Importação livre de qualquer música pelo usuário.
+- OAuth até o setup externo ser concluído e o aceite legal ser integrado.
+- Analytics publicitário ou rastreadores de terceiros.
+- LMS, venda B2B, campanhas de marketing e notificações comerciais.

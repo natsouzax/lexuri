@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { callLLM, safeJsonParse } from '@/lib/openai'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 
 // GET: glossário (takeaways) + música do usuário (versos).
@@ -45,6 +46,8 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    await enforceDailyQuota(user.id, 'generate')
+
     const { song_id, texts } = (await request.json()) as { song_id: string; texts: string[] }
     const clean = (texts ?? []).map((t) => String(t ?? '').trim()).filter(Boolean).slice(0, 2)
     if (!song_id || clean.length === 0) {
@@ -80,6 +83,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ saved: clean.length, newVerses })
   } catch (e) {
+    if (e instanceof QuotaExceededError) {
+      return NextResponse.json({ error: e.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

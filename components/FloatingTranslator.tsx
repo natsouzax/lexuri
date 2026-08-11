@@ -25,7 +25,8 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 // Tradutor de socorro do app: bolinha flutuante → mini painel English→idioma
 // nativo. Aceita texto digitado OU seleção na tela; oferece ouvir (TTS) e
-// salvar na biblioteca (vira flashcard no SRS). UI em inglês (imersão).
+// aprender o conteúdo (entra na revisão SRS e, consequentemente, na biblioteca).
+// UI em inglês (imersão).
 // canSave=false na landing pública (sem login não dá pra salvar flashcard).
 export default function FloatingTranslator({ canSave = true }: { canSave?: boolean }) {
   const [open, setOpen] = useState(false)
@@ -84,7 +85,7 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
     window.speechSynthesis.speak(u)
   }
 
-  async function save() {
+  async function learn() {
     const text = input.trim()
     if (!text || saving) return
     setSaving(true)
@@ -106,7 +107,11 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cards: [card] }),
         })
-        awardXP('word_looked_up')
+        void awardXP(
+          'word_looked_up',
+          `translator:${card.word.trim().toLocaleLowerCase('en-US')}`,
+          { source: 'translator', word: card.word },
+        )
         setSaved(true)
       }
     } catch {
@@ -217,7 +222,7 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
               </button>
               {canSave && (
                 <button
-                  onClick={save}
+                  onClick={learn}
                   disabled={!input.trim() || saving || saved}
                   style={{
                     flex: 1,
@@ -232,10 +237,23 @@ export default function FloatingTranslator({ canSave = true }: { canSave?: boole
                     opacity: input.trim() ? 1 : 0.5,
                   }}
                 >
-                  {saved ? 'Saved ✓' : saving ? <><span className="spinner" /> Saving…</> : '+ Save to library'}
+                  {saved
+                    ? 'Learning ✓'
+                    : saving
+                      ? <><span className="spinner" /> Adding…</>
+                      : '+ Learn'}
                 </button>
               )}
             </div>
+            {saved && (
+              <p
+                role="status"
+                aria-live="polite"
+                style={{ margin: '8px 0 0', color: 'var(--moss)', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}
+              >
+                Added to Review and Library.
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

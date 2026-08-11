@@ -9,6 +9,7 @@ import { getAlbum, sungTracks, nextAlbumStep, type AlbumProgress } from '@/lib/a
 import { getFeedItem } from '@/lib/feed'
 import type { Flashcard } from '@/lib/types'
 import { TrophyIcon, MusicNoteIcon, MoonIcon, PencilIcon } from '@/components/ui/Icons'
+import { awardXP } from '@/lib/xp'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, options)
@@ -63,6 +64,10 @@ export default function AlbumCyclePage() {
         body: JSON.stringify({ action: `day${day}` }),
       })
       setAlbumProgress(updated)
+      void awardXP('album_review_completed', `album:${album.id}:day:${day}`, { albumId: album.id, day })
+      if (day === 3) {
+        void awardXP('album_completed', `album:${album.id}:completed`, { albumId: album.id })
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -82,6 +87,7 @@ export default function AlbumCyclePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ song_id: firstSong, texts: [reflection.trim()] }),
       })
+      void awardXP('takeaway_created', `album:${album.id}:reflection`, { albumId: album.id })
       // Compila a faixa do usuário e fecha o ciclo do álbum.
       await apiFetch(`/api/albums/${album.id}/song`)
       await markDay(3)

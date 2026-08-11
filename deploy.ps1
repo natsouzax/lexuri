@@ -1,24 +1,8 @@
-# Deploy para Cloudflare com valores de producao
-# Usa .env.production (pasta pai) em vez de .env.local durante o build
+$ErrorActionPreference = "Stop"
 
-$envLocal = ".env.local"
-$envLocalBak = ".env.local.bak"
-$envProd = "../.env.production"
-
-# Guarda o .env.local atual
-if (Test-Path $envLocal) {
-    Rename-Item $envLocal $envLocalBak
-}
-
-# Copia o .env.production como .env.local para o build o usar
-Copy-Item $envProd $envLocal
-
-try {
-    npm run deploy
-} finally {
-    # Restaura o .env.local original (sempre, mesmo se der erro)
-    Remove-Item $envLocal -ErrorAction SilentlyContinue
-    if (Test-Path $envLocalBak) {
-        Rename-Item $envLocalBak $envLocal
-    }
+# Vercel is the only production target for this repository. The npm script
+# runs tests, a production build, and a runtime dependency audit before upload.
+npm run deploy
+if ($LASTEXITCODE -ne 0) {
+    throw "Lexuri deployment failed with exit code $LASTEXITCODE."
 }

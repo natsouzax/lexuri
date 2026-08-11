@@ -5,6 +5,7 @@ import {
   SpeechAnalysisServiceError,
 } from '@/lib/openai-speech'
 import { createClient } from '@/lib/supabase-server'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 import { validatePcmWav } from '@/lib/music/wav-validation'
 
@@ -38,6 +39,8 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (sectionError) throw sectionError
     if (!section) return NextResponse.json({ error: 'Song section not found.' }, { status: 404 })
+
+    await enforceDailyQuota(user.id, 'speech')
 
     const audio = await file.arrayBuffer()
     validatePcmWav(audio, { recordingName: 'pronunciation recording' })
@@ -82,6 +85,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ...result, attemptId: attempt.id, createdAt: attempt.created_at })
   } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      return NextResponse.json({ error: error.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     const message = errorMessage(error)
     const status = error instanceof SpeechAnalysisServiceError ? 502 : 400
     return NextResponse.json({ error: message }, { status })

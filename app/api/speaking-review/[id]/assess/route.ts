@@ -11,6 +11,7 @@ import {
   nextSpeakingReview,
 } from '@/lib/music/speaking-review'
 import { validatePcmWav } from '@/lib/music/wav-validation'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import type { SpeakingReviewAssessment, SpeakingReviewItem } from '@/lib/music/types'
 
 interface ReviewRow {
@@ -73,6 +74,8 @@ export async function POST(
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'Missing pronunciation recording.' }, { status: 400 })
     }
+    await enforceDailyQuota(user.id, 'speech')
+
     const audio = await file.arrayBuffer()
     validatePcmWav(audio, {
       recordingName: 'word recording',
@@ -144,6 +147,9 @@ export async function POST(
 
     return NextResponse.json(assessment)
   } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      return NextResponse.json({ error: error.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     const status = error instanceof SpeechAnalysisServiceError ? 502 : 400
     return NextResponse.json({ error: errorMessage(error) }, { status })
   }

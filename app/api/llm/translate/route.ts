@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
+import { createClient } from '@/lib/supabase-server'
+import { enforceDailyQuota, QuotaExceededError } from '@/lib/rate-limit'
 import { errorMessage } from '@/lib/http'
 
-// Endpoint dedicado pro hover — só a tradução, texto puro. Público (sem
-// login): também alimenta o tradutor flutuante na landing de marketing.
-// Limitado a trechos curtos (palavras/frases) pra evitar abuso/custo.
+// Endpoint dedicado pro hover — só a tradução, texto puro.
+//
+// Exige login desde 2026-08: era público pra alimentar o tradutor flutuante da
+// landing, o que deixava a chave da OpenAI acessível a qualquer um da internet
+// num loop. O tradutor saiu da landing; dentro do app o usuário já está logado.
 const MAX_LEN = 200
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = (await request.json()) as { word: string; context?: string; native_lang?: string }
     const { word, context = '' } = body
 
@@ -18,6 +26,8 @@ export async function POST(request: Request) {
     if (word.length > MAX_LEN) {
       return NextResponse.json({ error: 'Text too long.' }, { status: 400 })
     }
+
+    await enforceDailyQuota(user.id, 'translate')
 
     // Idioma vem da escolha do popup (client); fallback Portuguese.
     const nativeLang = body.native_lang?.trim() || 'Portuguese'
@@ -46,6 +56,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ translation })
   } catch (e) {
+    if (e instanceof QuotaExceededError) {
+      return NextResponse.json({ error: e.message, code: 'DAILY_LIMIT' }, { status: 429 })
+    }
     return NextResponse.json({ error: errorMessage(e) }, { status: 500 })
   }
 }

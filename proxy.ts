@@ -11,11 +11,12 @@ const PROTECTED_PREFIXES = [
   '/dashboard',
   '/leaderboard',
   '/achievements',
+  '/settings',
 ]
 
 const AUTH_PAGES = ['/login', '/register']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -42,7 +43,8 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const matchesPrefix = (p: string) => pathname === p || pathname.startsWith(`${p}/`)
+  const matchesPrefix = (prefix: string) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`)
 
   if (!user && PROTECTED_PREFIXES.some(matchesPrefix)) {
     const url = request.nextUrl.clone()

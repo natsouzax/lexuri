@@ -6,6 +6,7 @@ import { getFeedItem } from '@/lib/feed'
 import { DAY_INFO, nextReviewStep, type SongProgress } from '@/lib/mvp'
 import { useLang, type DictKey } from '@/lib/i18n'
 import SrsSession from '@/components/review/SrsSession'
+import GlossaryPractice from '@/components/review/GlossaryPractice'
 import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
 import { FlameIcon, BookIcon, CheckCircleIcon, DayIcon } from '@/components/ui/Icons'
 import type { Flashcard } from '@/lib/types'
@@ -93,6 +94,8 @@ export default function ReviewPage() {
         </div>
 
         <SrsSession />
+
+        <GlossaryPractice />
 
         {loaded && rows.length === 0 && (
           <div className="card" style={{ textAlign: 'center', padding: '40px 32px' }}>

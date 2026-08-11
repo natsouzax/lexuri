@@ -1,91 +1,68 @@
 # Deploy — Lexuri Validação
 
-> Como colocar o MVP no ar. Atualizado em 2026-07-21.
+> Processo revisado em 2026-08-11.
 
----
+## Produção
 
-## Onde roda
+- Vercel project: `lexuri-validacao`
+- Canonical URL: <https://lexuri-validacao.vercel.app>
+- Linked account: `natsouzax`
+- Runtime: Node 24.x (declared in `package.json`)
+- Deployment source: current local working directory through Vercel CLI
 
-- **Host:** Vercel — projeto `lexuri-validacao`
-- **URL de produção:** https://lexuri-validacao.vercel.app
-- **Conta:** natsouzax (`.vercel/project.json` guarda o link)
-- **Sem GitHub conectado:** o deploy é feito **direto da máquina** pela CLI da
-  Vercel (não há `git push` — os commits ficam locais no repositório).
+The repository has a GitHub remote, but this project's established release path
+is still the Vercel CLI. A production deployment is not proof that the Git
+working tree was committed, so commit and tag first.
 
-## Serviços externos (já configurados na Vercel)
+## Required production environment
 
-| Variável | Uso |
+| Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Banco + Auth |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Cliente Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Rotas server-side |
-| `OPENAI_API_KEY` | Tradução, geração da música e transcrição do treino e da performance completa |
+| `NEXT_PUBLIC_SUPABASE_URL` | Database and Auth URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser/SSR user client |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only quotas, deletion, and administrative access |
+| `OPENAI_API_KEY` | Translation, generation, and speech transcription |
 
-O `lrclib.net` (usado só nos scripts locais de geração de lição) **não** é
-necessário em produção — as lições são estáticas em `data/featured-lessons/`.
+`NEXT_PUBLIC_APP_URL` is optional for local maintenance/transcript helpers. Static
+curated lessons do not need transcript provider keys at runtime.
 
----
+Preview and Development environments are separate in Vercel. If using a preview
+deployment, configure its environment variables and add that exact callback URL
+to Supabase Auth; preferably use an isolated Supabase project for destructive E2E tests.
 
-## Passo a passo
-
-```bash
-# 1. Garantir que o build passa localmente
-npm run build
-
-# 2. Deploy de produção (sobe a pasta atual pra Vercel)
-npm run deploy        # = vercel --prod
-```
-
-Pronto. O `vercel --prod` empacota, sobe e publica em
-lexuri-validacao.vercel.app. Não precisa de git.
-
-### Pré-requisitos (uma vez só)
-- Estar logado: `vercel whoami` (senão `vercel login`)
-- Projeto linkado: já está (`.vercel/project.json`). Se sumir: `vercel link`.
-
----
-
-## Banco de dados (Supabase)
-
-As migrations vivem em `supabase/migrations/`. A 0024 (MVP: song_progress,
-takeaways, user_verses, profiles.study_level/brain_map) **já foi aplicada**.
-Para aplicar novas:
+## Release commands
 
 ```bash
-npm run db:migrate    # = supabase db push
+supabase db push --dry-run
+npm run db:migrate
+npm run db:status
+npm run deploy
 ```
 
-Depois do deploy, conferir no Supabase → Authentication → URL Configuration
-se `https://lexuri-validacao.vercel.app` está nas **Redirect URLs** (senão o
-login OAuth/callback falha).
+`npm run deploy` runs `npm run check:release` before `vercel --prod`.
 
----
+## Post-deploy smoke
+
+```text
+/             -> 200
+/login        -> 200
+/register     -> 200
+/privacy      -> 200
+/terms        -> 200
+/dashboard    -> 307 to /login while signed out
+/api/feedback -> 401 while signed out
+```
+
+Then run the authenticated flow in `beta-test-runbook.md`.
 
 ## Rollback
 
-A Vercel guarda todos os deployments. Para voltar: dashboard do projeto →
-aba Deployments → no deployment anterior, "Promote to Production" (1 clique).
+Vercel dashboard → Deployments → select the previous known-good deployment →
+Promote to Production. Do not manually reverse migrations; ship an explicit
+forward migration if database behavior must change.
 
----
+## External dashboard checks
 
-## Opcional — conectar GitHub (deploy automático)
-
-Hoje o deploy é manual pela CLI. Se quiser deploy automático a cada push:
-
-```bash
-# criar repo no GitHub (privado), então:
-git remote add origin git@github.com:<user>/lexuri-validacao.git
-git push -u origin master
-# depois, no dashboard da Vercel: Settings → Git → conectar o repo
-```
-
-A partir daí cada `git push` dispara um deploy. Enquanto não fizer isso, use
-`npm run deploy`.
-
----
-
-## Pendências conhecidas
-
-- **Under the Bridge** está em manutenção (fora do catálogo) — legenda ASR
-  corrompida. Re-sincronizar com `npm run resync:batch3` (precisa acessar
-  lrclib.net) e remover `maintenance: true` de `data/feed-items.json`.
+- Supabase Auth: canonical Redirect URL and intended email-confirmation setting.
+- OpenAI project: enforced spend limit and alerts.
+- Vercel: Production environment names, Node runtime, logs, and deployment alias.

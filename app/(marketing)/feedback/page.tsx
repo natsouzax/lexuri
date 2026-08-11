@@ -21,13 +21,11 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T
 }
 
-// Página pública de feedback pra testers — sem exigir login, já que quem
-// está testando o app pode nem ter conta ainda. E-mail é opcional, só pra
-// quem quiser resposta.
+// The page itself remains public so the navigation link never dead-ends, but
+// submitting requires a tester account and is rate-limited on the server.
 export default function FeedbackPage() {
   const [type, setType] = useState<FeedbackType>('bug')
   const [message, setMessage] = useState('')
-  const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -41,11 +39,10 @@ export default function FeedbackPage() {
       await apiFetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, message: message.trim(), email: email.trim() }),
+        body: JSON.stringify({ type, message: message.trim() }),
       })
       setSent(true)
       setMessage('')
-      setEmail('')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -62,8 +59,8 @@ export default function FeedbackPage() {
           </p>
           <h1 className="mkt-legal-title">Send feedback</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.6, margin: '10px 0 0' }}>
-            Found a bug, have an idea, or just want to tell us something? This goes straight to the team —
-            no account needed.
+            Found a bug, have an idea, or just want to tell us something? Sign in with your tester
+            account so we can protect the form from spam and remove the feedback if you delete your account.
           </p>
         </div>
 
@@ -82,7 +79,7 @@ export default function FeedbackPage() {
               Thanks for the feedback!
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, lineHeight: 1.6 }}>
-              We read every message. If you left an email and this needs a reply, we&apos;ll get back to you.
+              We read every message. If this needs a reply, we&apos;ll use your account email.
             </p>
             <button className="btn-secondary" onClick={() => setSent(false)}>
               Send another
@@ -130,16 +127,11 @@ export default function FeedbackPage() {
               style={{ marginBottom: 12 }}
             />
 
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your email (optional — only if you want a reply)"
-              className="contact-field"
-              style={{ marginBottom: 4 }}
-            />
-
             {error && <div className="alert-error" style={{ marginTop: 12 }}>{error}</div>}
+
+            <p style={{ margin: '12px 0 0', color: 'var(--muted)', fontSize: '0.76rem' }}>
+              Not signed in? <Link href="/login" className="auth-link">Open your tester account</Link>.
+            </p>
 
             <button
               type="submit"

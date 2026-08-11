@@ -68,39 +68,22 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 16 }}>
+    <div className="review-stack-wide">
+      <div className="review-progress">
         {matched.size / 2} {t('act.of')} {tiles.length / 2} {t('act.pairs')} · {misses} {t('act.mistakes')}
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-          gap: 10,
-          marginBottom: 24,
-        }}
-      >
+      <div className="memory-grid">
         {tiles.map((tile) => {
-          const isUp = flipped.includes(tile.key) || matched.has(tile.key)
           const isMatched = matched.has(tile.key)
+          const isUp = flipped.includes(tile.key) || isMatched
           return (
             <button
               key={tile.key}
+              type="button"
+              className={`memory-tile${isMatched ? ' is-matched' : isUp ? ' is-up' : ''}`}
               onClick={() => handleFlip(tile)}
               disabled={isMatched}
-              style={{
-                minHeight: 72,
-                borderRadius: 12,
-                border: `1.5px solid ${isMatched ? 'var(--moss)' : isUp ? 'var(--clay)' : 'var(--line)'}`,
-                background: isMatched ? 'rgba(70,98,74,0.1)' : isUp ? '#fff' : 'var(--sage)',
-                color: isMatched ? 'var(--moss)' : 'var(--ink)',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                cursor: isMatched ? 'default' : 'pointer',
-                padding: '8px 10px',
-                transition: 'all 160ms ease',
-              }}
             >
               {isUp ? tile.label : '?'}
             </button>
@@ -109,14 +92,14 @@ export default function Day2Memory({ cards, onDone, finishing }: Props) {
       </div>
 
       {allMatched && (
-        <div style={{ textAlign: 'center', position: 'relative' }}>
+        <div className="memory-done">
           <ConfettiBurst />
-          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 900, fontSize: '1.15rem', marginBottom: 12 }}>
-            {t('act.allPairs')}
-          </p>
-          <button className="btn-primary" onClick={() => { playFanfare(); onDone() }} disabled={finishing} style={{ padding: '10px 28px' }}>
-            {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay2')}
-          </button>
+          <p className="memory-done-title">{t('act.allPairs')}</p>
+          <div className="review-actions">
+            <button className="btn-primary" onClick={() => { playFanfare(); onDone() }} disabled={finishing}>
+              {finishing ? <><span className="spinner" /> {t('act.saving')}</> : t('act.finishDay2')}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { getFeedItem, FEED_ITEMS } from '@/lib/feed'
 import { getDueCards } from '@/lib/srs'
 import type { Takeaway, UserVerse } from '@/lib/mvp'
 import type { Flashcard } from '@/lib/types'
+import type { GlossaryExample } from '@/lib/glossary-practice'
 import type { MusicStudioData } from '@/lib/music/types'
 import { useLang, type DictKey } from '@/lib/i18n'
 import ProfileSidePanel from '@/components/ui/ProfileSidePanel'
@@ -51,6 +52,7 @@ export default function LibraryPage() {
   const [tab, setTab] = useState<Tab>('words')
   const [cards, setCards] = useState<Flashcard[]>([])
   const [takeaways, setTakeaways] = useState<Takeaway[]>([])
+  const [glossaryExamples, setGlossaryExamples] = useState<GlossaryExample[]>([])
   const [verses, setVerses] = useState<UserVerse[]>([])
   const [studio, setStudio] = useState<MusicStudioData | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -66,11 +68,13 @@ export default function LibraryPage() {
       apiFetch<Flashcard[]>('/api/flashcards').catch(() => [] as Flashcard[]),
       apiFetch<{ takeaways: Takeaway[]; verses: UserVerse[] }>('/api/takeaways')
         .catch(() => ({ takeaways: [], verses: [] })),
+      apiFetch<GlossaryExample[]>('/api/glossary-practice/examples').catch(() => [] as GlossaryExample[]),
       apiFetch<MusicStudioData>('/api/user-songs').catch(() => null),
-    ]).then(([c, tw, music]) => {
+    ]).then(([c, tw, examples, music]) => {
       setCards(c)
       setTakeaways(tw.takeaways)
       setVerses(tw.verses)
+      setGlossaryExamples(examples)
       setStudio(music)
       setLoaded(true)
     })
@@ -276,6 +280,9 @@ export default function LibraryPage() {
           <div className="panel" style={{ marginBottom: 16 }}>
             <span className="mini-label">{t('lib.glossary.how.label')}</span>
             <p className="panel-copy">{t('lib.glossary.how.body')}</p>
+            <p className="panel-copy" style={{ marginTop: 8 }}>
+              Complete “Make it yours” in Review and your real answers will appear here as My own examples.
+            </p>
           </div>
           {loaded && takeaways.length === 0 && (
             <EmptyState
@@ -286,6 +293,7 @@ export default function LibraryPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {takeaways.map((tk) => {
               const item = getFeedItem(tk.song_id)
+              const ownExamples = glossaryExamples.filter((example) => example.takeaway_id === tk.id)
               return (
                 <div key={tk.id} className="panel" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <span style={{ color: 'var(--muted)', flexShrink: 0, display: 'flex' }}><PencilIcon size={16} /></span>
@@ -293,6 +301,27 @@ export default function LibraryPage() {
                     <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.55 }}>{tk.text}</p>
                     <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700, marginTop: 6 }}>
                       {item ? `♪ ${item.title} · ` : ''}{new Date(tk.created_at).toLocaleDateString()}
+                    </div>
+                    <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
+                      <span className="mini-label" style={{ fontSize: '0.62rem' }}>My own examples</span>
+                      {ownExamples.length === 0 ? (
+                        <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: '0.76rem', lineHeight: 1.45 }}>
+                          Not practised personally yet.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 7 }}>
+                          {ownExamples.slice(0, 3).map((example) => (
+                            <div key={example.id} style={{ borderRadius: 10, background: 'var(--sage)', padding: '9px 10px' }}>
+                              <p style={{ margin: 0, color: 'var(--moss)', fontSize: '0.82rem', fontWeight: 700, lineHeight: 1.5 }}>
+                                “{example.answer}”
+                              </p>
+                              <small style={{ display: 'block', color: 'var(--muted)', marginTop: 4 }}>
+                                {new Date(example.created_at).toLocaleDateString()}
+                              </small>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

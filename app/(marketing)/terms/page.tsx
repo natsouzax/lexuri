@@ -1,171 +1,127 @@
 import type { Metadata } from 'next'
+import { DATA_CONTACT_EMAIL, LEGAL_VERSION } from '@/lib/legal'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms of Service for Lexuri — AI-powered English learning platform.',
+  description: 'Terms for participating in the Lexuri validation beta.',
 }
 
 export default function TermsPage() {
   return (
     <div className="mkt-legal">
       <div className="mkt-legal-inner">
-
         <div className="mkt-legal-header">
           <p className="mkt-legal-eyebrow">Legal</p>
           <h1 className="mkt-legal-title">Terms of Service</h1>
           <p className="mkt-legal-meta">
-            Effective date: <strong>June 20, 2026</strong> &nbsp;·&nbsp; Version 1.0
+            Effective date: <strong>August 11, 2026</strong> &nbsp;·&nbsp; Version {LEGAL_VERSION}
           </p>
         </div>
 
         <div className="mkt-legal-body">
-
           <p>
-            These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of Lexuri
-            (&ldquo;Service&rdquo;), operated by Natan Oliveira (&ldquo;we&rdquo;, &ldquo;us&rdquo;,
-            or &ldquo;our&rdquo;), a sole proprietor based in Brazil. By creating an account or
-            using the Service, you agree to be bound by these Terms. If you do not agree, do not
-            use the Service.
+            These Terms govern participation in the Lexuri validation beta, operated by Natan
+            Oliveira in Brazil. Creating an account means you agree to these Terms and the Privacy
+            Policy for the document version shown at registration.
           </p>
 
-          <h2>1. Description of Service</h2>
+          <h2>1. Beta Purpose and Scope</h2>
           <p>
-            Lexuri is an AI-powered English learning platform that allows users to extract
-            language chunks from YouTube videos and song lyrics, generate flashcards, and review
-            vocabulary using spaced repetition. The Service uses third-party AI APIs (OpenAI)
-            to process content submitted by users.
+            Lexuri is a research prototype for learning English through music. It provides curated
+            song lessons, saved vocabulary, spaced review, glossary practice, gamification, and
+            optional speaking exercises. The current beta is free and does not offer a paid plan.
+          </p>
+          <p>
+            Features may change, contain errors, or be temporarily unavailable during the test.
+            Feedback is welcome but participation does not create an employment, school-grade, or
+            paid-service relationship.
           </p>
 
           <h2>2. Eligibility</h2>
           <p>
-            You must be at least 13 years old to use the Service. If you are under 18, you
-            represent that your legal guardian has reviewed and agreed to these Terms on your
-            behalf.
+            You must be at least 13 years old. If you are 13–17, a legal guardian must authorize
+            your participation and review these Terms and the Privacy Policy. Users under 13 may
+            not create an account. A teacher&apos;s invitation does not replace guardian authorization
+            when it is required.
           </p>
 
-          <h2>3. Account Registration</h2>
-          <p>
-            You are responsible for maintaining the confidentiality of your account credentials
-            and for all activities that occur under your account. You agree to provide accurate
-            and complete information when creating your account and to update it as necessary.
-            We reserve the right to terminate accounts that violate these Terms.
-          </p>
-
-          <h2>4. Acceptable Use</h2>
-          <p>You agree not to:</p>
+          <h2>3. Account Responsibilities</h2>
           <ul>
-            <li>Use the Service for any unlawful purpose or in violation of any regulations;</li>
-            <li>Submit content that infringes third-party intellectual property rights;</li>
-            <li>Attempt to reverse-engineer, scrape, or abuse the Service or its APIs;</li>
-            <li>Use automated tools to access the Service without prior written consent;</li>
-            <li>Share your account credentials with third parties;</li>
-            <li>Circumvent any usage limits or access controls.</li>
+            <li>Provide accurate registration information and use only your own account.</li>
+            <li>Keep the password confidential and report suspected unauthorized access.</li>
+            <li>Do not share private information about another person in answers or feedback.</li>
+            <li>Use the microphone only when you are comfortable doing so; audio exercises are optional.</li>
           </ul>
 
-          <h2>5. Content and Intellectual Property</h2>
+          <h2>4. Acceptable Use</h2>
+          <p>You must not:</p>
+          <ul>
+            <li>Use Lexuri unlawfully or to harm, harass, or impersonate another person.</li>
+            <li>Submit content that violates privacy, copyright, or other third-party rights.</li>
+            <li>Probe, automate, scrape, overload, reverse-engineer, or bypass access and usage controls.</li>
+            <li>Use AI output as professional legal, medical, financial, or safety advice.</li>
+          </ul>
+
+          <h2>5. Content and Music</h2>
           <p>
-            <strong>Your content:</strong> You retain ownership of the content you submit to the
-            Service (e.g., YouTube URLs, vocabulary selections). By submitting content, you grant
-            us a limited, non-exclusive license to process it solely to provide the Service to you.
+            You retain rights in original text and recordings you submit. You authorize Lexuri and
+            its documented service providers to process that content only to provide, protect, and
+            evaluate the beta as described in the Privacy Policy.
           </p>
           <p>
-            <strong>Our content:</strong> The Lexuri name, logo, design, software, and all
-            AI-generated flashcard content produced by the Service are owned by or licensed to
-            us. You may not copy, modify, distribute, or create derivative works without our
-            written permission.
-          </p>
-          <p>
-            <strong>Third-party content:</strong> YouTube videos and song lyrics accessed through
-            the Service are subject to their respective copyright holders&rsquo; terms. Lexuri does
-            not host this content — it is processed in real time and stored only as user-selected
-            excerpts in your personal flashcard library.
+            Music videos, lyrics, artist names, and related material belong to their respective
+            rights holders. Lexuri uses embedded playback and curated educational excerpts; it does
+            not grant permission to redistribute third-party content.
           </p>
 
-          <h2>6. AI-Generated Content</h2>
+          <h2>6. AI-Generated Feedback</h2>
           <p>
-            The Service uses OpenAI to generate flashcard definitions, translations, and language
-            explanations. AI-generated content may occasionally be inaccurate. You are responsible
-            for reviewing the accuracy of content before relying on it for language learning.
-            We do not guarantee the accuracy, completeness, or appropriateness of AI-generated outputs.
+            Translations, definitions, questions, verses, transcriptions, and pronunciation feedback
+            may be inaccurate or incomplete. Treat them as learning aids, verify important details,
+            and report harmful or clearly incorrect output.
           </p>
 
-          <h2>7. Subscriptions and Payments</h2>
+          <h2>7. Usage Limits and Availability</h2>
           <p>
-            The Service offers a free tier and a paid &ldquo;Pro&rdquo; subscription. Payments are
-            processed by Stripe. By subscribing, you agree to Stripe&rsquo;s terms of service.
-          </p>
-          <p>
-            Subscriptions renew automatically at the end of each billing period. You may cancel
-            your subscription at any time through your account settings. Cancellation takes effect
-            at the end of the current billing period — you will retain access until then. We do
-            not provide refunds for partial periods, except where required by applicable law.
+            Per-user limits may temporarily stop paid AI features to control abuse and test costs.
+            Lexuri may change, pause, or end the beta and will provide reasonable notice when
+            practical. No uninterrupted uptime is guaranteed.
           </p>
 
-          <h2>8. Free Tier Limits</h2>
+          <h2>8. Privacy and Account Deletion</h2>
           <p>
-            Free-tier accounts are subject to usage limits on AI features (chunk detection and
-            flashcard generation). These limits may change at any time. We will notify active
-            users of material changes via email.
+            The Privacy Policy explains data handling and user rights. You may update your profile,
+            withdraw optional marketing consent, or permanently delete the account in Settings.
+            Account deletion also removes saved final recordings and cannot be undone.
           </p>
 
-          <h2>9. Service Availability</h2>
+          <h2>9. Disclaimer and Liability</h2>
           <p>
-            We strive to maintain the Service operational 24/7 but do not guarantee uninterrupted
-            availability. We may modify, suspend, or discontinue any part of the Service at any
-            time. We will provide reasonable notice of material changes where possible.
+            The beta is provided &ldquo;as is&rdquo; for evaluation. To the extent permitted by Brazilian
+            law, Lexuri does not guarantee that the service or AI output will be error-free, suitable
+            for a particular learning result, or continuously available. Nothing in these Terms
+            excludes rights that cannot legally be waived, including applicable consumer and data
+            protection rights.
           </p>
 
-          <h2>10. Disclaimer of Warranties</h2>
+          <h2>10. Suspension and Termination</h2>
           <p>
-            THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; WITHOUT
-            WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
-            MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT
-            WARRANT THAT THE SERVICE WILL BE ERROR-FREE OR THAT DEFECTS WILL BE CORRECTED.
+            Access may be suspended for abuse, security risk, or violation of these Terms. You may
+            end participation at any time by deleting the account. The beta may also be discontinued
+            after reasonable notice when practical.
           </p>
 
-          <h2>11. Limitation of Liability</h2>
+          <h2>11. Governing Law and Changes</h2>
           <p>
-            TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT,
-            INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR
-            REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL,
-            OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE SERVICE.
-          </p>
-          <p>
-            OUR TOTAL LIABILITY FOR ANY CLAIMS UNDER THESE TERMS SHALL NOT EXCEED THE AMOUNT YOU
-            PAID US IN THE 12 MONTHS PRECEDING THE CLAIM, OR R$100.00 (ONE HUNDRED BRAZILIAN REAIS),
-            WHICHEVER IS GREATER.
+            Brazilian law applies, including the Civil Code, Consumer Defense Code where applicable,
+            and LGPD. Material changes receive a new version and may require renewed acceptance.
           </p>
 
-          <h2>12. Termination</h2>
+          <h2>12. Contact</h2>
           <p>
-            You may delete your account at any time through Settings → Delete Account. We may
-            suspend or terminate your access immediately if you violate these Terms or if we
-            discontinue the Service. Upon termination, your data will be deleted within 30 days
-            as described in our Privacy Policy.
+            Questions can be sent to{' '}
+            <a href={`mailto:${DATA_CONTACT_EMAIL}`} className="mkt-legal-link">{DATA_CONTACT_EMAIL}</a>.
           </p>
-
-          <h2>13. Governing Law</h2>
-          <p>
-            These Terms are governed by the laws of Brazil, specifically the Consumer Defense Code
-            (Lei 8.078/1990), the Brazilian Civil Code, and the Brazilian General Data Protection
-            Law (LGPD — Lei 13.709/2018). Any disputes shall be resolved in the courts of Brazil.
-          </p>
-
-          <h2>14. Changes to These Terms</h2>
-          <p>
-            We may update these Terms from time to time. We will notify you of material changes
-            by email or by posting a notice in the Service. Your continued use of the Service
-            after the effective date of the revised Terms constitutes your acceptance of the changes.
-          </p>
-
-          <h2>15. Contact</h2>
-          <p>
-            Questions about these Terms? Contact us at:{' '}
-            <a href="mailto:natanoliveiraad855@gmail.com" className="mkt-legal-link">
-              natanoliveiraad855@gmail.com
-            </a>
-          </p>
-
         </div>
       </div>
     </div>

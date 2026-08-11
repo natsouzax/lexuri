@@ -1,66 +1,37 @@
-# Checklist Legal — Lexuri
+# Checklist legal e de privacidade — Lexuri beta
 
-> LGPD (Lei 13.709/2018) + requisitos gerais para SaaS B2C
+> Revisado em 2026-08-11 para um piloto gratuito e fechado. Isto não substitui
+> revisão jurídica profissional.
 
----
+## Implementado
 
-## Status Atual
+- [x] Terms e Privacy descrevem o beta atual, sem Stripe/planos/serviços removidos.
+- [x] Versão e data efetiva visíveis nos documentos.
+- [x] Aceite obrigatório de Terms e Privacy no cadastro.
+- [x] Versão/data de aceite gravadas em `legal_consents` pelo trigger do banco.
+- [x] Marketing opcional, separado e revogável em Settings.
+- [x] Perfil editável em Settings.
+- [x] Exclusão self-service de Auth, dados vinculados, feedback/analytics e gravações privadas.
+- [x] Portabilidade disponível por solicitação no contato de privacidade.
+- [x] Microfone descrito como opcional; gravação final exige consentimento explícito.
+- [x] Terceiros efetivamente usados declarados: Supabase, OpenAI, Vercel e YouTube.
+- [x] Fluxo de cadastro confirma requisito 18+ ou autorização do responsável para 13–17.
+- [x] Menores de 13 anos excluídos do beta.
 
-| Item | Status |
-|---|---|
-| Página `/terms` | ✅ Criada (2026-06-20) |
-| Página `/privacy` | ✅ Criada (2026-06-20) |
-| Checkbox ToS no cadastro (required) | ✅ |
-| Checkbox Privacy no cadastro (required) | ✅ Atualizado (2026-06-20) |
-| Checkbox marketing consent (optional) | ✅ |
-| Consentimento registrado no banco | ✅ `marketing_consent` em `profiles.options` |
-| Copyright no footer | ✅ |
-| Links para /terms e /privacy no footer | ✅ Adicionado (2026-06-20) |
+## Antes de convidar alunos
 
----
+- [ ] Confirmar com professora/escola a faixa etária da turma.
+- [ ] Se houver participantes de 13–17, obter autorização documentada do responsável pelo processo da escola/teste.
+- [ ] Fornecer Terms/Privacy e destacar que microfone é opcional.
+- [ ] Confirmar responsável pelo atendimento de solicitações LGPD no e-mail publicado.
+- [ ] Testar uma exclusão real e uma solicitação de exportação antes do primeiro convite.
 
-## Antes de Cobrar Clientes — Obrigatório
+## Antes de cobrar ou abrir ao público
 
-- [ ] **Revisar com advogado LGPD** — documentos atuais são funcionais para beta, não para produção comercial
-- [ ] **Registrar DPO (Encarregado)** — para empresas. Para pessoa física, o próprio responsável é o DPO
-- [ ] **Registrar CNPJ** — necessário antes de cobrar clientes PJ ou emitir nota fiscal
-- [ ] **Contrato de processamento de dados com OpenAI** — verificar Data Processing Agreement (DPA) da OpenAI
-- [ ] **Stripe Brazil compliance** — verificar se conta Stripe está configurada para receber pagamentos no Brasil
-- [ ] **Política de cookies** — página `/cookies` ou banner (para usuários europeus via GDPR)
-- [ ] **Mecanismo de exclusão de dados** — endpoint `/api/auth/delete-account` existe ✅, mas verificar se deleta dados em cascata (OpenAI logs, Stripe customer)
-
----
-
-## Terceiros que Recebem Dados (declarados na Privacy Policy)
-
-| Serviço | Dados | País | DPA |
-|---|---|---|---|
-| Supabase | Todos os dados do usuário | EUA (via Fly.io) | Disponível |
-| OpenAI | Texto/áudio enviado pelo usuário | EUA | Disponível |
-| Stripe | Dados de pagamento | EUA | Disponível |
-| Resend | Email do usuário | EUA | Disponível |
-| Genius | Nenhum (busca pública) | EUA | N/A |
-| Vercel | Logs de acesso, IP | EUA | Disponível |
-
----
-
-## Serviços Recomendados para Revisão Legal
-
-| Serviço | Adequado para | Custo |
-|---|---|---|
-| [Termos de Uso BR](https://termos.host) | Documentos em PT-BR | Free–R$50/mês |
-| [Iubenda](https://iubenda.com) | Gerador automático | $27/ano |
-| Advogado LGPD | Revisão profissional | R$2k–8k |
-
----
-
-## Direitos do Usuário (LGPD Art. 18) — Implementados?
-
-| Direito | Canal atual | Precisa automatizar? |
-|---|---|---|
-| Acesso aos dados | Solicitar via email | Sim — self-service |
-| Correção | Settings → Profile | ✅ |
-| Exclusão | Settings → Delete Account | ✅ |
-| Portabilidade | Não implementado | A implementar |
-| Revogação do consentimento | Delete Account (workaround) | A implementar |
-| Oposição ao tratamento | Não implementado | A implementar |
+- [ ] Revisão com advogado especializado em LGPD/consumidor.
+- [ ] Definir estrutura empresarial/fiscal e emissão de nota.
+- [ ] Formalizar contratos/DPA e transferência internacional com operadores.
+- [ ] Automatizar exportação de dados e rotina de retenção de feedback/logs.
+- [ ] Realizar relatório de impacto conforme risco, público e orientação aplicável da ANPD.
+- [ ] Revisar propriedade/licenciamento dos excertos de letras e catálogo.
+- [ ] Criar processo documentado de incidente e comunicação.
