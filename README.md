@@ -134,7 +134,7 @@ Curated lessons are pre-generated `StaticLesson` TypeScript files in [`data/feat
 
 ## Current scope
 
-Lexuri is free and has no paid plan or subscription. The catalog is curated; importing any song a learner chooses is not currently supported. OAuth is not enabled. AI-backed features require an OpenAI key and are subject to daily usage limits. Availability on the live site depends on its deployment and service configuration.
+Lexuri is currently free during research validation; no paid plan is offered today. The catalog is curated; importing any song a learner chooses is not currently supported. OAuth is not enabled. Self-hosted AI features require an OpenAI key and are subject to daily usage limits. Availability on the live site depends on its deployment and service configuration.
 
 See the [roadmap](./_plans/roadmap.md), [documentation index](./_plans/README.md), [beta runbook](./_plans/beta-test-runbook.md), and [Music Studio notes](./_docs/music-studio.md).
 
@@ -149,3 +149,17 @@ MIT covers Lexuri's original software; it does not grant rights to song lyrics, 
 ## License
 
 Original Lexuri software: [MIT](./LICENSE). Third-party content is excluded from that license.
+
+---
+
+<div align="center">
+
+<h2>Want to learn English with Lexuri?</h2>
+
+<p>Use the hosted app and start with a song you love. There is no local setup, Supabase project, or personal API key to configure.</p>
+
+<h3><a href="https://lexuri-validacao.vercel.app">Open Lexuri and start learning →</a></h3>
+
+<sub>The hosted app is currently free during research validation. Any future pricing will be announced on the product site.</sub>
+
+</div>
