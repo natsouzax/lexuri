@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" fill="none">
+  <defs>
+    <linearGradient id="backdrop" x1="100" y1="30" x2="1280" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#263B32"/>
+      <stop offset="1" stop-color="#17211D"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="400" y1="200" x2="1190" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D47B55"/>
+      <stop offset="1" stop-color="#9A492F"/>
+    </linearGradient>
+    <filter id="shadow" x="80" y="54" width="1280" height="820" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="18"/>
+      <feGaussianBlur stdDeviation="22"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+      <feBlend in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+    <clipPath id="screen">
+      <rect x="120" y="92" width="1200" height="740" rx="22"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1440" height="900" fill="url(#backdrop)"/>
+  <circle cx="1332" cy="83" r="186" fill="#C86F4A" fill-opacity=".12"/>
+  <circle cx="94" cy="826" r="210" fill="#D7EAD2" fill-opacity=".07"/>
+
+  <g filter="url(#shadow)">
+    <rect x="120" y="92" width="1200" height="740" rx="22" fill="#FFFDF8"/>
+    <g clip-path="url(#screen)">
+      <path d="M120 114C120 101.85 129.85 92 142 92H1298C1310.15 92 1320 101.85 1320 114V145H120V114Z" fill="#F2EEE5"/>
+      <circle cx="148" cy="118" r="6" fill="#D87955"/>
+      <circle cx="169" cy="118" r="6" fill="#E6BE64"/>
+      <circle cx="190" cy="118" r="6" fill="#96B38F"/>
+      <text x="720" y="123" text-anchor="middle" fill="#77766D" font-family="Arial, sans-serif" font-size="13" font-weight="600">Lexuri · Learning space</text>
+
+      <rect x="120" y="145" width="220" height="687" fill="#18211D"/>
+      <rect x="145" y="168" width="34" height="34" rx="11" fill="#D47B55"/>
+      <text x="162" y="192" text-anchor="middle" fill="#FFF9ED" font-family="Georgia, serif" font-size="22" font-weight="700">L</text>
+      <text x="190" y="190" fill="#FFF9ED" font-family="Georgia, serif" font-size="20" font-weight="700">Lexuri</text>
+      <text x="264" y="190" fill="#D47B55" font-family="Arial, sans-serif" font-size="20" font-weight="700">.</text>
+
+      <text x="153" y="243" fill="#8E9A91" font-family="Arial, sans-serif" font-size="10" font-weight="700" letter-spacing="1.7">LEARNING</text>
+      <rect x="140" y="260" width="180" height="42" rx="10" fill="#C86F4A"/>
+      <text x="166" y="286" fill="#FFF9ED" font-family="Arial, sans-serif" font-size="14" font-weight="700">⌂</text>
+      <text x="190" y="286" fill="#FFF9ED" font-family="Arial, sans-serif" font-size="13" font-weight="700">Home</text>
+      <text x="166" y="338" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="14">♫</text>
+      <text x="190" y="338" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="13">Song lessons</text>
+      <text x="166" y="384" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="14">▤</text>
+      <text x="190" y="384" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="13">My words</text>
+      <text x="166" y="430" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="14">◉</text>
+      <text x="190" y="430" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="13">Albums</text>
+      <text x="153" y="493" fill="#8E9A91" font-family="Arial, sans-serif" font-size="10" font-weight="700" letter-spacing="1.7">YOUR PROGRESS</text>
+      <text x="166" y="533" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="14">✦</text>
+      <text x="190" y="533" fill="#C3CBC4" font-family="Arial, sans-serif" font-size="13">Achievements</text>
+
+      <rect x="140" y="728" width="180" height="76" rx="14" fill="#25332C"/>
+      <text x="158" y="755" fill="#D7EAD2" font-family="Arial, sans-serif" font-size="11" font-weight="700">A LITTLE EVERY DAY</text>
+      <text x="158" y="778" fill="#FFF9ED" font-family="Arial, sans-serif" font-size="12">Listen · Explore · Review</text>
+
+      <rect x="340" y="145" width="980" height="687" fill="#FBF8F0"/>
+      <text x="382" y="190" fill="#70766E" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.2">YOUR ENGLISH, IN CONTEXT</text>
+      <text x="382" y="238" fill="#18211D" font-family="Georgia, serif" font-size="35" font-weight="700">Continue learning from real English.</text>
+      <text x="382" y="265" fill="#68716A" font-family="Arial, sans-serif" font-size="14">Explore a song, save useful phrases, and bring them back in your next review.</text>
+
+      <rect x="382" y="286" width="133" height="30" rx="15" fill="#E4EFDF"/>
+      <text x="448" y="306" text-anchor="middle" fill="#45614C" font-family="Arial, sans-serif" font-size="11" font-weight="700">1  Listen</text>
+      <rect x="523" y="286" width="140" height="30" rx="15" fill="#F8E7DF"/>
+      <text x="593" y="306" text-anchor="middle" fill="#A95637" font-family="Arial, sans-serif" font-size="11" font-weight="700">2  Explore</text>
+      <rect x="671" y="286" width="131" height="30" rx="15" fill="#FCF0D1"/>
+      <text x="736" y="306" text-anchor="middle" fill="#8A681B" font-family="Arial, sans-serif" font-size="11" font-weight="700">3  Review</text>
+      <rect x="810" y="286" width="124" height="30" rx="15" fill="#E9E5F4"/>
+      <text x="872" y="306" text-anchor="middle" fill="#67578E" font-family="Arial, sans-serif" font-size="11" font-weight="700">4  Create</text>
+
+      <rect x="382" y="343" width="586" height="254" rx="18" fill="url(#hero)"/>
+      <circle cx="906" cy="382" r="30" fill="#FFF9ED" fill-opacity=".13"/>
+      <text x="905" y="391" text-anchor="middle" fill="#FFF9ED" font-family="Arial, sans-serif" font-size="26">♫</text>
+      <text x="416" y="383" fill="#F8D6C8" font-family="Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5">PICK UP WHERE YOU LEFT OFF</text>
+      <text x="416" y="425" fill="#FFF9ED" font-family="Georgia, serif" font-size="27" font-weight="700">Learn a song, one phrase at a time.</text>
+      <text x="416" y="454" fill="#F8E8DF" font-family="Arial, sans-serif" font-size="13">Tap a phrase to explore its meaning in context.</text>
+      <rect x="416" y="485" width="514" height="1" fill="#FFF9ED" fill-opacity=".23"/>
+      <text x="416" y="518" fill="#FFF9ED" font-family="Arial, sans-serif" font-size="15" font-weight="700">♪  A song you love</text>
+      <text x="416" y="543" fill="#F8E8DF" font-family="Arial, sans-serif" font-size="12">Synced lyrics  ·  Curated lesson</text>
+      <rect x="416" y="561" width="514" height="5" rx="2.5" fill="#FFF9ED" fill-opacity=".25"/>
+      <rect x="416" y="561" width="171" height="5" rx="2.5" fill="#F5C55D"/>
+
+      <rect x="990" y="343" width="288" height="254" rx="18" fill="#FFFFFF" stroke="#E9E4D9"/>
+      <text x="1018" y="380" fill="#18211D" font-family="Georgia, serif" font-size="20" font-weight="700">Today’s rhythm</text>
+      <text x="1018" y="402" fill="#7A8079" font-family="Arial, sans-serif" font-size="12">Small sessions, steady progress.</text>
+      <rect x="1018" y="423" width="232" height="48" rx="12" fill="#F0F5EC"/>
+      <circle cx="1043" cy="447" r="11" fill="#D7EAD2"/>
+      <text x="1043" y="451" text-anchor="middle" fill="#45614C" font-family="Arial, sans-serif" font-size="10" font-weight="700">1</text>
+      <text x="1065" y="443" fill="#29372E" font-family="Arial, sans-serif" font-size="12" font-weight="700">Explore a song</text>
+      <text x="1065" y="459" fill="#777F77" font-family="Arial, sans-serif" font-size="10">Words worth keeping</text>
+      <rect x="1018" y="481" width="232" height="48" rx="12" fill="#FAF0E9"/>
+      <circle cx="1043" cy="505" r="11" fill="#F3DFD5"/>
+      <text x="1043" y="509" text-anchor="middle" fill="#A95637" font-family="Arial, sans-serif" font-size="10" font-weight="700">2</text>
+      <text x="1065" y="501" fill="#29372E" font-family="Arial, sans-serif" font-size="12" font-weight="700">Review your words</text>
+      <text x="1065" y="517" fill="#777F77" font-family="Arial, sans-serif" font-size="10">Flashcards and recall</text>
+      <rect x="1018" y="539" width="232" height="42" rx="12" fill="#FFF8E8"/>
+      <circle cx="1043" cy="560" r="11" fill="#F8EBCB"/>
+      <text x="1043" y="564" text-anchor="middle" fill="#8A681B" font-family="Arial, sans-serif" font-size="10" font-weight="700">3</text>
+      <text x="1065" y="564" fill="#29372E" font-family="Arial, sans-serif" font-size="12" font-weight="700">Make it your own</text>
+
+      <text x="382" y="643" fill="#18211D" font-family="Georgia, serif" font-size="22" font-weight="700">Keep building your English</text>
+      <text x="382" y="665" fill="#737B73" font-family="Arial, sans-serif" font-size="12">Lessons and practice designed around language you already hear.</text>
+
+      <rect x="382" y="687" width="274" height="113" rx="15" fill="#FFFFFF" stroke="#E9E4D9"/>
+      <rect x="398" y="703" width="52" height="78" rx="10" fill="#D8E6D3"/>
+      <circle cx="424" cy="730" r="13" fill="#B6CFAD"/>
+      <text x="466" y="723" fill="#A95637" font-family="Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1">SONG LESSON</text>
+      <text x="466" y="747" fill="#18211D" font-family="Arial, sans-serif" font-size="13" font-weight="700">Expressions in context</text>
+      <text x="466" y="768" fill="#747C74" font-family="Arial, sans-serif" font-size="11">Listen · Save · Review</text>
+
+      <rect x="672" y="687" width="274" height="113" rx="15" fill="#FFFFFF" stroke="#E9E4D9"/>
+      <rect x="688" y="703" width="52" height="78" rx="10" fill="#F5E7C9"/>
+      <path d="M703 742C703 733 725 733 725 742V756H703V742Z" fill="#D8B763"/>
+      <text x="756" y="723" fill="#A95637" font-family="Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1">YOUR LIBRARY</text>
+      <text x="756" y="747" fill="#18211D" font-family="Arial, sans-serif" font-size="13" font-weight="700">Personal glossary</text>
+      <text x="756" y="768" fill="#747C74" font-family="Arial, sans-serif" font-size="11">Your words, your examples</text>
+
+      <rect x="962" y="687" width="316" height="113" rx="15" fill="#FFFFFF" stroke="#E9E4D9"/>
+      <rect x="978" y="703" width="52" height="78" rx="10" fill="#E8E3F1"/>
+      <path d="M991 754L1003 730L1017 754H991Z" fill="#A79AC5"/>
+      <text x="1046" y="723" fill="#A95637" font-family="Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="1">ALBUM JOURNEY</text>
+      <text x="1046" y="747" fill="#18211D" font-family="Arial, sans-serif" font-size="13" font-weight="700">Learn track by track</text>
+      <text x="1046" y="768" fill="#747C74" font-family="Arial, sans-serif" font-size="11">Themes, reflection, progress</text>
+    </g>
+    <rect x="120" y="92" width="1200" height="740" rx="22" stroke="#FFFFFF" stroke-opacity=".3"/>
+  </g>
+
+  <rect x="902" y="850" width="418" height="30" rx="15" fill="#FFF9ED" fill-opacity=".12"/>
+  <text x="1111" y="870" text-anchor="middle" fill="#F6EDE1" font-family="Arial, sans-serif" font-size="11" font-weight="600">Illustrative product preview · replace with an active app screenshot</text>
+</svg>
