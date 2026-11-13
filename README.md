@@ -1,134 +1,126 @@
-# Lexuri — learn English through music
+# Lexuri
 
-MVP validating a simple hypothesis: **learning English by listening to songs you already love drives engagement and retention.**
+**Learn English through the songs you love.** Lexuri is an open-source research app that turns music into a practical learning loop: listen with synced lyrics, explore unfamiliar expressions, and review what you learned over three short sessions.
 
-The user listens to a song with synced lyrics, taps on unfamiliar words (instant translation), saves the ones they want to learn, and reviews them in short sessions over 3 days. In the end, their own learnings become "their song."
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[Try the live app](https://lexuri-validacao.vercel.app) · [Explore the code](https://github.com/natsouzax/lexuri)
 
-**Production:** [lexuri-validacao.vercel.app](https://lexuri-validacao.vercel.app)
+Lexuri has been tried by active learners and shaped by feedback from teachers and international participants. It is still a research prototype: the goal is to learn which parts of the experience help people return to English practice and use new language themselves.
 
-> This is NOT a SaaS — it's a research prototype. No sales, no funnel, no premium tier. The goal is to validate the idea with real users and iterate from data.
+## The experience
 
----
+1. **Choose a level and a song.** Start with a curated lesson or continue through a concept album.
+2. **Listen with synced lyrics.** Follow the song while the player highlights each line.
+3. **Explore language in context.** Tap a word or phrase to see its translation and meaning, then save it for review.
+4. **Return over three short sessions.** Practice with flashcards, a memory game, and a lyrics activity.
+5. **Make the language your own.** Save personal takeaways and examples; the app uses them to build a personal glossary and verses.
 
-## User flow
+The public landing page shows the core idea and its three-step learning loop:
 
-```
-Sign up → choose level (1 click) → open a song
-      ↓
-Listen with synced lyrics (karaoke style)
-      ↓
-Tap words/chunks → translation → save to library
-      ↓
-3-day review cycle per song:
-  Day 1 — Flashcards (SRS: flip the card, rate difficulty)
-  Day 2 — Memory game (match word to translation)
-  Day 3 — Complete the lyrics + "which 2 takeaways stuck with you?"
-      ↓
-Takeaways become part of the Glossary, every 2 takeaways generate a verse
-      ↓
-Verse by verse, the user composes their own song
-```
+![Lexuri landing page with a synced-lyrics preview](./_docs/screenshots/landing.png)
 
-## Album module
+![The three-step learning loop shown on the live Lexuri site](./_docs/screenshots/features.png)
 
-Besides standalone songs, learners can go through an entire concept album (e.g. American Idiot, Green Day) — completing the 3-day cycle for each track, then a global album cycle with a reflection on the theme, and in the end the verses from all tracks form "their track." Albums are organized into 3 tiers: beginner / intermediate / advanced.
+## What is in the app
 
-## Key features
-
-| Area | What it does |
+| Area | What learners can do |
 | --- | --- |
-| Synced player | Karaoke-style lyrics synced with the YouTube video |
-| Tap-to-translate | Tap any word/chunk to get translation + meaning; saves as a flashcard |
-| Chunk analysis (AI) | GPT detects idioms, phrasal verbs, collocations, etc. (dense, ~11-22 per 100 words), filterable by type |
-| Spaced repetition (SM-2) | Flashcards resurface right before they'd be forgotten |
-| D1/D2/D3 cycle | Three short sessions per song, with a 1-day lock between steps |
-| Active glossary + verses | Only what the user writes enters the glossary; every 2 entries generate a verse |
-| Floating translator | Floating bubble on any screen: type or select text to translate/listen/save |
-| Gamification | XP, streaks, daily quests, badges, leaderboard |
-| Immersion + i18n | UI 100% in English; the language chosen in the popup only translates content (lyrics, chunks, words). 13 native languages supported |
+| Synced music player | Follow curated lyrics alongside a YouTube video. |
+| Word and phrase exploration | Translate words, inspect meanings and language chunks, and save useful items. |
+| Three-day review | Practice with spaced flashcards, a memory game, and fill-in-the-lyrics activities. |
+| Personal glossary | Record takeaways and examples, then turn them into generated verses. |
+| Albums | Work through selected concept albums, track progress, and reflect on the album as a whole. |
+| Speaking practice | Record optional practice takes and receive AI pronunciation feedback; review saved words with spaced repetition. |
+| Motivation and progress | Track streaks, XP, quests, badges, and a learner leaderboard. |
+| Languages | Keep the interface in English while translating learning content into one of 13 supported native languages. |
+| Privacy controls | Manage profile and marketing preferences, review privacy information, and delete an account. |
 
-## Architecture
+## Project status and limits
 
-Content is static, progress is stored in the database. Lessons ("StaticLesson") are pre-generated TypeScript files in `data/featured-lessons/` — transcript, synced segments, and analyzed chunks. Loading a song performs no scraping or AI call. Runtime AI is limited to user-requested translation/definition, glossary and verse generation, and optional speech transcription.
+Lexuri is a free research prototype. It has no paid plan, subscription, or advertising funnel. The current experience uses a curated song catalog; importing any song a learner chooses is outside the current scope. Some translation, generation, and speech features require an OpenAI API key and are subject to daily usage limits.
 
-Offline curation: synced lyrics come from lrclib.net (community LRC database) or YouTube captions; chunks are AI-generated. Everything runs through scripts in `scripts/`, outside of runtime.
+The codebase includes the product features listed above, but production availability depends on the live deployment and its Supabase/OpenAI configuration. OAuth is not enabled in the sign-in flow. See the [roadmap](./_plans/roadmap.md) for implementation notes and planned work.
 
-Supabase stores account preferences, auditable legal consent, user-created learning data, progress, gamification, feedback, and optional final recordings. User-owned records use Row Level Security; administrative keys remain server-only.
+## Tech stack
 
-## Stack
+- **Application:** Next.js 16.3 App Router, React 19, TypeScript, Node.js 24
+- **Styling:** Tailwind CSS 4 and a custom design system
+- **Auth and data:** Supabase Auth and Postgres with Row Level Security
+- **AI:** OpenAI for user-requested translation, definitions, glossary and verse generation, and optional speech transcription
+- **Deployment:** Vercel
+- **Lesson content:** curated, pre-generated TypeScript data; synced lyrics are prepared offline, so opening a lesson does not scrape a song at runtime
 
-| Layer | Technology |
-| --- | --- |
-| Framework | Next.js 16.3 (App Router, React 19, TypeScript; Node 24) |
-| Styling | Tailwind v4 + custom design system (globals.css) |
-| Database + Auth | Supabase (Postgres + RLS + Auth) |
-| AI | OpenAI — translation/definition, glossary generation, verses, and speech transcription |
-| Synced lyrics | lrclib.net (offline curation) |
-| Animations | Framer Motion |
-| Deploy | Vercel |
+## Run locally
 
-## Running locally
+### Requirements
 
-```
+- Node.js 24.x
+- npm
+- Your own Supabase project and OpenAI API key for authenticated and AI-powered features
+
+### Setup
+
+```bash
+git clone https://github.com/natsouzax/lexuri.git
+cd lexuri
 npm install
+```
+
+Create `.env.local` in the project root using `.env.example` as a template:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Keep service-role and OpenAI keys server-side. Never add real keys to source control. Configure Supabase Auth redirect URLs for your local app before testing registration and login.
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-App runs at `localhost:3000`. Requires a `.env.local` with the keys (see `.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`.
+Open [http://localhost:3000](http://localhost:3000). Static lesson pages can be explored without making an AI call; account-backed features need your Supabase configuration.
 
-## Database
+### Database setup
 
-```
+The migrations are in [`supabase/migrations/`](./supabase/migrations/). Link the Supabase CLI to **your own development project**, review the pending changes, and then apply them:
+
+```bash
+supabase db push --dry-run
 npm run db:migrate
 ```
 
-Applies Supabase migrations in `supabase/migrations/`. Release-critical additions include 0031 (per-user API quotas), 0032 (Glossary practice), 0033 (legal consent/preferences), and 0034 (authenticated feedback).
+Do not point a local checkout at a production database while setting up the project. More deployment and rollback details are in [`_plans/deploy.md`](./_plans/deploy.md).
 
-## Curation scripts (non-runtime)
+## Architecture
 
-| Command | What it does |
-| --- | --- |
-| npm run check:albums | Analyzes feasibility of candidate albums (lrclib sync + density) |
-| npm run gen:album | Generates lessons for an album's tracks via lrclib + chunks |
-| npm run regen:chunks | Re-analyzes lesson chunks without touching the sync |
-| npm run resync:batch3 | Re-syncs specific songs via lrclib |
+Lessons are curated and stored as static `StaticLesson` TypeScript data in [`data/featured-lessons/`](./data/featured-lessons/). Each lesson contains a transcript, timed segments, and analyzed language chunks. User accounts, preferences, learning progress, glossary entries, and optional recordings are stored in Supabase. User-owned rows are protected with Row Level Security; administrative keys stay on the server.
 
-## Deploy
+AI runs only when a learner requests an AI-backed action, such as a translation, definition, generated verse, or speech assessment. Offline scripts in [`scripts/`](./scripts/) support lesson curation and synchronization.
 
-```
-npm run deploy
-```
+## Project docs
 
-Runs tests, a production build, a production-dependency audit, and then `vercel --prod`. The app runs at lexuri-validacao. Details and rollback steps are in `_plans/deploy.md`; the beta operating checklist is in `_plans/beta-test-runbook.md`.
+- [Product roadmap and current scope](./_plans/roadmap.md)
+- [Documentation index](./_plans/README.md)
+- [Beta test runbook](./_plans/beta-test-runbook.md)
+- [Deployment and rollback](./_plans/deploy.md)
+- [Music Studio notes](./_docs/music-studio.md)
 
-## Structure
+## Contributing
 
-```
-app/
-  (marketing)/   research landing + privacy/terms
-  (auth)/        login, signup
-  (app)/         dashboard, feed, level, music, review, library, albums, settings
-  api/           flashcards, progress, takeaways, llm, gamification, albums
-components/      player, chunks, review (D1/D2/D3), floating translator, ui
-data/
-  featured-lessons/  static lessons (StaticLesson)
-  albums/            concept album metadata
-lib/               chunks, srs, gamification, i18n, album, mvp, supabase
-scripts/           lesson generation / re-sync (offline)
-supabase/migrations/
-_plans/            decisions, roadmap, deploy, album module
-```
+Lexuri is open source under the MIT License. You can use, modify, and redistribute the original software, including in your own app, while preserving the copyright and license notice. Contributions are welcome through GitHub issues and pull requests.
 
-## Living documentation
+Before proposing a change, check the roadmap and explain the learner problem it addresses. Keep credentials and learner data out of commits. For product changes, include a short description of the user flow and any setup or migration impact.
 
-The `_plans/` directory is the product's memory:
-- `decisions.md` — architecture/product decision log
-- `roadmap.md` — what's done and what's left
-- `deploy.md` — how to ship it
-- `beta-test-runbook.md` — release gate, smoke test, and cohort operation
-- `beta-metrics.sql` — aggregate activation and retention funnel
-- `album-module.md` — album module design
+### Song lyrics and other third-party content
+
+The MIT License applies to Lexuri's original software. It does **not** grant rights to song lyrics, music recordings, video, artist names, or other third-party material. Some curated lesson files contain lyrics whose rights belong to their respective owners. Check the rights for any content before reusing, redistributing, or deploying it; replace it with content you are authorized to use when needed.
 
 ## License
 
-Copyright © 2026 Natan Oliveira — all rights reserved. Code visible for portfolio and transparency purposes; not open source for redistribution.
+Original Lexuri software is available under the [MIT License](./LICENSE). Third-party content is excluded from that grant; see the note above.
