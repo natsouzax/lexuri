@@ -19,7 +19,6 @@ The public landing page shows the core idea and its three-step learning loop:
 
 ![Lexuri landing page with a synced-lyrics preview](./_docs/screenshots/landing.png)
 
-![The three-step learning loop shown on the live Lexuri site](./_docs/screenshots/features.png)
 
 ## What is in the app
 
