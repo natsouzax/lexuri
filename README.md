@@ -7,7 +7,7 @@
 <p>Learn through music you already love: explore real phrases in context, review them across three short sessions, and turn your discoveries into a personal glossary.</p>
 
 <p>
-  <a href="https://lexuri-validacao.vercel.app"><strong>Try Lexuri</strong></a>
+  <a href="https://lexuri.app"><strong>Try Lexuri</strong></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/natsouzax/lexuri">Explore the source</a>
   &nbsp;·&nbsp;
@@ -158,7 +158,7 @@ Original Lexuri software: [MIT](./LICENSE). Third-party content is excluded from
 
 <p>Use the hosted app and start with a song you love. There is no local setup, Supabase project, or personal API key to configure.</p>
 
-<h3><a href="https://lexuri-validacao.vercel.app">Open Lexuri and start learning →</a></h3>
+<h3><a href="https://lexuri.app">Open Lexuri and start learning →</a></h3>
 
 <sub>The hosted app is currently free during research validation. Any future pricing will be announced on the product site.</sub>
 
